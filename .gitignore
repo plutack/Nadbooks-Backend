@@ -15,6 +15,7 @@ lerna-debug.log*
 
 # dotenv environment variable files
 .env
+.envrc
 .env.development
 .env.test
 .env.production
@@ -22,3 +23,8 @@ lerna-debug.log*
 # temp directory
 .temp
 .tmp
+
+# biome config file
+biome.json
+
+/generated/prisma
