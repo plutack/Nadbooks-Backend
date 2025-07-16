@@ -1,10 +1,11 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from '@/auth/auth.service';
-import { CreateUserDto, LoginUserDto } from '@/auth/dto/auth.dto';
+import { CreateUserDto, LoginUserDto } from '@/auth/dtos/auth.dto';
+import { GoogleOauthGuard } from './guards/google-oauth.guard';
 
 @Controller('auth')
 export class AuthController {
-	constructor(private auth: AuthService) {}
+	constructor(private auth: AuthService) { }
 
 	@Post('register')
 	registerUser(@Body() body: CreateUserDto) {
@@ -14,5 +15,15 @@ export class AuthController {
 	@Post('login')
 	loginUser(@Body() body: LoginUserDto) {
 		return this.auth.login(body);
+	}
+
+	@Get('google/url')
+	@UseGuards(GoogleOauthGuard)
+	async googleAuth() { }
+
+	@Get('google/callback')
+	@UseGuards(GoogleOauthGuard)
+	async googleAuthCallback(@Req() req: IRequestWithUser,) {
+		return await this.auth.registerGoogleUser(req.user)
 	}
 }
