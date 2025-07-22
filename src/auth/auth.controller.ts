@@ -17,7 +17,7 @@ export class AuthController {
 		return this.auth.login(body);
 	}
 
-	@Get('google/url')
+	@Get('google')
 	@UseGuards(GoogleOauthGuard)
 	async googleAuth() { }
 
