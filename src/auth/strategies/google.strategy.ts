@@ -1,6 +1,6 @@
 import { PrismaService } from '@/prisma/prisma.service';
-import { Inject, Injectable } from '@nestjs/common';
-import { ConfigService, ConfigType } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from "passport-google-oauth2"
 
