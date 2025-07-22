@@ -2,6 +2,7 @@ import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from '@/auth/auth.service';
 import { CreateUserDto, LoginUserDto } from '@/auth/dtos/auth.dto';
 import { GoogleOauthGuard } from "@/auth/guards/google-oauth.guard"
+import { Request } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -23,7 +24,7 @@ export class AuthController {
 
 	@Get('google/callback')
 	@UseGuards(GoogleOauthGuard)
-	async googleAuthCallback(@Req() req: IRequestWithUser,) {
-		return await this.auth.registerGoogleUser(req.user)
+	async googleAuthCallback(@Req() req: Request) {
+		return await this.auth.registerGoogleUser(req.user as GoogleResponseUser)
 	}
 }
