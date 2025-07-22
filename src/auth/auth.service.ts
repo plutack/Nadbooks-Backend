@@ -123,7 +123,7 @@ export class AuthService {
 					email: existingUser.email,
 				},
 			};
-		}else{
+		}else if(!existingUser){
 			const newUser = await this.db.user.create({
 				data:{
 					firstName: user.name.givenName,
