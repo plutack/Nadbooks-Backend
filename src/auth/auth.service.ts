@@ -1,4 +1,5 @@
 import {
+	BadRequestException,
 	ConflictException,
 	Injectable,
 	InternalServerErrorException,
@@ -8,14 +9,14 @@ import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
 import { PrismaService } from '@/prisma/prisma.service';
-import { CreateUserDto, LoginUserDto } from './dto/auth.dto';
+import { CreateUserDto, LoginUserDto } from "@/auth/dtos/auth.dto"
 
 @Injectable()
 export class AuthService {
 	constructor(
 		private readonly db: PrismaService,
 		private readonly jwt: JwtService,
-	) {}
+	) { }
 
 	async register(dto: CreateUserDto) {
 		try {
@@ -27,6 +28,7 @@ export class AuthService {
 					lastName: dto.lastName.trim().toLowerCase(),
 					email: dto.email.trim().toLowerCase(),
 					username: dto.username.trim().toLowerCase(),
+					authMode: "default",
 					passwordHash,
 				},
 				select: {
@@ -67,7 +69,11 @@ export class AuthService {
 			throw new UnauthorizedException('Invalid credentials');
 		}
 
-		const isMatch = await argon.verify(existingUser.passwordHash, dto.password);
+		if (existingUser.authMode !== "default") {
+			throw new BadRequestException("Invalid login approach")
+		}
+		const isMatch = await argon.verify(existingUser.passwordHash as string, dto.password);
+	
 		if (!isMatch) {
 			throw new UnauthorizedException('Invalid credentials');
 		}
@@ -90,5 +96,61 @@ export class AuthService {
 				email: existingUser.email,
 			},
 		};
+	}
+
+	async registerGoogleUser(user: GoogleResponseUser) {
+		const existingUser = await this.db.user.findFirst({
+			where: {
+				email: user.email
+			},
+		});
+		if (existingUser && existingUser.authMode === "google") {
+			const payload = {
+				sub: existingUser.id,
+				username: existingUser.username,
+				email: existingUser.email,
+			};
+
+			const accessToken = await this.jwt.signAsync(payload);
+			console.log(accessToken)
+			return {
+				accessToken,
+				user: {
+					id: existingUser.id,
+					username: existingUser.username,
+					firstName: existingUser.firstName,
+					lastName: existingUser.lastName,
+					email: existingUser.email,
+				},
+			};
+		}else if(!existingUser){
+			const newUser = await this.db.user.create({
+				data:{
+					firstName: user.name.givenName,
+					lastName: user.name.familyName,
+					email: user.email,
+					authMode: "google",
+					username: user.name.givenName.split("@")[0]
+				}
+			})
+			const payload = {
+				sub: newUser.id,
+				username: newUser.username,
+				email: newUser.email,
+			};
+
+			const accessToken = await this.jwt.signAsync(payload);
+
+			return {
+				accessToken,
+				user: {
+					id: newUser.id,
+					username: newUser.username,
+					firstName: newUser.firstName,
+					lastName: newUser.lastName,
+					email: newUser.email,
+				},
+			}; 
+		}
 	}
 }
