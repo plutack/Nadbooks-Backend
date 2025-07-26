@@ -1,15 +1,15 @@
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import metadata from '@/metadata';
+import { AppModule } from './app.module';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 	app.enableShutdownHooks();
 	app.use(cookieParser());
-	app.setGlobalPrefix("api")
+	app.setGlobalPrefix('api');
 	const config = app.get(ConfigService);
 	const swaggerConfig = new DocumentBuilder()
 		.setTitle('Nadbooks-Backend')
@@ -19,7 +19,7 @@ async function bootstrap() {
 
 	await SwaggerModule.loadPluginMetadata(metadata);
 	const apiDoc = () => SwaggerModule.createDocument(app, swaggerConfig);
-	SwaggerModule.setup('docs', app, apiDoc);
+	SwaggerModule.setup('api/docs', app, apiDoc);
 	await app.listen(config.get('PORT') ?? 3000);
 }
 bootstrap();
