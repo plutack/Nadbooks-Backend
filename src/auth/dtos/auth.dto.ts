@@ -12,8 +12,10 @@ import {
 
 export class CreateUserDto {
 	@IsNotEmpty()
+	@Transform(({ value }) => value.trim().toLowerCase())
 	firstName: string;
 	@IsNotEmpty()
+	@Transform(({ value }) => value.trim().toLowerCase())
 	lastName: string;
 	@IsEmail()
 	email: string;
@@ -39,12 +41,12 @@ export class CreateUserDto {
 }
 
 export class LoginUserDto {
-	@ValidateIf((o) => !o.email)
+	@ValidateIf((object) => !object.email)
 	@IsString()
 	@Transform(({ value }) => value?.trim().toLowerCase())
 	username?: string;
 
-	@ValidateIf((o) => !o.username)
+	@ValidateIf((object) => !object.username)
 	@IsEmail()
 	@Transform(({ value }) => value?.trim().toLowerCase())
 	email?: string;

@@ -8,15 +8,15 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
+import { CreateUserDto, LoginUserDto } from '@/auth/dtos/auth.dto';
 import { PrismaService } from '@/prisma/prisma.service';
-import { CreateUserDto, LoginUserDto } from "@/auth/dtos/auth.dto"
 
 @Injectable()
 export class AuthService {
 	constructor(
 		private readonly db: PrismaService,
 		private readonly jwt: JwtService,
-	) { }
+	) {}
 
 	async register(dto: CreateUserDto) {
 		try {
@@ -24,11 +24,10 @@ export class AuthService {
 
 			const newUser = await this.db.user.create({
 				data: {
-					firstName: dto.firstName.trim().toLowerCase(),
-					lastName: dto.lastName.trim().toLowerCase(),
-					email: dto.email.trim().toLowerCase(),
-					username: dto.username.trim().toLowerCase(),
-					authMode: "default",
+					firstName: dto.firstName,
+					lastName: dto.lastName,
+					email: dto.email,
+					username: dto.username,
 					passwordHash,
 				},
 				select: {
@@ -69,11 +68,14 @@ export class AuthService {
 			throw new UnauthorizedException('Invalid credentials');
 		}
 
-		if (existingUser.authMode !== "default") {
-			throw new BadRequestException("Invalid login approach")
+		if (existingUser.authMode !== 'default') {
+			throw new BadRequestException('Invalid login approach');
 		}
-		const isMatch = await argon.verify(existingUser.passwordHash as string, dto.password);
-	
+		const isMatch = await argon.verify(
+			existingUser.passwordHash as string,
+			dto.password,
+		);
+
 		if (!isMatch) {
 			throw new UnauthorizedException('Invalid credentials');
 		}
@@ -101,10 +103,10 @@ export class AuthService {
 	async registerGoogleUser(user: GoogleResponseUser) {
 		const existingUser = await this.db.user.findFirst({
 			where: {
-				email: user.email
+				email: user.email,
 			},
 		});
-		if (existingUser && existingUser.authMode === "google") {
+		if (existingUser && existingUser.authMode === 'google') {
 			const payload = {
 				sub: existingUser.id,
 				username: existingUser.username,
@@ -112,7 +114,7 @@ export class AuthService {
 			};
 
 			const accessToken = await this.jwt.signAsync(payload);
-			console.log(accessToken)
+			console.log(accessToken);
 			return {
 				accessToken,
 				user: {
@@ -123,16 +125,16 @@ export class AuthService {
 					email: existingUser.email,
 				},
 			};
-		}else if(!existingUser){
+		} else if (!existingUser) {
 			const newUser = await this.db.user.create({
-				data:{
+				data: {
 					firstName: user.name.givenName,
 					lastName: user.name.familyName,
 					email: user.email,
-					authMode: "google",
-					username: user.name.givenName.split("@")[0]
-				}
-			})
+					authMode: 'google',
+					username: user.name.givenName.split('@')[0],
+				},
+			});
 			const payload = {
 				sub: newUser.id,
 				username: newUser.username,
@@ -150,7 +152,7 @@ export class AuthService {
 					lastName: newUser.lastName,
 					email: newUser.email,
 				},
-			}; 
+			};
 		}
 	}
 }
