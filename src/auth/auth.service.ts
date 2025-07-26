@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
+import { AuthMode } from 'generated/prisma';
 import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
 import { CreateUserDto, LoginUserDto } from '@/auth/dtos/auth.dto';
 import { PrismaService } from '@/prisma/prisma.service';
@@ -26,6 +27,7 @@ export class AuthService {
 				data: {
 					firstName: dto.firstName,
 					lastName: dto.lastName,
+					authMode: AuthMode.EMAIL,
 					email: dto.email,
 					username: dto.username,
 					passwordHash,
@@ -68,7 +70,7 @@ export class AuthService {
 			throw new UnauthorizedException('Invalid credentials');
 		}
 
-		if (existingUser.authMode !== 'default') {
+		if (existingUser.authMode !== AuthMode.EMAIL) {
 			throw new BadRequestException('Invalid login approach');
 		}
 		const isMatch = await argon.verify(
@@ -106,7 +108,7 @@ export class AuthService {
 				email: user.email,
 			},
 		});
-		if (existingUser && existingUser.authMode === 'google') {
+		if (existingUser && existingUser.authMode === AuthMode.GOOGLE) {
 			const payload = {
 				sub: existingUser.id,
 				username: existingUser.username,
@@ -131,7 +133,7 @@ export class AuthService {
 					firstName: user.name.givenName,
 					lastName: user.name.familyName,
 					email: user.email,
-					authMode: 'google',
+					authMode: AuthMode.GOOGLE,
 					username: user.name.givenName.split('@')[0],
 				},
 			});
