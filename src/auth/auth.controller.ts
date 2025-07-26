@@ -24,7 +24,7 @@ export class AuthController {
 
 	@Get('google/callback')
 	@UseGuards(GoogleOauthGuard)
-	googleAuthCallback(@Req() req: Request) {
-		return this.auth.registerGoogleUser(req.user as GoogleResponseUser)
+ async googleAuthCallback(@Req() req: Request) {
+		return await this.auth.registerGoogleUser(req.user as GoogleResponseUser)
 	}
 }
