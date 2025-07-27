@@ -1,12 +1,12 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Request } from 'express';
 import { AuthService } from '@/auth/auth.service';
 import { CreateUserDto, LoginUserDto } from '@/auth/dtos/auth.dto';
-import { GoogleOauthGuard } from "@/auth/guards/google-oauth.guard"
-import { Request } from 'express';
+import { GoogleOauthGuard } from '@/auth/guards/google-oauth.guard';
 
 @Controller('auth')
 export class AuthController {
-	constructor(private auth: AuthService) { }
+	constructor(private auth: AuthService) {}
 
 	@Post('register')
 	registerUser(@Body() body: CreateUserDto) {
@@ -20,11 +20,11 @@ export class AuthController {
 
 	@Get('google')
 	@UseGuards(GoogleOauthGuard)
-	googleAuth() { }
+	googleAuth() {}
 
 	@Get('google/callback')
 	@UseGuards(GoogleOauthGuard)
- async googleAuthCallback(@Req() req: Request) {
-		return await this.auth.registerGoogleUser(req.user as GoogleResponseUser)
+	async googleAuthCallback(@Req() req: Request) {
+		return await this.auth.registerGoogleUser(req.user as GoogleResponseUser);
 	}
 }
