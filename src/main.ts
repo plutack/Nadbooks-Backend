@@ -42,11 +42,8 @@ async function bootstrap() {
 		.build();
 
 	await SwaggerModule.loadPluginMetadata(metadata);
-	const apiDoc = () =>
-		SwaggerModule.createDocument(app, swaggerConfig, {
-			ignoreGlobalPrefix: false,
-		});
-	SwaggerModule.setup('/docs', app, apiDoc);
+	const apiDoc = () => SwaggerModule.createDocument(app, swaggerConfig);
+	SwaggerModule.setup('api/docs', app, apiDoc);
 	await app.listen(config.get('PORT') ?? 3000);
 }
 bootstrap();
