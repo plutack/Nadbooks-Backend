@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, RequestTimeoutException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Dropbox } from 'dropbox';
 
@@ -24,11 +24,16 @@ export class DropboxService {
         }
     }
     async getDropboxClient() {
-        const newAccessToken = await this.getNewAccessToken()
-        const dbx = new Dropbox({
-            accessToken: newAccessToken,
-        })
-        return dbx
+        try {
+            const newAccessToken = await this.getNewAccessToken()
+            const dbx = new Dropbox({
+                accessToken: newAccessToken,
+            })
+            return dbx
+        } catch (error) {
+            throw error
+        }
+
     }
 
     async getRefreshToken() {
@@ -78,7 +83,11 @@ export class DropboxService {
             }
             return response["access_token"]
         } catch (error) {
-            throw new InternalServerErrorException(error)
+            if (error.message === "fetch failed") {
+                throw new RequestTimeoutException("Please check your internet connection")
+            } else {
+                throw new InternalServerErrorException(error)
+            }
         }
     }
     async storeFile(file: Express.Multer.File, fileName: string) {
@@ -99,7 +108,7 @@ export class DropboxService {
             const directUrl = rawUrl.replace("www.dropbox.com", "dl.dropboxusercontent.com").replace("?dl=0", "")
             return directUrl
         } catch (error) {
-            throw new Error(error)
+            throw error
         }
 
     }
