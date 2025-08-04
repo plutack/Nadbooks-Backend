@@ -35,7 +35,7 @@ export class DropboxService {
         const encodedCredentials = btoa(`${this.APP_KEY}:${this.APP_SECRET}`)
         const params = new URLSearchParams()
         params.append("code", this.AUTH_CODE)
-        params.append("grant_type","authorization_code")
+        params.append("grant_type", "authorization_code")
         params.append("redirect_uri", this.REDIRECT_URI)
 
         const refreshTokenRequest = await fetch(
@@ -45,7 +45,7 @@ export class DropboxService {
                 body: params,
                 headers: {
                     "Authorization": `Basic ${encodedCredentials}`,
-                    "Content-Type":"application/x-www-form-urlencoded",
+                    "Content-Type": "application/x-www-form-urlencoded",
                 }
             }
         )
@@ -61,13 +61,13 @@ export class DropboxService {
         try {
             const encodedCredentials = btoa(`${this.APP_KEY}:${this.APP_SECRET}`)
             const params = new URLSearchParams()
-            params.append("grant_type","refresh_token")
-            params.append("refresh_token",this.REFRESH_TOKEN)
+            params.append("grant_type", "refresh_token")
+            params.append("refresh_token", this.REFRESH_TOKEN)
             const tokenRequest = await fetch(this.DROPBOXTOKENURL, {
                 method: "POST",
                 body: params,
                 headers: {
-                    "Content-Type":"application/x-www-form-urlencoded",
+                    "Content-Type": "application/x-www-form-urlencoded",
                     "Authorization": `Basic ${encodedCredentials}`
                 }
             })
@@ -82,20 +82,25 @@ export class DropboxService {
         }
     }
     async storeFile(file: Express.Multer.File, fileName: string) {
-        const dropboxClient = await this.getDropboxClient()
-        // pathName should be genre/fileName
-        // const sharedLinks = await dropboxClient.sharingListSharedLinks({})  
-        file.filename = fileName
-        const pathName = `/nadbooks/${file.filename}`
-        await dropboxClient.filesUpload({ path: pathName, contents: file.buffer, mode: { ".tag": "overwrite" } })
-        const sharedLinkMetadata = await dropboxClient.sharingCreateSharedLinkWithSettings({
-            path: pathName,
-            settings: {
-                requested_visibility: { ".tag": "public" }
-            }
-        })
-        const rawUrl = sharedLinkMetadata.result.url
-        const directUrl = rawUrl.replace("www.dropbox.com", "dl.dropboxusercontent.com").replace("?dl=0", "")
-        return directUrl
+        try {
+            const dropboxClient = await this.getDropboxClient()
+            // pathName should be genre/fileName
+            // const sharedLinks = await dropboxClient.sharingListSharedLinks({})  
+            file.filename = fileName
+            const pathName = `/nadbooks/${file.filename}`
+            await dropboxClient.filesUpload({ path: pathName, contents: file.buffer, mode: { ".tag": "overwrite" } })
+            const sharedLinkMetadata = await dropboxClient.sharingCreateSharedLinkWithSettings({
+                path: pathName,
+                settings: {
+                    requested_visibility: { ".tag": "public" }
+                }
+            })
+            const rawUrl = sharedLinkMetadata.result.url
+            const directUrl = rawUrl.replace("www.dropbox.com", "dl.dropboxusercontent.com").replace("?dl=0", "")
+            return directUrl
+        } catch (error) {
+            throw new Error(error)
+        }
+
     }
 }
