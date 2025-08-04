@@ -31,6 +31,13 @@ export class BooksService {
         })
     }
 
+    async getBooks(filters: BaseFilterQueryType){
+        return await this.db.book.findMany({
+            take: filters.limit || 20,
+            skip: filters.skip || 0
+        })
+    }
+
 
 
     /**
