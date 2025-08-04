@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { StoreBookDto, UpdateBookDto } from './dtos/book.dto';
 import { BooksService } from './books.service';
@@ -8,6 +8,11 @@ import { Request } from 'express';
 @Controller('books')
 export class BooksController {
     constructor(private bookService: BooksService){}
+
+    @Get()
+    getBooks(@Query() query: BaseFilterQueryType){
+        return this.bookService.getBooks(query)
+    }
 
     @Post()
     @UseGuards(AuthGuard)
