@@ -1,42 +1,57 @@
-import { IsBooleanString, IsDateString, IsNotEmpty, IsNumber, IsNumberString, IsOptional } from "class-validator";
+import { MultipartFileDto } from '@/helpers/dto/multipart.util';
+import {
+	IsBooleanString,
+	IsDateString,
+	IsNotEmpty,
+	IsNumber,
+	IsNumberString,
+	IsOptional,
+	IsString,
+	isString,
+} from 'class-validator';
 
 export class StoreBookDto {
-    @IsNotEmpty()
-    title: string
+	@IsNotEmpty()
+	@IsString()
+	title: string;
 
-    @IsNotEmpty()
-    author: string
+	@IsNotEmpty()
+	@IsString()
+	author: string;
 
-    @IsNotEmpty()
-    @IsBooleanString()
-    isMature: boolean
+	@IsNotEmpty()
+	@IsBooleanString()
+	isMature: boolean;
 
-    @IsNotEmpty()
-    @IsNumberString()
-    pageCount: number
+	@IsNotEmpty()
+	@IsNumberString()
+	pageCount: number;
 
-    @IsNotEmpty()
-    @IsDateString()
-    dateAuthored: Date
+	@IsNotEmpty()
+	@IsDateString()
+	dateAuthored: Date;
 }
 
 export class UpdateBookDto {
-    @IsOptional()
-    title: string
+	@IsOptional()
+	@IsString()
+	title: string;
 
-    @IsOptional()
-    author: string
+	@IsOptional()
+	@IsString()
+	author: string;
 
+	@IsBooleanString()
+	@IsOptional()
+	isMature: boolean;
 
-    @IsBooleanString()
-    @IsOptional()
-    isMature: boolean
+	@IsNumberString()
+	@IsOptional()
+	pageCount: number;
 
-    @IsNumberString()
-    @IsOptional()
-    pageCount: number
-
-    @IsDateString()
-    @IsOptional()
-    dateAuthored: Date
+	@IsDateString()
+	@IsOptional()
+	dateAuthored: Date;
 }
+
+export const StoreBookMultipartDto = MultipartFileDto(StoreBookDto, 'book');

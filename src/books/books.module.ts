@@ -1,15 +1,17 @@
 import { Module } from '@nestjs/common';
-import { BooksController } from './books.controller';
-import { BooksService } from './books.service';
-import { DropboxService } from '@/dropbox/dropbox.service';
-import { PrismaModule } from '@/prisma/prisma.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { PrismaModule } from '@/prisma/prisma.module';
+import { StorageService } from '@/storage/storage.service';
+import { BooksController } from './books.controller';
+import { BooksService } from './books.service';
+import { StorageModule } from '@/storage/storage.module';
 
 @Module({
-    imports:[
-        PrismaModule,
-        JwtModule.registerAsync({
+	imports: [
+		PrismaModule,
+		StorageModule,
+		JwtModule.registerAsync({
 			imports: [ConfigModule],
 			useFactory: (config: ConfigService) => ({
 				secret: config.get('JWT_SECRET'),
@@ -17,8 +19,8 @@ import { JwtModule } from '@nestjs/jwt';
 			}),
 			inject: [ConfigService],
 		}),
-    ],
-    controllers: [BooksController],
-    providers:[BooksService, DropboxService]
+	],
+	controllers: [BooksController],
+	providers: [BooksService],
 })
 export class BooksModule {}
