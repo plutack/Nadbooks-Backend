@@ -42,6 +42,6 @@ model Book{
   dateUpdated DateTime @updatedAt @map("date_updated")
   dateAuthored DateTime @map("date_authored")
   dateUploaded DateTime @map("date_uploaded")
-  userId Int @map("user_id") @default(1)
+  userId Int @map("user_id")
   user User @relation(fields: [userId], references: [id])
 }
