@@ -29,19 +29,26 @@ model User {
   passwordHash String?  @map("password_hash") @db.VarChar(255)
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
-  books Book[]
+  books        Book[]
 }
 
-model Book{
-  id String @id @default(uuid())
-  title String @db.VarChar(255)
-  author String @db.VarChar(255)
-  isMature Boolean @map("is_mature")
-  pageCount Int @map("page_count")
-  bookURL String @map("book_url") @db.VarChar(255)
-  dateUpdated DateTime @updatedAt @map("date_updated")
+
+//NOTE: Genre might become an enum.
+model Book {
+  id           String   @id @default(uuid())
+  title        String   @db.VarChar(255)
+  author       String   @db.VarChar(255)
+  genre        String   @db.VarChar(255) 
+  price        Int      
+  isMature     Boolean  @map("is_mature")
+  pageCount    Int      @map("page_count")
+  bookURL      String   @map("book_url") @db.VarChar(255)
+  bookCoverURL String   @map("book_cover_url") @db.VarChar(255)
+  dateUpdated  DateTime @updatedAt @map("date_updated")
   dateAuthored DateTime @map("date_authored")
   dateUploaded DateTime @map("date_uploaded")
-  userId Int @map("user_id")
-  user User @relation(fields: [userId], references: [id])
+  userId       Int      @map("user_id")
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@index([author, genre])
 }

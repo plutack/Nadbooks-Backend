@@ -1,3 +1,9 @@
+import { FileType } from '@/books/types';
+
 export interface IStorageService {
-	storeFile(file: Express.Multer.File, fileName: string): Promise<string>;
+	storeFile(
+		filetype: FileType,
+		file: Express.Multer.File,
+		fileName: string,
+	): Promise<string>;
 }
