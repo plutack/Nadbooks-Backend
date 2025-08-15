@@ -9,18 +9,12 @@ import {
 	Post,
 	Query,
 	Req,
-	UploadedFile,
 	UploadedFiles,
 	UseGuards,
-	UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
 import { AuthGuard, CurrentUser } from '@/auth/auth.guard';
-import {
-	UploadBook,
-	UploadBookAndCover,
-} from '@/helpers/decorators/upload-book.decorator';
+import { UploadBookAndCover } from '@/helpers/decorators/upload-book.decorator';
 import { BaseFilterQueryType } from '@/types/filters.type';
 import { BooksService } from './books.service';
 import { StoreBookDto, UpdateBookDto } from './dtos/book.dto';
