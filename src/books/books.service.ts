@@ -3,7 +3,6 @@ import {
 	Injectable,
 	NotFoundException,
 } from '@nestjs/common';
-import { Book } from 'generated/prisma';
 import { PrismaService } from '@/prisma/prisma.service';
 import { StorageService } from '@/storage/storage.service';
 import { BaseFilterQueryType } from '@/types/filters.type';
@@ -20,6 +19,28 @@ export class BooksService {
 	private getBookCoverName(bookName: string): string {
 		return `${bookName}-cover`;
 	}
+
+	// function to confirm if the file has the right dimensions
+	private validateBookCover(file: Express.Multer.File): boolean {
+		console.log(file.filename);
+		return true;
+	}
+
+	private uploadCover(
+		cover: Express.Multer.File,
+		title: string,
+	): Promise<string> {
+		if (!this.validateBookCover(cover)) {
+			throw new BadRequestException('Invalid book cover');
+		}
+
+		return this.storageService.storeFile(
+			FileType.COVER,
+			cover,
+			this.getBookCoverName(title),
+		);
+	}
+
 	async storeBook(
 		bookDTO: StoreBookDto,
 		book: Express.Multer.File,
@@ -32,11 +53,7 @@ export class BooksService {
 		}
 		const [bookURL, bookCoverURL] = await Promise.all([
 			this.storageService.storeFile(FileType.BOOK, book, bookDTO.title),
-			this.storageService.storeFile(
-				FileType.COVER, //NOTE: this is probably redundant
-				bookCover,
-				this.getBookCoverName(bookDTO.title),
-			),
+			this.uploadCover(bookCover, bookDTO.title),
 		]);
 		const newBook = await this.db.book.create({
 			data: {
@@ -139,11 +156,7 @@ export class BooksService {
 					)
 				: Promise.resolve(undefined),
 			bookCover
-				? this.storageService.storeFile(
-						FileType.COVER,
-						bookCover,
-						this.getBookCoverName(bookDTO.title || bookRecord.title),
-					)
+				? this.uploadCover(bookCover, bookDTO.title || bookRecord.title)
 				: Promise.resolve(undefined),
 		]);
 
