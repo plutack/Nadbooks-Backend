@@ -6,7 +6,6 @@ import {
 import { PrismaService } from '@/prisma/prisma.service';
 import { StorageService } from '@/storage/storage.service';
 import { StoreBookDto, UpdateBookDto } from './dtos/book.dto';
-import { MultipartFileDto } from '@/helpers/dto/multipart.util';
 
 @Injectable()
 export class BooksService {
