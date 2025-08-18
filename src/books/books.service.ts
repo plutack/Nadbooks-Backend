@@ -148,13 +148,13 @@ export class BooksService {
 
 	async bookmarkBook(userId: number, bookId: string){
 		await this.findBookById(bookId)
-		const hasUserBookmarkedBook = await this.db.bookBookmark.findFirst({
-			where:{bookId, userId}
-		})
+		// const hasUserBookmarkedBook = await this.db.bookBookmark.findFirst({
+		// 	where:{bookId, userId}
+		// })
 
-		if (hasUserBookmarkedBook) {
-			throw new BadRequestException("You have already bookmarked this book.")
-		}
+		// if (hasUserBookmarkedBook) {
+		// 	throw new BadRequestException("You have already bookmarked this book.")
+		// }
 		await this.db.bookBookmark.create({
 			data:{
 				bookId,
