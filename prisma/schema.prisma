@@ -55,4 +55,5 @@ model BookBookmark {
   bookId    String   @map("book_id")
   book      Book     @relation(fields: [bookId], references: [id])
   createdAt DateTime @default(now()) @map("created_at")
+  @@unique([userId, bookId])
 }
