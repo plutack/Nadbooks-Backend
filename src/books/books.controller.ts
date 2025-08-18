@@ -28,6 +28,16 @@ export class BooksController {
 		return this.bookService.getBooks(query);
 	}
 
+	@Get("/bookmarked")
+	@UseGuards(AuthGuard)
+	getUserBookMarkedBooks(
+		@CurrentUser() user: JwtPayloadType,
+		@Query() query: BaseFilterQueryType
+	){
+		return this.bookService.getUserBookmarkedBooks(user.sub, query)
+	}
+	
+
 	@Post()
 	@UseGuards(AuthGuard)
 	@UploadBook()
