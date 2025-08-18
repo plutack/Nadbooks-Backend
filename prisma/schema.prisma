@@ -20,28 +20,39 @@ enum AuthMode {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  firstName    String   @map("first_name") @db.VarChar(255)
-  lastName     String   @map("last_name") @db.VarChar(255)
-  username     String   @unique @db.VarChar(255)
-  email        String   @unique @db.VarChar(255)
-  authMode     AuthMode @map("auth_mode")
-  passwordHash String?  @map("password_hash") @db.VarChar(255)
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-  books Book[]
+  id            Int            @id @default(autoincrement())
+  firstName     String         @map("first_name") @db.VarChar(255)
+  lastName      String         @map("last_name") @db.VarChar(255)
+  username      String         @unique @db.VarChar(255)
+  email         String         @unique @db.VarChar(255)
+  authMode      AuthMode       @map("auth_mode")
+  passwordHash  String?        @map("password_hash") @db.VarChar(255)
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  books         Book[]
+  bookBookmarks BookBookmark[]
 }
 
-model Book{
-  id String @id @default(uuid())
-  title String @db.VarChar(255)
-  author String @db.VarChar(255)
-  isMature Boolean @map("is_mature")
-  pageCount Int @map("page_count")
-  bookURL String @map("book_url") @db.VarChar(255)
-  dateUpdated DateTime @updatedAt @map("date_updated")
-  dateAuthored DateTime @map("date_authored")
-  dateUploaded DateTime @map("date_uploaded")
-  userId Int @map("user_id")
-  user User @relation(fields: [userId], references: [id])
+model Book {
+  id           String         @id @default(uuid())
+  title        String         @db.VarChar(255)
+  author       String         @db.VarChar(255)
+  isMature     Boolean        @map("is_mature")
+  pageCount    Int            @map("page_count")
+  bookURL      String         @map("book_url") @db.VarChar(255)
+  dateUpdated  DateTime       @updatedAt @map("date_updated")
+  dateAuthored DateTime       @map("date_authored")
+  dateUploaded DateTime       @map("date_uploaded")
+  userId       Int            @map("user_id")
+  user         User           @relation(fields: [userId], references: [id])
+  bookmarks    BookBookmark[]
+}
+
+model BookBookmark {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  bookId    String   @map("book_id")
+  book      Book     @relation(fields: [bookId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
 }
