@@ -61,6 +61,15 @@ export class BooksController {
 		);
 	}
 
+	@Patch("bookmark/:id")
+	@UseGuards(AuthGuard)
+	bookmarkBook(
+		@Param('id') id: string,
+		@CurrentUser() user: JwtPayloadType,
+	){
+		return this.bookService.bookmarkBook(user.sub, id)
+	}
+
 	@Delete(':id')
 	@UseGuards(AuthGuard)
 	deleteBookById(@Param('id') id: string, @Req() request: Request) {
