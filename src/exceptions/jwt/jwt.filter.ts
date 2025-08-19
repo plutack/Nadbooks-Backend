@@ -10,7 +10,7 @@ export class JwtFilter implements ExceptionFilter {
     response.status(401).json({
       "error":"Token Expired",
       "message":"Token has expired. Login to generate a new token.",
-      "statusCode":403
+      "statusCode":401
     })
   }
 }
