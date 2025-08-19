@@ -7,7 +7,7 @@ export class JwtFilter implements ExceptionFilter {
     const http = host.switchToHttp()
     const response = http.getResponse()
 
-    response.status(403).json({
+    response.status(401).json({
       "error":"Token Expired",
       "message":"Token has expired. Login to generate a new token.",
       "statusCode":403
