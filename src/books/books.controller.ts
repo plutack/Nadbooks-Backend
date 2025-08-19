@@ -1,4 +1,5 @@
 import {
+	BadRequestException,
 	Body,
 	Controller,
 	Delete,
@@ -8,14 +9,13 @@ import {
 	Post,
 	Query,
 	Req,
-	UploadedFile,
+	UploadedFiles,
 	UseGuards,
-	UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
 import { AuthGuard, CurrentUser } from '@/auth/auth.guard';
-import { UploadBook } from '@/helpers/decorators/upload-book.decorator';
+import { UploadBookAndCover } from '@/helpers/decorators/upload-book.decorator';
+import { BaseFilterQueryType } from '@/types/filters.type';
 import { BooksService } from './books.service';
 import { StoreBookDto, UpdateBookDto } from './dtos/book.dto';
 
@@ -30,26 +30,41 @@ export class BooksController {
 
 	@Post()
 	@UseGuards(AuthGuard)
-	@UploadBook()
+	@UploadBookAndCover()
 	uploadFile(
-		@UploadedFile() book: Express.Multer.File,
+		@UploadedFiles()
+		files: {
+			book?: Express.Multer.File[];
+			bookCover?: Express.Multer.File[];
+		},
 		@Body() body: StoreBookDto,
 		@CurrentUser() user: JwtPayloadType,
 	) {
-		return this.bookService.storeBook(body, book, user);
-	}
+		if (!files.book?.[0]) {
+			throw new BadRequestException('Book file is required');
+		}
+		if (!files.bookCover?.[0]) {
+			throw new BadRequestException('Book cover is required');
+		}
 
-	@Get(':id')
-	findBookById(@Param('id') id: string) {
-		return this.bookService.findBookById(id);
+		return this.bookService.storeBook(
+			body,
+			files.book[0],
+			files.bookCover[0],
+			user,
+		);
 	}
 
 	@Patch(':id')
 	@UseGuards(AuthGuard)
-	@UseInterceptors(FileInterceptor('book'))
+	@UploadBookAndCover()
 	updateBookById(
 		@Param('id') id: string,
-		@UploadedFile() book: Express.Multer.File,
+		@UploadedFiles()
+		files: {
+			book?: Express.Multer.File[];
+			bookCover?: Express.Multer.File[];
+		},
 		@Body() body: UpdateBookDto,
 		@Req() request: Request,
 	) {
@@ -57,7 +72,8 @@ export class BooksController {
 			id,
 			(request?.user as JwtPayloadType).sub,
 			body,
-			book,
+			files.book?.[0],
+			files.bookCover?.[0],
 		);
 	}
 

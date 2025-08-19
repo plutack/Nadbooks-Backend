@@ -1,4 +1,4 @@
-type BaseFilterQueryType = {
-    limit?: number 
-    skip?: number
-}
+export type BaseFilterQueryType = {
+	limit?: number;
+	skip?: number;
+};

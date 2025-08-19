@@ -7,6 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Dropbox } from 'dropbox';
 import { IStorageService } from '@/storage/interfaces/storage.interface';
+import { FileType } from '@/books/types';
 
 @Injectable()
 export class DropboxService implements IStorageService {
@@ -106,7 +107,11 @@ export class DropboxService implements IStorageService {
 			}
 		}
 	}
-	async storeFile(file: Express.Multer.File, fileName: string) {
+	async storeFile(
+		FileType: FileType,
+		file: Express.Multer.File,
+		fileName: string,
+	) {
 		try {
 			const dropboxClient = await this.getDropboxClient();
 			// pathName should be genre/fileName
