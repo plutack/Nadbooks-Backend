@@ -2,7 +2,7 @@ import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
 import { TokenExpiredError } from '@nestjs/jwt';
 
 @Catch(TokenExpiredError)
-export class JwtFilter<TokenExpiredError> implements ExceptionFilter {
+export class JwtFilter implements ExceptionFilter {
   catch(exception: TokenExpiredError, host: ArgumentsHost) {
     const http = host.switchToHttp()
     const response = http.getResponse()
