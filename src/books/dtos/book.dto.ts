@@ -1,30 +1,35 @@
-import { MultipartFileDto } from '@/helpers/dto/multipart.util';
+import { PartialType } from '@nestjs/mapped-types';
 import {
-	IsBooleanString,
+	IsBoolean,
 	IsDateString,
 	IsNotEmpty,
 	IsNumber,
-	IsNumberString,
-	IsOptional,
 	IsString,
-	isString,
 } from 'class-validator';
+import * as multipartUtil from '@/helpers/dto/multipart.util';
 
 export class StoreBookDto {
 	@IsNotEmpty()
 	@IsString()
 	title: string;
 
-	@IsNotEmpty()
-	@IsString()
-	author: string;
+	/** NOTE: commented this out because since authors should always be a user.
+	 We might as well dynamically generate this. */
+
+	// @IsNotEmpty()
+	// @IsString()
+	// author: string;
 
 	@IsNotEmpty()
-	@IsBooleanString()
+	@IsString()
+	genre: string;
+
+	@IsNotEmpty()
+	@IsBoolean()
 	isMature: boolean;
 
 	@IsNotEmpty()
-	@IsNumberString()
+	@IsNumber()
 	pageCount: number;
 
 	@IsNotEmpty()
@@ -32,26 +37,9 @@ export class StoreBookDto {
 	dateAuthored: Date;
 }
 
-export class UpdateBookDto {
-	@IsOptional()
-	@IsString()
-	title: string;
+export class UpdateBookDto extends PartialType(StoreBookDto) {}
 
-	@IsOptional()
-	@IsString()
-	author: string;
-
-	@IsBooleanString()
-	@IsOptional()
-	isMature: boolean;
-
-	@IsNumberString()
-	@IsOptional()
-	pageCount: number;
-
-	@IsDateString()
-	@IsOptional()
-	dateAuthored: Date;
-}
-
-export const StoreBookMultipartDto = MultipartFileDto(StoreBookDto, 'book');
+export const StoreBookMultipartDto = multipartUtil.MultipartFileDto(
+	StoreBookDto,
+	['book', 'bookCover'],
+);

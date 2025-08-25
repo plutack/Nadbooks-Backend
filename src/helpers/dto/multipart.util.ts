@@ -3,11 +3,27 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export function MultipartFileDto<T extends Type<any>>(
 	BaseDto: T,
-	fileField = 'file',
+	fileFields: string[] = ['file'],
 ) {
 	class MultipartDto extends BaseDto {
-		@ApiProperty({ type: 'string', format: 'binary' })
-		[fileField]: any;
+		constructor(...args: any[]) {
+			super(...args);
+		}
 	}
+
+	for (const field of fileFields) {
+		Object.defineProperty(MultipartDto.prototype, field, {
+			value: undefined,
+			writable: true,
+			enumerable: true,
+			configurable: true,
+		});
+
+		ApiProperty({ type: 'string', format: 'binary' })(
+			MultipartDto.prototype,
+			field,
+		);
+	}
+
 	return MultipartDto;
 }
