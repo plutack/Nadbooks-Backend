@@ -179,8 +179,8 @@ export class BooksService {
 		});
 	}
 
-	async bookmarkBook(userId: number, bookId: string){
-		await this.findBookById(bookId)
+	async bookmarkBook(userId: number, bookId: string) {
+		await this.findBookById(bookId);
 		// const hasUserBookmarkedBook = await this.db.bookBookmark.findFirst({
 		// 	where:{bookId, userId}
 		// })
@@ -189,26 +189,26 @@ export class BooksService {
 		// 	throw new BadRequestException("You have already bookmarked this book.")
 		// }
 		await this.db.bookBookmark.create({
-			data:{
+			data: {
 				bookId,
-				userId
-			}
-		})
+				userId,
+			},
+		});
 	}
 
-	async getUserBookmarkedBooks(userId: number, filters: BaseFilterQueryType){
+	async getUserBookmarkedBooks(userId: number, filters: BaseFilterQueryType) {
 		return this.db.bookBookmark.findMany({
-			where:{
-				userId
+			where: {
+				userId,
 			},
-			select:{
-				book:true, 
-				id:false, 
-				bookId:false,
-				createdAt:true
+			select: {
+				book: true,
+				id: false,
+				bookId: false,
+				createdAt: true,
 			},
-			take:filters.limit || 20,
-			skip: filters.skip || 0
-		})
+			take: filters.limit || 20,
+			skip: filters.skip || 0,
+		});
 	}
 }
