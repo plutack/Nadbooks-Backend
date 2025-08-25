@@ -27,6 +27,7 @@ export class BooksController {
 	getBooks(@Query() query: BaseFilterQueryType) {
 		return this.bookService.getBooks(query);
 	}
+	
 
 	@Post()
 	@UseGuards(AuthGuard)
@@ -75,6 +76,15 @@ export class BooksController {
 			files.book?.[0],
 			files.bookCover?.[0],
 		);
+	}
+
+	@Patch("bookmarks/:id")
+	@UseGuards(AuthGuard)
+	bookmarkBook(
+		@Param('id') id: string,
+		@CurrentUser() user: JwtPayloadType,
+	){
+		return this.bookService.bookmarkBook(user.sub, id)
 	}
 
 	@Delete(':id')
