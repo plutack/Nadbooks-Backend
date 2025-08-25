@@ -25,6 +25,10 @@ export class StoreBookDto {
 	genre: string;
 
 	@IsNotEmpty()
+	@IsNumber()
+	price: number;
+
+	@IsNotEmpty()
 	@IsBoolean()
 	isMature: boolean;
 
