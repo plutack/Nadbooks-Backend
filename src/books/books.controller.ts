@@ -62,7 +62,7 @@ export class BooksController {
 		);
 	}
 
-	@Patch("bookmark/:id")
+	@Patch("bookmarks/:id")
 	@UseGuards(AuthGuard)
 	bookmarkBook(
 		@Param('id') id: string,
