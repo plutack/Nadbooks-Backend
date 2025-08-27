@@ -6,6 +6,14 @@ import { AuthGuard, CurrentUser } from '@/auth/auth.guard';
 export class UserController {
     constructor (private userService: UserService){}
 
+    @Get("books")
+    @UseGuards(AuthGuard)
+    getBooksByUser(
+        @CurrentUser() user: JwtPayloadType
+    ){
+        return this.userService.booksByUser(user)
+    }
+
     @Get("bookmarks")
     @UseGuards(AuthGuard)
     getBookmarks(
