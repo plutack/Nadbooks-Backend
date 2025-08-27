@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from '@/prisma/prisma.module';
-import { StorageService } from '@/storage/storage.service';
 import { BooksController } from './books.controller';
 import { BooksService } from './books.service';
 import { StorageModule } from '@/storage/storage.module';
@@ -23,4 +22,4 @@ import { StorageModule } from '@/storage/storage.module';
 	controllers: [BooksController],
 	providers: [BooksService],
 })
-export class BooksModule {}
+export class BooksModule { }
