@@ -18,12 +18,17 @@ import { UploadBookAndCover } from '@/helpers/decorators/upload-book.decorator';
 import { BaseFilterQueryType } from '@/types/filters.type';
 import { BooksService } from './books.service';
 import { StoreBookDto, UpdateBookDto } from './dtos/book.dto';
+import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('books')
 export class BooksController {
-	constructor(private bookService: BooksService) {}
+	constructor(private bookService: BooksService) { }
 
 	@Get()
+	@ApiOperation({
+		summary: "Returns the books on the platform",
+		description: "Returns a paginated list of books on the platform"
+	})
 	getBooks(@Query() query: BaseFilterQueryType) {
 		return this.bookService.getBooks(query);
 	}
