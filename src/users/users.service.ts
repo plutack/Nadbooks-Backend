@@ -20,4 +20,12 @@ export class UserService {
             }
         })
     }
+
+    booksByUser(user: JwtPayloadType) {
+        return this.db.book.findMany({
+            where: {
+                userId: user.sub
+            }
+        })
+    }
 }
