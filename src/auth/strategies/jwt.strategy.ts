@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
@@ -20,7 +20,7 @@ export class JWTStrategy extends PassportStrategy(Strategy, 'jwt') {
 			ignoreExpiration: false,
 		});
 	}
-	
+
 	validate(payload) {
 		return payload;
 	}

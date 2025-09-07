@@ -2,15 +2,14 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from '@/prisma/prisma.module';
-import { AuthController } from '@/auth/auth.controller';
-import { AuthService } from '@/auth/auth.service';
-import { JWTStrategy } from '@/auth/strategies/jwt.strategy';
-import { GoogleStrategy } from '@/auth/strategies/google.strategy';
+import { BooksController } from './books.controller';
+import { BooksService } from './books.service';
+import { StorageModule } from '@/storage/storage.module';
 
 @Module({
 	imports: [
-		ConfigModule,
 		PrismaModule,
+		StorageModule,
 		JwtModule.registerAsync({
 			imports: [ConfigModule],
 			useFactory: (config: ConfigService) => ({
@@ -20,8 +19,7 @@ import { GoogleStrategy } from '@/auth/strategies/google.strategy';
 			inject: [ConfigService],
 		}),
 	],
-	controllers: [AuthController],
-	providers: [AuthService, JWTStrategy, GoogleStrategy],
-	exports: [AuthService],
+	controllers: [BooksController],
+	providers: [BooksService],
 })
-export class AuthModule {}
+export class BooksModule { }
