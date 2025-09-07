@@ -11,13 +11,24 @@ import { AuthMode } from 'generated/prisma';
 import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
 import { CreateUserDto, LoginUserDto } from '@/auth/dtos/auth.dto';
 import { PrismaService } from '@/prisma/prisma.service';
+import { OAuth2Client } from 'google-auth-library';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
+	private GOOGLE_CLIENT_ID: string
 	constructor(
 		private readonly db: PrismaService,
 		private readonly jwt: JwtService,
-	) {}
+		private readonly config: ConfigService
+	) {
+		this.GOOGLE_CLIENT_ID = config.get<string>("GOOGLE_CLIENT_ID")!
+		if (!this.GOOGLE_CLIENT_ID) {
+			throw new Error(
+				"GOOGLE_CLIENT_ID not set"
+			)
+		}
+	}
 
 	async register(dto: CreateUserDto) {
 		try {
@@ -102,20 +113,26 @@ export class AuthService {
 		};
 	}
 
-	async registerGoogleUser(user: GoogleResponseUser) {
+	async google(token: string) {
+		const client = new OAuth2Client(this.GOOGLE_CLIENT_ID)
+		const ticket = await client.verifyIdToken({
+			idToken: token,
+			audience: this.GOOGLE_CLIENT_ID
+		})
+		const payload = ticket.getPayload()
 		const existingUser = await this.db.user.findFirst({
 			where: {
-				email: user.email,
-			},
-		});
-		if (existingUser && existingUser.authMode === AuthMode.GOOGLE) {
-			const payload = {
+				email: payload?.email
+			}
+		})
+		if (existingUser && existingUser.authMode == "GOOGLE") {
+			const jwtPayload = {
 				sub: existingUser.id,
 				username: existingUser.username,
 				email: existingUser.email,
 			};
 
-			const accessToken = await this.jwt.signAsync(payload);
+			const accessToken = await this.jwt.signAsync(jwtPayload);
 			return {
 				accessToken,
 				user: {
@@ -129,20 +146,27 @@ export class AuthService {
 		} else if (!existingUser) {
 			const newUser = await this.db.user.create({
 				data: {
-					firstName: user.name.givenName,
-					lastName: user.name.familyName,
-					email: user.email,
+					firstName: payload?.given_name!,
+					lastName: payload?.family_name!,
 					authMode: AuthMode.GOOGLE,
-					username: user.name.givenName.split('@')[0],
+					email: payload?.email!,
+					username: payload?.email!.split('@')[0]!,
 				},
-			});
-			const payload = {
+				select: {
+					id: true,
+					firstName: true,
+					lastName: true,
+					email: true,
+					username: true,
+				},
+			})
+			const jwtPayload = {
 				sub: newUser.id,
 				username: newUser.username,
 				email: newUser.email,
 			};
 
-			const accessToken = await this.jwt.signAsync(payload);
+			const accessToken = await this.jwt.signAsync(jwtPayload);
 			return {
 				accessToken,
 				user: {
@@ -153,6 +177,8 @@ export class AuthService {
 					email: newUser.email,
 				},
 			};
+		}else{
+			throw new BadRequestException("Please login via email")
 		}
 	}
 }

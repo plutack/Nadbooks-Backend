@@ -68,3 +68,8 @@ export class LoginUserDto {
 	@IsNotEmpty()
 	password: string;
 }
+
+export class GoogleAuthDto {
+	@IsString()
+	token: string
+}
