@@ -22,10 +22,11 @@ enum AuthMode {
 enum TransactionType {
   DEPOSIT
   WITHDRAWAL
+  TRANSFER
 }
 
 model User {
-  id            Int            @id @default(autoincrement())
+  id            String         @id @default(uuid())
   firstName     String         @map("first_name") @db.VarChar(255)
   lastName      String         @map("last_name") @db.VarChar(255)
   username      String         @unique @db.VarChar(255)
@@ -53,7 +54,7 @@ model Book {
   dateUpdated  DateTime       @updatedAt @map("date_updated")
   dateAuthored DateTime       @map("date_authored")
   dateUploaded DateTime       @map("date_uploaded")
-  userId       Int            @map("user_id")
+  userId       String         @map("user_id")
   user         User           @relation(fields: [userId], references: [id])
   bookmarks    BookBookmark[]
 
@@ -62,7 +63,7 @@ model Book {
 
 model BookBookmark {
   id        Int      @id @default(autoincrement())
-  userId    Int      @map("user_id")
+  userId    String   @map("user_id")
   user      User     @relation(fields: [userId], references: [id])
   bookId    String   @map("book_id")
   book      Book     @relation(fields: [bookId], references: [id])
@@ -72,22 +73,25 @@ model BookBookmark {
 }
 
 model Wallet {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @unique @map("user_id")
+  id        String   @id @default(uuid())
+  userId    String   @unique @map("user_id")
   user      User     @relation(fields: [userId], references: [id])
   balance   Int      @default(0)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  transactions WalletTransaction[]
+  sentTransactions     WalletTransaction[] @relation("SentTransactions")
+  receivedTransactions WalletTransaction[] @relation("ReceivedTransactions")
 }
 
 model WalletTransaction {
-  id          Int             @id @default(autoincrement())
-  walletId    Int
-  wallet      Wallet          @relation(fields: [walletId], references: [id])
-  type        TransactionType
-  amount      Int
-  description String?
-  createdAt   DateTime        @default(now()) @map("created_at")
+  id                String          @id @default(uuid())
+  senderWalletId    String?
+  recipientWalletId String?
+  senderWallet      Wallet?         @relation("SentTransactions", fields: [senderWalletId], references: [id])
+  recipientWallet   Wallet?         @relation("ReceivedTransactions", fields: [recipientWalletId], references: [id])
+  type              TransactionType
+  amount            Int
+  description       String?
+  createdAt         DateTime        @default(now()) @map("created_at")
 }
