@@ -23,6 +23,20 @@ enum TransactionType {
   DEPOSIT
   WITHDRAWAL
   TRANSFER
+  PAYMENT
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+  COMPLETED
 }
 
 model User {
@@ -38,6 +52,7 @@ model User {
   books         Book[]
   bookBookmarks BookBookmark[]
   Wallet        Wallet?
+  Order         Order[]
 }
 
 //NOTE: Genre might become an enum.
@@ -57,6 +72,7 @@ model Book {
   userId       String         @map("user_id")
   user         User           @relation(fields: [userId], references: [id])
   bookmarks    BookBookmark[]
+  OrderBook    OrderBook[]
 
   @@index([author, genre])
 }
@@ -80,18 +96,53 @@ model Wallet {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  sentTransactions     WalletTransaction[] @relation("SentTransactions")
-  receivedTransactions WalletTransaction[] @relation("ReceivedTransactions")
+  sentTransactions     Transaction[] @relation("SentTransactions")
+  receivedTransactions Transaction[] @relation("ReceivedTransactions")
 }
 
-model WalletTransaction {
-  id                String          @id @default(uuid())
-  senderWalletId    String?
-  recipientWalletId String?
-  senderWallet      Wallet?         @relation("SentTransactions", fields: [senderWalletId], references: [id])
-  recipientWallet   Wallet?         @relation("ReceivedTransactions", fields: [recipientWalletId], references: [id])
+model Transaction {
+  id                String            @id @default(uuid())
   type              TransactionType
   amount            Int
+  // currency          String            @default("NGN")
+  senderWalletId    String?           @map("sender_wallet_id")
+  recipientWalletId String?           @map("recipient_wallet_id")
+  reference         String            @unique
+  status            TransactionStatus @default(PENDING)
   description       String?
-  createdAt         DateTime        @default(now()) @map("created_at")
+  providerResponse  Json?
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  senderWallet    Wallet? @relation("SentTransactions", fields: [senderWalletId], references: [id])
+  recipientWallet Wallet? @relation("ReceivedTransactions", fields: [recipientWalletId], references: [id])
+  Order           Order[]
+}
+
+model Order {
+  id            String      @id @default(uuid())
+  userId        String      @map("user_id")
+  status        OrderStatus @default(PENDING)
+  totalAmount   Int         @map("total_amount")
+  // currency      String      @default("NGN")
+  transactionId String?     @map("transaction_id")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  transaction Transaction? @relation(fields: [transactionId], references: [id])
+  user        User         @relation(fields: [userId], references: [id])
+  books       OrderBook[]
+}
+
+model OrderBook {
+  id        String   @id @default(uuid())
+  orderId   String   @map("order_id")
+  bookId    String   @map("book_id")
+  price     Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id])
+  book  Book  @relation(fields: [bookId], references: [id])
+
+  @@unique([orderId, bookId])
 }
