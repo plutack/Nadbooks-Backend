@@ -1,5 +1,5 @@
-type JwtPayloadType = {
-	sub: number;
+export type JwtPayloadType = {
+	sub: string;
 	username: string;
 	email: string;
 };

@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '@/prisma/prisma.service';
 import { StorageService } from '@/storage/storage.service';
 import { BaseFilterQueryType } from '@/types/filters.type';
+import { JwtPayloadType } from '@/types/jwt.type';
 import { StoreBookDto, UpdateBookDto } from './dtos/book.dto';
 import { FileType, UpdatableBookFields } from './types';
 
@@ -108,7 +109,7 @@ export class BooksService {
 		});
 	}
 
-	async findUserBookById(id: string, userId: number) {
+	async findUserBookById(id: string, userId: string) {
 		const book = await this.db.book.findFirst({
 			where: {
 				userId: userId,
@@ -121,7 +122,7 @@ export class BooksService {
 		return book;
 	}
 
-	async deleteBook(id: string, userId: number) {
+	async deleteBook(id: string, userId: string) {
 		await this.findUserBookById(id, userId);
 		await this.db.book.delete({
 			where: {
@@ -134,7 +135,7 @@ export class BooksService {
 
 	async updateBook(
 		id: string,
-		userId: number,
+		userId: string,
 		bookDTO: UpdateBookDto,
 		book?: Express.Multer.File,
 		bookCover?: Express.Multer.File,
@@ -181,7 +182,7 @@ export class BooksService {
 		});
 	}
 
-	async bookmarkBook(userId: number, bookId: string) {
+	async bookmarkBook(userId: string, bookId: string) {
 		await this.findBookById(bookId);
 		// const hasUserBookmarkedBook = await this.db.bookBookmark.findFirst({
 		// 	where:{bookId, userId}
@@ -198,8 +199,8 @@ export class BooksService {
 		});
 	}
 
-	async getUserBookmarkedBooks(userId: number, filters: BaseFilterQueryType) {
-		return this.db.bookBookmark.findMany({
+	async getUserBookmarkedBooks(userId: string, filters: BaseFilterQueryType) {
+		return await this.db.bookBookmark.findMany({
 			where: {
 				userId,
 			},
