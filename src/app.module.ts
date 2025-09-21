@@ -7,6 +7,9 @@ import { PrismaModule } from '@/prisma/prisma.module';
 import { BooksModule } from './books/books.module';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { UserModule } from './users/users.module';
+import { WalletModule } from './wallet/wallet.module';
+import { PaymentService } from './payment/payment.service';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
 	imports: [
@@ -17,9 +20,11 @@ import { UserModule } from './users/users.module';
 		PrismaModule,
 		BooksModule,
 		UserModule,
+		WalletModule,
+		PaymentModule,
 	],
 	controllers: [AppController],
-	providers: [AppService],
+	providers: [AppService, PaymentService],
 })
 export class AppModule {
 	configure(consumer: MiddlewareConsumer) {
