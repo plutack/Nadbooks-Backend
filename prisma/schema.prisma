@@ -116,7 +116,8 @@ model Transaction {
 
   senderWallet    Wallet? @relation("SentTransactions", fields: [senderWalletId], references: [id])
   recipientWallet Wallet? @relation("ReceivedTransactions", fields: [recipientWalletId], references: [id])
-  Order           Order[]
+
+  order Order?
 }
 
 model Order {
@@ -124,8 +125,7 @@ model Order {
   userId        String      @map("user_id")
   status        OrderStatus @default(PENDING)
   totalAmount   Int         @map("total_amount")
-  // currency      String      @default("NGN")
-  transactionId String?     @map("transaction_id")
+  transactionId String?     @unique @map("transaction_id")
   createdAt     DateTime    @default(now()) @map("created_at")
   updatedAt     DateTime    @updatedAt @map("updated_at")
 
