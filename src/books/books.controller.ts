@@ -12,22 +12,23 @@ import {
 	UploadedFiles,
 	UseGuards,
 } from '@nestjs/common';
+import { ApiOperation } from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthGuard, CurrentUser } from '@/auth/auth.guard';
+import { BooksService } from '@/books/books.service';
+import { StoreBookDto, UpdateBookDto } from '@/books/dtos/book.dto';
 import { UploadBookAndCover } from '@/helpers/decorators/upload-book.decorator';
 import { BaseFilterQueryType } from '@/types/filters.type';
-import { BooksService } from './books.service';
-import { StoreBookDto, UpdateBookDto } from './dtos/book.dto';
-import { ApiOperation } from '@nestjs/swagger';
+import { JwtPayloadType } from '@/types/jwt.type';
 
 @Controller('books')
 export class BooksController {
-	constructor(private bookService: BooksService) { }
+	constructor(private bookService: BooksService) {}
 
 	@Get()
 	@ApiOperation({
-		summary: "Returns the books on the platform",
-		description: "Returns a paginated list of books on the platform"
+		summary: 'Returns the books on the platform',
+		description: 'Returns a paginated list of books on the platform',
 	})
 	getBooks(@Query() query: BaseFilterQueryType) {
 		return this.bookService.getBooks(query);
