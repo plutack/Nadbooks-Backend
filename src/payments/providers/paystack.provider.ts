@@ -3,10 +3,10 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import crypto from 'crypto';
 import { lastValueFrom } from 'rxjs';
-import { IPaymentService } from '@/payments/interfaces/payment.interface';
+import { PaymentProvider } from '@/payments/interfaces/payment.interface';
 
 @Injectable()
-export class PaystackService implements IPaymentService {
+export class PaystackProvider implements PaymentProvider {
 	private readonly PAYSTACK_BASE = 'https://api.paystack.co';
 	private readonly secretKey: string;
 	constructor(
@@ -18,7 +18,7 @@ export class PaystackService implements IPaymentService {
 			throw new Error('PAYSTACK_SECRET_KEY is not set in environment');
 		}
 	}
-	async createPaymentReference(input: {
+	async initiatePayment(input: {
 		amount: number;
 		email: string;
 		metadata?: any; //TODO: properly typecast
