@@ -71,5 +71,5 @@ export class LoginUserDto {
 
 export class GoogleAuthDto {
 	@IsString()
-	token: string
+	token: string;
 }

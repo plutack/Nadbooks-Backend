@@ -1,3 +1,4 @@
+import { JwtPayloadType } from '@/types/jwt.type';
 import {
 	CanActivate,
 	createParamDecorator,
