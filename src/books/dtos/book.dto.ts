@@ -1,9 +1,11 @@
 import { PartialType } from '@nestjs/mapped-types';
 import {
 	IsBoolean,
+	IsBooleanString,
 	IsDateString,
 	IsNotEmpty,
 	IsNumber,
+	IsNumberString,
 	IsString,
 } from 'class-validator';
 import * as multipartUtil from '@/helpers/dto/multipart.util';
@@ -25,15 +27,15 @@ export class StoreBookDto {
 	genre: string;
 
 	@IsNotEmpty()
-	@IsNumber()
+	@IsNumberString()
 	price: number;
 
 	@IsNotEmpty()
-	@IsBoolean()
+	@IsBooleanString()
 	isMature: boolean;
 
 	@IsNotEmpty()
-	@IsNumber()
+	@IsNumberString()
 	pageCount: number;
 
 	@IsNotEmpty()
