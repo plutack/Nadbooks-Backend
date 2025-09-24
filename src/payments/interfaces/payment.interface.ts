@@ -1,9 +1,16 @@
-export interface IPaymentService {
-	createPaymentReference(input: {
+export interface PaymentProvider {
+	initiatePayment(input: {
+		transactionId: string;
 		amount: number;
-		email: string;
+		customer: {
+			id: string;
+			email?: string;
+		};
 		metadata?: Record<string, any>;
-	}): Promise<{ reference: string }>; //TODO: this should return enough info to the frontend for a redirect to payment platform
+	}): Promise<{
+		reference: string;
+		paymentUrl?: string;
+	}>;
 
 	verifyPayment(reference: string): Promise<{
 		status: 'success' | 'failed' | 'pending';
