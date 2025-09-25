@@ -22,7 +22,6 @@ export class BooksService {
 
 	// function to confirm if the file has the right dimensions
 	private validateBookCover(file: Express.Multer.File): boolean {
-		console.log(file.filename);
 		return true;
 	}
 
