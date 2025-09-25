@@ -50,7 +50,7 @@ export class DropboxService implements IStorageService {
 			return dbx;
 		} catch (error) {
 			this.logger.error('Failed to initialize Dropbox client', error);
-			throw new Error('Dropbox client initialization failed');
+			throw error;
 		}
 	}
 
@@ -112,36 +112,27 @@ export class DropboxService implements IStorageService {
 		file: Express.Multer.File,
 		fileName: string,
 	) {
-		try {
-			const dropboxClient = await this.getDropboxClient();
-			// pathName should be genre/fileName
-			// const sharedLinks = await dropboxClient.sharingListSharedLinks({})
-			file.filename = fileName;
-			const pathName = `/nadbooks/${file.filename}`;
-			await dropboxClient.filesUpload({
+		const dropboxClient = await this.getDropboxClient();
+		// pathName should be genre/fileName
+		// const sharedLinks = await dropboxClient.sharingListSharedLinks({})
+		file.filename = fileName;
+		const pathName = `/nadbooks/${file.filename}`;
+		await dropboxClient.filesUpload({
+			path: pathName,
+			contents: file.buffer,
+			mode: { '.tag': 'overwrite' },
+		});
+		const sharedLinkMetadata =
+			await dropboxClient.sharingCreateSharedLinkWithSettings({
 				path: pathName,
-				contents: file.buffer,
-				mode: { '.tag': 'overwrite' },
+				settings: {
+					requested_visibility: { '.tag': 'public' },
+				},
 			});
-			const sharedLinkMetadata =
-				await dropboxClient.sharingCreateSharedLinkWithSettings({
-					path: pathName,
-					settings: {
-						requested_visibility: { '.tag': 'public' },
-					},
-				});
-			const rawUrl = sharedLinkMetadata.result.url;
-			const directUrl = rawUrl
-				.replace('www.dropbox.com', 'dl.dropboxusercontent.com')
-				.replace('?dl=0', '');
-			return directUrl;
-		} catch (error) {
-			this.logger.error(
-				`Failed to upload ${fileName}`,
-				error.stack,
-				'DropboxService',
-			);
-			throw error;
-		}
+		const rawUrl = sharedLinkMetadata.result.url;
+		const directUrl = rawUrl
+			.replace('www.dropbox.com', 'dl.dropboxusercontent.com')
+			.replace('?dl=0', '');
+		return directUrl;
 	}
 }
