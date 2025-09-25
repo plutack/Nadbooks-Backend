@@ -22,7 +22,6 @@ export class BooksService {
 
 	// function to confirm if the file has the right dimensions
 	private validateBookCover(file: Express.Multer.File): boolean {
-		console.log(file.filename);
 		return true;
 	}
 
@@ -61,6 +60,9 @@ export class BooksService {
 				author: user.username, //TODO: maybe we include first and last name in the jwt?
 				bookURL,
 				bookCoverURL,
+				pageCount: Number(bookDTO.pageCount),
+				price: Number(bookDTO.price),
+				isMature: Boolean(bookDTO.isMature),
 				userId: user.sub,
 				dateUploaded: new Date(),
 				dateAuthored: new Date(bookDTO.dateAuthored),
