@@ -60,6 +60,9 @@ export class BooksService {
 				author: user.username, //TODO: maybe we include first and last name in the jwt?
 				bookURL,
 				bookCoverURL,
+				pageCount: Number(bookDTO.pageCount),
+				price: Number(bookDTO.price),
+				isMature: Boolean(bookDTO.isMature),
 				userId: user.sub,
 				dateUploaded: new Date(),
 				dateAuthored: new Date(bookDTO.dateAuthored),
