@@ -104,7 +104,7 @@ export class BooksService {
 	async getBookByTitle(title: string) {
 		return await this.db.book.findFirst({
 			where: {
-				title: title,
+				title,
 			},
 		});
 	}
@@ -112,7 +112,7 @@ export class BooksService {
 	async findUserBookById(id: string, userId: string) {
 		const book = await this.db.book.findFirst({
 			where: {
-				userId: userId,
+				userId,
 				id,
 			},
 		});
@@ -126,7 +126,7 @@ export class BooksService {
 		await this.findUserBookById(id, userId);
 		await this.db.book.delete({
 			where: {
-				userId: userId,
+				userId,
 				id,
 			},
 		});
