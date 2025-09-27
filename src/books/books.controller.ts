@@ -47,10 +47,10 @@ export class BooksController {
 		@CurrentUser() user: JwtPayloadType,
 	) {
 		if (!files.book?.[0]) {
-			throw new BadRequestException('Book file (book) is required');
+			throw new BadRequestException('Book file is required');
 		}
 		if (!files.bookCover?.[0]) {
-			throw new BadRequestException('Book cover (bookCover) is required');
+			throw new BadRequestException('Book cover file is required');
 		}
 
 		return this.bookService.storeBook(
