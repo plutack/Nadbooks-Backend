@@ -5,28 +5,26 @@ import {
 	InternalServerErrorException,
 	UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
 import { AuthMode } from 'generated/prisma';
 import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
+import { OAuth2Client } from 'google-auth-library';
 import { CreateUserDto, LoginUserDto } from '@/auth/dtos/auth.dto';
 import { PrismaService } from '@/prisma/prisma.service';
-import { OAuth2Client } from 'google-auth-library';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
-	private GOOGLE_CLIENT_ID: string
+	private GOOGLE_CLIENT_ID: string;
 	constructor(
 		private readonly db: PrismaService,
 		private readonly jwt: JwtService,
-		private readonly config: ConfigService
+		config: ConfigService,
 	) {
-		this.GOOGLE_CLIENT_ID = config.get<string>("GOOGLE_CLIENT_ID")!
+		this.GOOGLE_CLIENT_ID = config.get<string>('GOOGLE_CLIENT_ID')!;
 		if (!this.GOOGLE_CLIENT_ID) {
-			throw new Error(
-				"GOOGLE_CLIENT_ID not set"
-			)
+			throw new Error('GOOGLE_CLIENT_ID not set');
 		}
 	}
 
@@ -42,6 +40,11 @@ export class AuthService {
 					email: dto.email,
 					username: dto.username,
 					passwordHash,
+					Wallet: {
+						create: {
+							balance: 0,
+						},
+					},
 				},
 				select: {
 					id: true,
@@ -49,6 +52,11 @@ export class AuthService {
 					lastName: true,
 					email: true,
 					username: true,
+					Wallet: {
+						select: {
+							balance: true,
+						},
+					},
 				},
 			});
 
@@ -114,18 +122,18 @@ export class AuthService {
 	}
 
 	async google(token: string) {
-		const client = new OAuth2Client(this.GOOGLE_CLIENT_ID)
+		const client = new OAuth2Client(this.GOOGLE_CLIENT_ID);
 		const ticket = await client.verifyIdToken({
 			idToken: token,
-			audience: this.GOOGLE_CLIENT_ID
-		})
-		const payload = ticket.getPayload()
+			audience: this.GOOGLE_CLIENT_ID,
+		});
+		const payload = ticket.getPayload();
 		const existingUser = await this.db.user.findFirst({
 			where: {
-				email: payload?.email
-			}
-		})
-		if (existingUser && existingUser.authMode == "GOOGLE") {
+				email: payload?.email,
+			},
+		});
+		if (existingUser && existingUser.authMode == 'GOOGLE') {
 			const jwtPayload = {
 				sub: existingUser.id,
 				username: existingUser.username,
@@ -151,6 +159,11 @@ export class AuthService {
 					authMode: AuthMode.GOOGLE,
 					email: payload?.email!,
 					username: payload?.email!.split('@')[0]!,
+					Wallet: {
+						create: {
+							balance: 0,
+						},
+					},
 				},
 				select: {
 					id: true,
@@ -159,7 +172,7 @@ export class AuthService {
 					email: true,
 					username: true,
 				},
-			})
+			});
 			const jwtPayload = {
 				sub: newUser.id,
 				username: newUser.username,
@@ -177,8 +190,8 @@ export class AuthService {
 					email: newUser.email,
 				},
 			};
-		}else{
-			throw new BadRequestException("Please login via email")
+		} else {
+			throw new BadRequestException('Please login via email');
 		}
 	}
 }
