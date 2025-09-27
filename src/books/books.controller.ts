@@ -72,11 +72,11 @@ export class BooksController {
 			bookCover?: Express.Multer.File[];
 		},
 		@Body() body: UpdateBookDto,
-		@Req() request: Request,
+		@CurrentUser() user: JwtPayloadType,
 	) {
 		return this.bookService.updateBook(
 			id,
-			(request?.user as JwtPayloadType).sub,
+			user.sub,
 			body,
 			files.book?.[0],
 			files.bookCover?.[0],
@@ -91,10 +91,7 @@ export class BooksController {
 
 	@Delete(':id')
 	@UseGuards(AuthGuard)
-	deleteBookById(@Param('id') id: string, @Req() request: Request) {
-		return this.bookService.deleteBook(
-			id,
-			(request?.user as JwtPayloadType).sub,
-		);
+	deleteBookById(@Param('id') id: string, @CurrentUser() user: JwtPayloadType) {
+		return this.bookService.deleteBook(id, user.sub);
 	}
 }
