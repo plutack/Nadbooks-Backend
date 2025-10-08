@@ -7,24 +7,26 @@ import { PrismaModule } from '@/prisma/prisma.module';
 import { BooksModule } from './books/books.module';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { UserModule } from './users/users.module';
+import { BlockchainModule } from './blockchain/blockchain.module';
 
 @Module({
 	imports: [
 		ConfigModule.forRoot({
 			isGlobal: true,
 		}),
-		AuthModule,
-		PrismaModule,
-		BooksModule,
-		UserModule,
+		BlockchainModule,
+		//	AuthModule,
+		//	PrismaModule,
+		//	BooksModule,
+		//	UserModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
 })
 export class AppModule {
-	configure(consumer: MiddlewareConsumer) {
-		consumer
-			.apply(LoggerMiddleware)
-			.forRoutes({ path: '*', method: RequestMethod.ALL });
-	}
+	// configure(consumer: MiddlewareConsumer) {
+	// 	consumer
+	// 		.apply(LoggerMiddleware)
+	// 		.forRoutes({ path: '*', method: RequestMethod.ALL });
+	// }
 }

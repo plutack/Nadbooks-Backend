@@ -29,7 +29,7 @@ async function bootstrap() {
 	app.useGlobalPipes(new ValidationPipe());
 	app.useGlobalFilters(new JwtFilter());
 	app.useGlobalFilters(new PrismaFilter());
-	app.useGlobalFilters(new ExceptionsFilter())
+	app.useGlobalFilters(new ExceptionsFilter());
 
 	app.enableCors({
 		origin: (origin: string | undefined, callback: Function) => {
