@@ -15,18 +15,18 @@ import { BlockchainModule } from './blockchain/blockchain.module';
 			isGlobal: true,
 		}),
 		BlockchainModule,
-		//	AuthModule,
-		//	PrismaModule,
-		//	BooksModule,
-		//	UserModule,
+		AuthModule,
+		PrismaModule,
+		BooksModule,
+		UserModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
 })
 export class AppModule {
-	// configure(consumer: MiddlewareConsumer) {
-	// 	consumer
-	// 		.apply(LoggerMiddleware)
-	// 		.forRoutes({ path: '*', method: RequestMethod.ALL });
-	// }
+	configure(consumer: MiddlewareConsumer) {
+		consumer
+			.apply(LoggerMiddleware)
+			.forRoutes({ path: '*', method: RequestMethod.ALL });
+	}
 }
