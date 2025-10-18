@@ -194,7 +194,7 @@ export class WalletService {
 
 				await tx.transaction.create({
 					data: {
-						type: TransactionType.TRANSFER,
+						type: TransactionType.ORDER,
 						amount,
 						senderWalletId: senderWallet.id,
 						recipientWalletId: recipientWallet.id,
@@ -207,8 +207,6 @@ export class WalletService {
 				return { success: true };
 			});
 		} catch (error: any) {
-			// 🧠 Prisma and Nest exceptions are thrown inside the transaction
-			// Only truly unexpected ones reach here.
 			if (error instanceof BadRequestException) {
 				// These come from our manual checks inside the transaction
 				throw error;
@@ -220,7 +218,7 @@ export class WalletService {
 			);
 		}
 	}
-	// Placeholder for crypto withdrawal
+	// Placeholder for crypto withdrawal. this should not be here
 	cryptoWithdrawal(userId: string, amount: Decimal, address: string) {
 		// NOTE: call crypto api here
 		// 1. Debit the user's wallet
