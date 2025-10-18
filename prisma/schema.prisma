@@ -22,8 +22,12 @@ enum AuthMode {
 enum TransactionType {
   DEPOSIT
   WITHDRAWAL
-  TRANSFER
-  PAYMENT
+  ORDER
+}
+
+enum Method {
+  FIAT
+  CRYPTO
 }
 
 enum TransactionStatus {
@@ -92,7 +96,7 @@ model Wallet {
   id        String   @id @default(uuid())
   userId    String   @unique @map("user_id")
   user      User     @relation(fields: [userId], references: [id])
-  balance   Int      @default(0)
+  balance   Decimal  @default(0)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -103,35 +107,35 @@ model Wallet {
 model Transaction {
   id                String            @id @default(uuid())
   type              TransactionType
-  amount            Int
-  // currency          String            @default("NGN")
+  amount            Decimal
   senderWalletId    String?           @map("sender_wallet_id")
   recipientWalletId String?           @map("recipient_wallet_id")
   reference         String            @unique
   status            TransactionStatus @default(PENDING)
   description       String?
+  metadata          Json?
   providerResponse  Json?
   createdAt         DateTime          @default(now()) @map("created_at")
   updatedAt         DateTime          @updatedAt @map("updated_at")
+  orderId           String?           @map("order_id")
 
   senderWallet    Wallet? @relation("SentTransactions", fields: [senderWalletId], references: [id])
   recipientWallet Wallet? @relation("ReceivedTransactions", fields: [recipientWalletId], references: [id])
 
-  order Order?
+  order Order? @relation(fields: [orderId], references: [id])
 }
 
 model Order {
-  id            String      @id @default(uuid())
-  userId        String      @map("user_id")
-  status        OrderStatus @default(PENDING)
-  totalAmount   Int         @map("total_amount")
-  transactionId String?     @unique @map("transaction_id")
-  createdAt     DateTime    @default(now()) @map("created_at")
-  updatedAt     DateTime    @updatedAt @map("updated_at")
+  id           String        @id @default(uuid())
+  userId       String        @map("user_id")
+  status       OrderStatus   @default(PENDING)
+  totalAmount  Int           @map("total_amount")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  transactions Transaction[]
 
-  transaction Transaction? @relation(fields: [transactionId], references: [id])
-  user        User         @relation(fields: [userId], references: [id])
-  books       OrderBook[]
+  user  User        @relation(fields: [userId], references: [id])
+  books OrderBook[]
 }
 
 model OrderBook {
