@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { OrderStatus } from 'generated/prisma';
 import { PrismaService } from '@/prisma/prisma.service';
-import { UUID } from 'crypto';
 
 @Injectable()
 export class OrderService {
@@ -52,6 +51,18 @@ export class OrderService {
 			return updatedOrder;
 		});
 	}
+	async getOrder(orderId: string) {
+		const order = await this.db.order.findUnique({
+			where: { id: orderId },
+		});
+
+		if (!order) {
+			throw new Error('Order not found');
+		}
+
+		return order;
+	}
+
 	/** NOTE: not sure if this is neccessary
 	 ( do we want to keep all order states as different
 	  transactions or update on the go)

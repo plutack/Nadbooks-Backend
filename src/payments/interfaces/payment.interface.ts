@@ -1,3 +1,5 @@
+import { WebhookEvent } from '@/types/payment.type';
+
 export interface PaymentProvider {
 	initiatePayment(input: {
 		transactionId: string;
@@ -20,7 +22,7 @@ export interface PaymentProvider {
 		providerResponse: any;
 	}>;
 
-	handleWebhook(payload: any, headers: any): Promise<void>;
+	handleWebhook(payload: any, headers: any): Promise<WebhookEvent>;
 }
 
 //paystack successful return for the initialize transaction
