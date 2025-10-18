@@ -83,6 +83,12 @@ export class BooksController {
 		);
 	}
 
+	@Post(':id/purchase')
+	@UseGuards(AuthGuard)
+	purchaseBook(@Param('id') id: string, @CurrentUser() user: JwtPayloadType) {
+		return this.bookService.purchaseBook(user.sub, id);
+	}
+
 	@Patch('bookmarks/:id')
 	@UseGuards(AuthGuard)
 	bookmarkBook(@Param('id') id: string, @CurrentUser() user: JwtPayloadType) {

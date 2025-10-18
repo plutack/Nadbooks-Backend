@@ -9,12 +9,19 @@ import { BaseFilterQueryType } from '@/types/filters.type';
 import { JwtPayloadType } from '@/types/jwt.type';
 import { StoreBookDto, UpdateBookDto } from './dtos/book.dto';
 import { FileType, UpdatableBookFields } from './types';
+import { WalletService } from '@/wallet/wallet.service';
+import { PriceFeedService } from '@/price-feed/price-feed.service';
+import { Decimal } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class BooksService {
+	private readonly COMMISSION_RATE = new Decimal(0.1); // 10%
+
 	constructor(
 		private readonly storageService: StorageService,
 		private readonly db: PrismaService,
+		private readonly walletService: WalletService,
+		private readonly priceFeedService: PriceFeedService,
 	) {}
 
 	private getBookCoverName(bookName: string): string {
@@ -213,5 +220,39 @@ export class BooksService {
 			take: filters.limit || 20,
 			skip: filters.skip || 0,
 		});
+	}
+
+	async purchaseBook(userId: string, bookId: string) {
+		const book = await this.findBookById(bookId);
+		const bookPriceInBooks = await this.priceFeedService.convertNgnToBooks(
+			book.price,
+		);
+
+		const buyerWallet = await this.walletService.getWallet(userId);
+		if (buyerWallet.balance < bookPriceInBooks) {
+			throw new BadRequestException('Insufficient balance');
+		}
+
+		const authorWallet = await this.walletService.getWallet(book.userId);
+		const commission = bookPriceInBooks.mul(this.COMMISSION_RATE);
+		const authorEarnings = bookPriceInBooks.sub(commission);
+
+		const reference = `book-purchase-${bookId}-${userId}`;
+
+		await this.walletService.debit(
+			userId,
+			bookPriceInBooks,
+			`Purchase of book: ${book.title}`,
+			reference,
+		);
+
+		await this.walletService.credit(
+			book.userId,
+			authorEarnings,
+			`Sale of book: ${book.title}`,
+			reference,
+		);
+
+		return { success: true, message: 'Book purchased successfully' };
 	}
 }
