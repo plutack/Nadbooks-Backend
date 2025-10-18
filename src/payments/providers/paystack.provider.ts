@@ -20,7 +20,7 @@ export class PaystackProvider implements PaymentProvider {
 	}
 	async initiatePayment(input: {
 		amount: number;
-		email: string;
+		email?: string;
 		metadata?: any; //TODO: properly typecast
 	}): Promise<{ reference: string }> {
 		const url = `${this.PAYSTACK_BASE}/transaction/initialize`;
@@ -40,6 +40,66 @@ export class PaystackProvider implements PaymentProvider {
 			),
 		);
 		return { reference: response.data.data.reference };
+	}
+
+	async initiateTransfer(input: {
+		amount: number;
+		reason: string;
+		accountNumber: string;
+		bankCode: string;
+		name: string;
+	}): Promise<{ reference: string }> {
+		const recipient = await this.createTransferRecipient({
+			accountNumber: input.accountNumber,
+			bankCode: input.bankCode,
+			name: input.name,
+		});
+
+		const url = `${this.PAYSTACK_BASE}/transfer`;
+		const response = await lastValueFrom(
+			this.http.post(
+				url,
+				{
+					source: 'balance',
+					amount: input.amount,
+					recipient: recipient.recipient_code,
+					reason: input.reason,
+				},
+				{
+					headers: {
+						Authorization: `Bearer ${this.secretKey}`,
+					},
+				},
+			),
+		);
+
+		return { reference: response.data.data.reference };
+	}
+
+	private async createTransferRecipient(input: {
+		name: string;
+		accountNumber: string;
+		bankCode: string;
+	}): Promise<{ recipient_code: string }> {
+		const url = `${this.PAYSTACK_BASE}/transferrecipient`;
+		const response = await lastValueFrom(
+			this.http.post(
+				url,
+				{
+					type: 'nuban',
+					name: input.name,
+					account_number: input.accountNumber,
+					bank_code: input.bankCode,
+					currency: 'NGN',
+				},
+				{
+					headers: {
+						Authorization: `Bearer ${this.secretKey}`,
+					},
+				},
+			),
+		);
+		return response.data.data;
 	}
 
 	async verifyPayment(reference: string) {
