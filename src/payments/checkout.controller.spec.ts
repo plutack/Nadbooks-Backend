@@ -2,17 +2,17 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CheckoutController } from './checkout.controller';
 
 describe('CheckoutController', () => {
-  let controller: CheckoutController;
+	let controller: CheckoutController;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [CheckoutController],
-    }).compile();
+	beforeEach(async () => {
+		const module: TestingModule = await Test.createTestingModule({
+			controllers: [CheckoutController],
+		}).compile();
 
-    controller = module.get<CheckoutController>(CheckoutController);
-  });
+		controller = module.get<CheckoutController>(CheckoutController);
+	});
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
+	it('should be defined', () => {
+		expect(controller).toBeDefined();
+	});
 });

@@ -1,6 +1,10 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from '@/auth/auth.service';
-import { CreateUserDto, GoogleAuthDto, LoginUserDto } from '@/auth/dtos/auth.dto';
+import {
+	CreateUserDto,
+	GoogleAuthDto,
+	LoginUserDto,
+} from '@/auth/dtos/auth.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -18,7 +22,6 @@ export class AuthController {
 
 	@Post('google')
 	googleAuth(@Body() body: GoogleAuthDto) {
-		return this.auth.google(body.token)
+		return this.auth.google(body.token);
 	}
-
 }
