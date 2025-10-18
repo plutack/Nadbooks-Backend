@@ -13,6 +13,9 @@ export class CheckoutController {
 		@Body() createCheckoutDto: CreateCheckoutDto,
 		@CurrentUser() user: JwtPayloadType,
 	) {
-		return await this.checkoutService.createCheckout();
+		return await this.checkoutService.createOrderCheckout(
+			user,
+			createCheckoutDto,
+		);
 	}
 }
