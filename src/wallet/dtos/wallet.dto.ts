@@ -1,5 +1,11 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
+import { PaymentMethod } from 'generated/prisma';
+
+export type ExternalPaymentMethod = Exclude<PaymentMethod, 'WALLET'>;
+
+//TODO: this is now redundant
+//
 export class DepositDto {
 	@IsNumber()
 	@IsNotEmpty()
@@ -7,5 +13,26 @@ export class DepositDto {
 
 	@IsString()
 	@IsNotEmpty()
-	paymentMethod: string;
+	paymentMethod: PaymentMethod;
+}
+
+export class WithdrawDto {
+	@IsNumber()
+	@IsNotEmpty()
+	amount: number;
+
+	@IsOptional()
+	@IsString()
+	accountNumber: string;
+
+	@IsOptional()
+	@IsString()
+	bankCode: string;
+
+	@IsNotEmpty()
+	method: ExternalPaymentMethod;
+
+	@IsOptional()
+	@IsString()
+	walletAddress?: string;
 }
