@@ -5,10 +5,11 @@ import { AppService } from '@/app.service';
 import { AuthModule } from '@/auth/auth.module';
 import { BooksModule } from '@/books/books.module';
 import { LoggerMiddleware } from '@/middlewares/logger.middleware';
-import { PaymentModule } from '@/payments/payments.module';
+import { OrderPaymentModule } from '@/payments/order-payment/order-payment.module';
 import { PrismaModule } from '@/prisma/prisma.module';
 import { UserModule } from '@/users/users.module';
 import { WalletModule } from '@/wallet/wallet.module';
+import { WithdrawalModule } from './payments/withdrawal/withdrawal.module';
 import { PriceFeedModule } from './price-feed/price-feed.module';
 
 @Module({
@@ -21,8 +22,9 @@ import { PriceFeedModule } from './price-feed/price-feed.module';
 		BooksModule,
 		UserModule,
 		WalletModule,
-		PaymentModule,
 		PriceFeedModule,
+		OrderPaymentModule,
+		WithdrawalModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
