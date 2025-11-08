@@ -25,9 +25,10 @@ enum TransactionType {
   ORDER
 }
 
-enum Method {
-  FIAT
+enum PaymentMethod {
+  PAYSTACK
   CRYPTO
+  WALLET
 }
 
 enum TransactionStatus {
@@ -39,6 +40,7 @@ enum TransactionStatus {
 enum OrderStatus {
   PENDING
   PAID
+  FAILED
   CANCELLED
   COMPLETED
 }
@@ -62,23 +64,22 @@ model User {
 //NOTE: Genre might become an enum.
 model Book {
   id           String         @id @default(uuid())
-  title        String         @db.VarChar(255)
-  author       String         @db.VarChar(255)
-  genre        String         @db.VarChar(255)
+  title        String
+  genre        String
   price        Int
   isMature     Boolean        @map("is_mature")
   pageCount    Int            @map("page_count")
-  bookURL      String         @map("book_url") @db.VarChar(255)
-  bookCoverURL String         @map("book_cover_url") @db.VarChar(255)
+  bookURL      String         @map("book_url")
+  bookCoverURL String         @map("book_cover_url")
   dateUpdated  DateTime       @updatedAt @map("date_updated")
   dateAuthored DateTime       @map("date_authored")
   dateUploaded DateTime       @map("date_uploaded")
-  userId       String         @map("user_id")
-  user         User           @relation(fields: [userId], references: [id])
+  authorId     String         @map("author_id") // <- renamed
+  author       User           @relation(fields: [authorId], references: [id])
   bookmarks    BookBookmark[]
   OrderBook    OrderBook[]
 
-  @@index([author, genre])
+  @@index([genre])
 }
 
 model BookBookmark {
@@ -108,11 +109,13 @@ model Transaction {
   id                String            @id @default(uuid())
   type              TransactionType
   amount            Decimal
+  paymentMethod     PaymentMethod     @map("payment_method")
   senderWalletId    String?           @map("sender_wallet_id")
   recipientWalletId String?           @map("recipient_wallet_id")
   reference         String            @unique
   status            TransactionStatus @default(PENDING)
   description       String?
+  reason            String?
   metadata          Json?
   providerResponse  Json?
   createdAt         DateTime          @default(now()) @map("created_at")
@@ -143,6 +146,7 @@ model OrderBook {
   orderId   String   @map("order_id")
   bookId    String   @map("book_id")
   price     Int
+  authorId  String   @map("author_id")
   createdAt DateTime @default(now()) @map("created_at")
 
   order Order @relation(fields: [orderId], references: [id])
