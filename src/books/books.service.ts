@@ -58,13 +58,12 @@ export class BooksService {
 		const newBook = await this.db.book.create({
 			data: {
 				...bookDTO,
-				author: user.username, //TODO: maybe we include first and last name in the jwt?
 				bookURL,
 				bookCoverURL,
 				pageCount: Number(bookDTO.pageCount),
 				price: Number(bookDTO.price),
 				isMature: Boolean(bookDTO.isMature),
-				userId: user.sub,
+				authorId: user.sub,
 				dateUploaded: new Date(),
 				dateAuthored: new Date(bookDTO.dateAuthored),
 			},
@@ -109,10 +108,10 @@ export class BooksService {
 		});
 	}
 
-	async findUserBookById(id: string, userId: string) {
+	async findAuthorBookById(id: string, authorId: string) {
 		const book = await this.db.book.findFirst({
 			where: {
-				userId,
+				authorId,
 				id,
 			},
 		});
@@ -122,16 +121,18 @@ export class BooksService {
 		return book;
 	}
 
-	async deleteBook(id: string, userId: string) {
-		await this.findUserBookById(id, userId);
-		await this.db.book.delete({
-			where: {
-				userId,
-				id,
-			},
-		});
-		return true;
-	}
+	//FEAT: user should still be able to delete their own books
+	// FIX: what happens when an author delete books that have been bought
+	// async deleteBook(id: string, userId: string) {
+	// 	await this.findUserBookById(id, userId);
+	// 	await this.db.book.delete({
+	// 		where: {
+	// 			userId,
+	// 			id,
+	// 		},
+	// 	});
+	// 	return true;
+	// }
 
 	async updateBook(
 		id: string,
@@ -148,7 +149,7 @@ export class BooksService {
 			throw new BadRequestException('Please provide fields to be updated');
 		}
 
-		const bookRecord = await this.findUserBookById(id, userId);
+		const bookRecord = await this.findAuthorBookById(id, userId);
 
 		const [bookURL, bookCoverURL] = await Promise.all([
 			book
