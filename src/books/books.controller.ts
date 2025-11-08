@@ -8,12 +8,10 @@ import {
 	Patch,
 	Post,
 	Query,
-	Req,
 	UploadedFiles,
 	UseGuards,
 } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
-import { Request } from 'express';
 import { AuthGuard, CurrentUser } from '@/auth/auth.guard';
 import { BooksService } from '@/books/books.service';
 import { StoreBookDto, UpdateBookDto } from '@/books/dtos/book.dto';
@@ -81,12 +79,6 @@ export class BooksController {
 			files.book?.[0],
 			files.bookCover?.[0],
 		);
-	}
-
-	@Post(':id/purchase')
-	@UseGuards(AuthGuard)
-	purchaseBook(@Param('id') id: string, @CurrentUser() user: JwtPayloadType) {
-		return this.bookService.purchaseBook(user.sub, id);
 	}
 
 	@Patch('bookmarks/:id')

@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import crypto from 'crypto';
 import { lastValueFrom } from 'rxjs';
-import { PaymentProvider } from '@/payments/interfaces/payment.interface';
+import { PaymentProvider } from '@/payments/shared/interfaces/payment.interface';
 
 @Injectable()
 export class PaystackProvider implements PaymentProvider {
@@ -18,11 +18,12 @@ export class PaystackProvider implements PaymentProvider {
 			throw new Error('PAYSTACK_SECRET_KEY is not set in environment');
 		}
 	}
-	async initiatePayment(input: {
+	async initiateDeposit(input: {
 		amount: number;
 		email?: string;
+		reference?: string;
 		metadata?: any; //TODO: properly typecast
-	}): Promise<{ reference: string }> {
+	}): Promise<{ reference: string; paymentUrl: string }> {
 		const url = `${this.PAYSTACK_BASE}/transaction/initialize`;
 		const response = await lastValueFrom(
 			this.http.post(
@@ -30,6 +31,7 @@ export class PaystackProvider implements PaymentProvider {
 				{
 					amount: input.amount,
 					email: input.email,
+					reference: input.reference,
 					metadata: input.metadata,
 				},
 				{
@@ -39,67 +41,25 @@ export class PaystackProvider implements PaymentProvider {
 				},
 			),
 		);
-		return { reference: response.data.data.reference };
+		const data = response.data.data;
+
+		return {
+			reference: data.reference,
+			paymentUrl: data.authorization_url,
+		};
 	}
 
-	async initiateTransfer(input: {
-		amount: number;
-		reason: string;
-		accountNumber: string;
-		bankCode: string;
-		name: string;
-	}): Promise<{ reference: string }> {
-		const recipient = await this.createTransferRecipient({
-			accountNumber: input.accountNumber,
-			bankCode: input.bankCode,
-			name: input.name,
-		});
-
-		const url = `${this.PAYSTACK_BASE}/transfer`;
+	async getAccountNameFromBankDetails(
+		bankCode: string,
+		accountNumber: string,
+	): Promise<string> {
+		const url = `${this.PAYSTACK_BASE}/bank/resolve?account_number=${accountNumber}&bank_code=${bankCode}`;
 		const response = await lastValueFrom(
-			this.http.post(
-				url,
-				{
-					source: 'balance',
-					amount: input.amount,
-					recipient: recipient.recipient_code,
-					reason: input.reason,
-				},
-				{
-					headers: {
-						Authorization: `Bearer ${this.secretKey}`,
-					},
-				},
-			),
+			this.http.get(url, {
+				headers: { Authorization: `Bearer ${this.secretKey}` },
+			}),
 		);
-
-		return { reference: response.data.data.reference };
-	}
-
-	private async createTransferRecipient(input: {
-		name: string;
-		accountNumber: string;
-		bankCode: string;
-	}): Promise<{ recipient_code: string }> {
-		const url = `${this.PAYSTACK_BASE}/transferrecipient`;
-		const response = await lastValueFrom(
-			this.http.post(
-				url,
-				{
-					type: 'nuban',
-					name: input.name,
-					account_number: input.accountNumber,
-					bank_code: input.bankCode,
-					currency: 'NGN',
-				},
-				{
-					headers: {
-						Authorization: `Bearer ${this.secretKey}`,
-					},
-				},
-			),
-		);
-		return response.data.data;
+		return response.data.data.account_name;
 	}
 
 	async verifyPayment(reference: string) {
