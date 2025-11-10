@@ -77,25 +77,20 @@ export class AuthService {
 
 	async login(dto: LoginUserDto) {
 		const existingUser = await this.db.user.findFirst({
-			where: {
-				OR: [
-					{ username: dto.username ?? undefined },
-					{ email: dto.email ?? undefined },
-				],
-			},
+			where: { email: dto.email },
 		});
 
 		if (!existingUser) {
 			throw new UnauthorizedException('Invalid credentials');
 		}
 
-		if (existingUser.authMode !== AuthMode.EMAIL) {
-			throw new BadRequestException('Invalid login approach');
+		if (!existingUser.passwordHash) {
+			throw new BadRequestException(
+				'This account cannot login with email/password',
+			);
 		}
-		const isMatch = await argon.verify(
-			existingUser.passwordHash as string,
-			dto.password,
-		);
+
+u		const isMatch = await argon.verify(existingUser.passwordHash, dto.password);
 
 		if (!isMatch) {
 			throw new UnauthorizedException('Invalid credentials');

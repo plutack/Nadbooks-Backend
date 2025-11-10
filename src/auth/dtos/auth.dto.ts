@@ -44,15 +44,9 @@ export class CreateUserDto {
 }
 
 export class LoginUserDto {
-	@ValidateIf((object) => !object.email)
-	@IsString()
-	@Transform(({ value }) => value?.trim().toLowerCase())
-	username?: string;
-
-	@ValidateIf((object) => !object.username)
 	@IsEmail()
 	@Transform(({ value }) => value?.trim().toLowerCase())
-	email?: string;
+	email: string;
 
 	@IsString()
 	@IsNotEmpty()
