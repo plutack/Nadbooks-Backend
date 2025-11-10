@@ -8,7 +8,6 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
-import { AuthMode } from 'generated/prisma';
 import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
 import { OAuth2Client } from 'google-auth-library';
 import { CreateUserDto, LoginUserDto } from '@/auth/dtos/auth.dto';
@@ -90,7 +89,7 @@ export class AuthService {
 			);
 		}
 
-u		const isMatch = await argon.verify(existingUser.passwordHash, dto.password);
+		const isMatch = await argon.verify(existingUser.passwordHash, dto.password);
 
 		if (!isMatch) {
 			throw new UnauthorizedException('Invalid credentials');
@@ -118,23 +117,32 @@ u		const isMatch = await argon.verify(existingUser.passwordHash, dto.password);
 
 	async google(token: string) {
 		const client = new OAuth2Client(this.GOOGLE_CLIENT_ID);
-		const ticket = await client.verifyIdToken({
-			idToken: token,
-			audience: this.GOOGLE_CLIENT_ID,
-		});
-		const payload = ticket.getPayload();
+
+		let payload;
+		try {
+			const ticket = await client.verifyIdToken({
+				idToken: token,
+				audience: this.GOOGLE_CLIENT_ID,
+			});
+			payload = ticket.getPayload();
+		} catch {
+			throw new UnauthorizedException('Invalid Google token');
+		}
+
+		if (!payload?.email) {
+			throw new BadRequestException('Google token missing email');
+		}
+
 		const existingUser = await this.db.user.findFirst({
-			where: {
-				email: payload?.email,
-			},
+			where: { email: payload.email },
 		});
-		if (existingUser && existingUser.authMode == 'GOOGLE') {
+
+		if (existingUser && !existingUser.passwordHash) {
 			const jwtPayload = {
 				sub: existingUser.id,
 				username: existingUser.username,
 				email: existingUser.email,
 			};
-
 			const accessToken = await this.jwt.signAsync(jwtPayload);
 			return {
 				accessToken,
@@ -146,19 +154,16 @@ u		const isMatch = await argon.verify(existingUser.passwordHash, dto.password);
 					email: existingUser.email,
 				},
 			};
-		} else if (!existingUser) {
+		}
+
+		if (!existingUser) {
 			const newUser = await this.db.user.create({
 				data: {
-					firstName: payload?.given_name!,
-					lastName: payload?.family_name!,
-					authMode: AuthMode.GOOGLE,
-					email: payload?.email!,
-					username: payload?.email!.split('@')[0]!,
-					Wallet: {
-						create: {
-							balance: 0,
-						},
-					},
+					firstName: payload.given_name!,
+					lastName: payload.family_name!,
+					email: payload.email,
+					username: payload.email.split('@')[0],
+					Wallet: { create: { balance: 0 } },
 				},
 				select: {
 					id: true,
@@ -168,13 +173,14 @@ u		const isMatch = await argon.verify(existingUser.passwordHash, dto.password);
 					username: true,
 				},
 			});
+
 			const jwtPayload = {
 				sub: newUser.id,
 				username: newUser.username,
 				email: newUser.email,
 			};
-
 			const accessToken = await this.jwt.signAsync(jwtPayload);
+
 			return {
 				accessToken,
 				user: {
@@ -185,8 +191,8 @@ u		const isMatch = await argon.verify(existingUser.passwordHash, dto.password);
 					email: newUser.email,
 				},
 			};
-		} else {
-			throw new BadRequestException('Please login via email');
 		}
+
+		throw new BadRequestException('Please login via email/password');
 	}
 }
