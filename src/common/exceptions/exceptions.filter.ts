@@ -8,22 +8,26 @@ import {
 @Catch(HttpException)
 export class ExceptionsFilter implements ExceptionFilter {
 	catch(exception: HttpException, host: ArgumentsHost) {
-		const http = host.switchToHttp();
-		const response = http.getResponse();
+		const ctx = host.switchToHttp();
+		const response = ctx.getResponse();
 
 		const status = exception.getStatus();
 		const raw = exception.getResponse();
 
-		const body =
-			typeof raw === 'string'
-				? { message: raw }
-				: (raw as Record<string, unknown>);
-
-		const errors = Array.isArray(body.message) ? body.message : undefined;
+		let errors: string[];
+		if (typeof raw === 'string') {
+			errors = [raw];
+		} else if (typeof raw === 'object' && raw !== null) {
+			errors = Array.isArray((raw as any).message)
+				? (raw as any).message
+				: [(raw as any).message || exception.message];
+		} else {
+			errors = [exception.message];
+		}
 
 		response.status(status).json({
 			statusCode: status,
-			message: exception.message,
+			message: `${exception.name}`,
 			errors,
 		});
 	}
