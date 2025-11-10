@@ -2,16 +2,13 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
 	IsEmail,
-	IsEnum,
 	IsNotEmpty,
-	IsOptional,
 	IsString,
 	Matches,
 	MaxLength,
 	MinLength,
 	ValidateIf,
 } from 'class-validator';
-import { AuthMode } from 'generated/prisma';
 
 export class CreateUserDto {
 	@IsNotEmpty()
@@ -23,13 +20,6 @@ export class CreateUserDto {
 	lastName: string;
 	@IsEmail()
 	email: string;
-
-	@IsOptional()
-	@ApiProperty({ enum: AuthMode })
-	@IsEnum(AuthMode, {
-		message: 'authmode not specified correctly',
-	})
-	authMode: AuthMode;
 
 	@IsNotEmpty()
 	@MinLength(4, { message: 'username must be at least 4 characters long' })

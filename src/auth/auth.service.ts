@@ -36,7 +36,6 @@ export class AuthService {
 				data: {
 					firstName: dto.firstName,
 					lastName: dto.lastName,
-					authMode: AuthMode.EMAIL,
 					email: dto.email,
 					username: dto.username,
 					passwordHash,
@@ -62,6 +61,7 @@ export class AuthService {
 
 			return newUser;
 		} catch (err) {
+			console.log(err);
 			if (
 				err instanceof PrismaClientKnownRequestError &&
 				err.code === 'P2002'
