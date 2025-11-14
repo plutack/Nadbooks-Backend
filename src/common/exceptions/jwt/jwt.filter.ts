@@ -4,8 +4,7 @@ import {
 	ExceptionFilter,
 	HttpStatus,
 } from '@nestjs/common';
-import { TokenExpiredError } from '@nestjs/jwt';
-import { JsonWebTokenError } from 'jsonwebtoken';
+import { JsonWebTokenError, TokenExpiredError } from '@nestjs/jwt';
 
 @Catch(TokenExpiredError, JsonWebTokenError)
 export class JwtFilter implements ExceptionFilter {
