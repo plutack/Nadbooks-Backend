@@ -20,7 +20,7 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, unknown> {
 				return {
 					statusCode,
 					message: 'Success',
-					errors: [],
+					errors: null,
 					data,
 				};
 			}),

@@ -5,20 +5,30 @@ import {
 	HttpStatus,
 } from '@nestjs/common';
 import { TokenExpiredError } from '@nestjs/jwt';
+import { JsonWebTokenError } from 'jsonwebtoken';
 
-@Catch(TokenExpiredError)
+@Catch(TokenExpiredError, JsonWebTokenError)
 export class JwtFilter implements ExceptionFilter {
-	catch(_exception: TokenExpiredError, host: ArgumentsHost) {
+	catch(exception: TokenExpiredError | JsonWebTokenError, host: ArgumentsHost) {
 		const http = host.switchToHttp();
 		const response = http.getResponse();
 
 		const status = HttpStatus.UNAUTHORIZED;
-		const message = 'Token has expired. Login to generate a new token.';
+		let message = 'Unauthorized Exception';
+		let errors: string[] = [];
+
+		if (exception instanceof TokenExpiredError) {
+			message = 'Unauthorized Exception';
+			errors = ['Token has expired. Please log in again.'];
+		} else if (exception instanceof JsonWebTokenError) {
+			message = 'Unauthorized Exception';
+			errors = [exception.message || 'Invalid token'];
+		}
 
 		response.status(status).json({
 			statusCode: status,
 			message,
-			errors: ['Token Expired'],
+			errors,
 		});
 	}
 }
