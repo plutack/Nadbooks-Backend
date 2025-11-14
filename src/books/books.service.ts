@@ -22,7 +22,7 @@ export class BooksService {
 	}
 
 	// function to confirm if the file has the right dimensions
-	private validateBookCover(file: Express.Multer.File): boolean {
+	private validateBookCover(_file: Express.Multer.File): boolean {
 		return true;
 	}
 
@@ -80,13 +80,46 @@ export class BooksService {
 		});
 	}
 
-	async getBooks(filters: BaseFilterQueryType) {
-		return await this.db.book.findMany({
-			take: filters.limit || 20,
-			skip: filters.skip || 0,
-		});
-	}
+	async getBooks(filters: BookFilterQueryType) {
+		const {
+			limit = 20,
+			skip = 0,
+			genre,
+			authorId,
+			minPrice,
+			maxPrice,
+			isMature,
+			dateAuthoredFrom,
+			dateAuthoredTo,
+		} = filters;
 
+		const where: any = {};
+
+		if (genre) where.genre = genre;
+		if (authorId) where.authorId = authorId;
+		if (isMature !== undefined) where.isMature = isMature;
+		if (minPrice !== undefined || maxPrice !== undefined) {
+			where.price = {};
+			if (minPrice !== undefined) where.price.gte = minPrice;
+			if (maxPrice !== undefined) where.price.lte = maxPrice;
+		}
+		if (dateAuthoredFrom || dateAuthoredTo) {
+			where.dateAuthored = {};
+			if (dateAuthoredFrom) where.dateAuthored.gte = new Date(dateAuthoredFrom);
+			if (dateAuthoredTo) where.dateAuthored.lte = new Date(dateAuthoredTo);
+		}
+
+		const total = await this.db.book.count({ where });
+
+		const data = await this.db.book.findMany({
+			where,
+			skip,
+			take: limit,
+			orderBy: { dateUploaded: 'desc' },
+		});
+
+		return { total, skip, limit, data };
+	}
 	/**
 	 * Returns book
 	 *

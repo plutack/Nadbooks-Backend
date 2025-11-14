@@ -1,10 +1,9 @@
 import { PartialType } from '@nestjs/mapped-types';
+import { Transform, Type } from 'class-transformer';
 import {
-	IsBoolean,
 	IsBooleanString,
-	IsDateString,
+	IsDate,
 	IsNotEmpty,
-	IsNumber,
 	IsNumberString,
 	IsString,
 } from 'class-validator';
@@ -40,7 +39,8 @@ export class StoreBookDto {
 	pageCount: number;
 
 	@IsNotEmpty()
-	@IsDateString()
+	@IsDate()
+	@Type(() => Date)
 	dateAuthored: Date;
 }
 

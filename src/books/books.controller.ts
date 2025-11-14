@@ -16,7 +16,7 @@ import { AuthGuard, CurrentUser } from '@/auth/auth.guard';
 import { BooksService } from '@/books/books.service';
 import { StoreBookDto, UpdateBookDto } from '@/books/dtos/book.dto';
 import { UploadBookAndCover } from '@/helpers/decorators/upload-book.decorator';
-import { BaseFilterQueryType } from '@/types/filters.type';
+import { BookFilterQueryType } from '@/types/filters.type';
 import { JwtPayloadType } from '@/types/jwt.type';
 
 @Controller('books')
@@ -28,7 +28,7 @@ export class BooksController {
 		summary: 'Returns the books on the platform',
 		description: 'Returns a paginated list of books on the platform',
 	})
-	getBooks(@Query() query: BaseFilterQueryType) {
+	getBooks(@Query() query: BookFilterQueryType) {
 		return this.bookService.getBooks(query);
 	}
 
