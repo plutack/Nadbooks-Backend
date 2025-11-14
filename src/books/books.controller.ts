@@ -14,9 +14,12 @@ import {
 import { ApiOperation } from '@nestjs/swagger';
 import { AuthGuard, CurrentUser } from '@/auth/auth.guard';
 import { BooksService } from '@/books/books.service';
-import { StoreBookDto, UpdateBookDto } from '@/books/dtos/book.dto';
+import {
+	BookFilterDto,
+	StoreBookDto,
+	UpdateBookDto,
+} from '@/books/dtos/book.dto';
 import { UploadBookAndCover } from '@/helpers/decorators/upload-book.decorator';
-import { BookFilterQueryType } from '@/types/filters.type';
 import { JwtPayloadType } from '@/types/jwt.type';
 
 @Controller('books')
@@ -28,7 +31,7 @@ export class BooksController {
 		summary: 'Returns the books on the platform',
 		description: 'Returns a paginated list of books on the platform',
 	})
-	getBooks(@Query() query: BookFilterQueryType) {
+	getBooks(@Query() query: BookFilterDto) {
 		return this.bookService.getBooks(query);
 	}
 

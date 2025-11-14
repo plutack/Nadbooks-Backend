@@ -16,6 +16,7 @@ export class ExceptionsFilter implements ExceptionFilter {
 		let message: string;
 		let errors: string[];
 
+		console.log(exception);
 		if (exception instanceof HttpException) {
 			status = exception.getStatus();
 			const raw = exception.getResponse();

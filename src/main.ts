@@ -28,7 +28,12 @@ async function bootstrap() {
 
 	app.enableShutdownHooks();
 	app.use(cookieParser());
-	app.useGlobalPipes(new ValidationPipe());
+	app.useGlobalPipes(
+		new ValidationPipe({
+			transform: true,
+			whitelist: true,
+		}),
+	);
 
 	app.useGlobalFilters(
 		new JwtFilter(),

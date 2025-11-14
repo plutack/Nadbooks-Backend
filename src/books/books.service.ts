@@ -5,9 +5,9 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import { StorageService } from '@/storage/storage.service';
-import { BaseFilterQueryType } from '@/types/filters.type';
+import { BaseFilterQueryType, BookFilterQueryType } from '@/types/filters.type';
 import { JwtPayloadType } from '@/types/jwt.type';
-import { StoreBookDto, UpdateBookDto } from './dtos/book.dto';
+import { BookFilterDto, StoreBookDto, UpdateBookDto } from './dtos/book.dto';
 import { FileType, UpdatableBookFields } from './types';
 
 @Injectable()
@@ -80,51 +80,25 @@ export class BooksService {
 		});
 	}
 
-	async getBooks(filters: BookFilterQueryType) {
-		const {
-			limit = 20,
-			skip = 0,
-			genre,
-			authorId,
-			minPrice,
-			maxPrice,
-			isMature,
-			dateAuthoredFrom,
-			dateAuthoredTo,
-		} = filters;
-
+	async getBooks(filters: BookFilterDto) {
 		const where: any = {};
 
-		if (genre) where.genre = genre;
-		if (authorId) where.authorId = authorId;
-		if (isMature !== undefined) where.isMature = isMature;
-		if (minPrice !== undefined || maxPrice !== undefined) {
+		if (filters.genre) where.genre = filters.genre;
+		if (filters.isMature !== undefined) where.isMature = filters.isMature;
+
+		if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
 			where.price = {};
-			if (minPrice !== undefined) where.price.gte = minPrice;
-			if (maxPrice !== undefined) where.price.lte = maxPrice;
-		}
-		if (dateAuthoredFrom || dateAuthoredTo) {
-			where.dateAuthored = {};
-			if (dateAuthoredFrom) where.dateAuthored.gte = new Date(dateAuthoredFrom);
-			if (dateAuthoredTo) where.dateAuthored.lte = new Date(dateAuthoredTo);
+			if (filters.minPrice !== undefined) where.price.gte = filters.minPrice;
+			if (filters.maxPrice !== undefined) where.price.lte = filters.maxPrice;
 		}
 
-		const total = await this.db.book.count({ where });
-
-		const data = await this.db.book.findMany({
+		return await this.db.book.findMany({
+			take: filters.limit,
+			skip: filters.skip,
 			where,
-			skip,
-			take: limit,
-			orderBy: { dateUploaded: 'desc' },
 		});
-
-		return { total, skip, limit, data };
 	}
-	/**
-	 * Returns book
-	 *
-	 * Raises an error if the book is not found
-	 */
+
 	async findBookById(bookId: string) {
 		const book = await this.getBookById(bookId);
 		if (!book) {
