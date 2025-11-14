@@ -123,16 +123,15 @@ export class BooksService {
 
 	//FEAT: user should still be able to delete their own books
 	// FIX: what happens when an author delete books that have been bought
-	// async deleteBook(id: string, userId: string) {
-	// 	await this.findUserBookById(id, userId);
-	// 	await this.db.book.delete({
-	// 		where: {
-	// 			userId,
-	// 			id,
-	// 		},
-	// 	});
-	// 	return true;
-	// }
+	async deleteBook(id: string, authorId: string) {
+		await this.findAuthorBookById(id, authorId);
+		await this.db.book.delete({
+			where: {
+				authorId,
+				id,
+			},
+		});
+	}
 
 	async updateBook(
 		id: string,
