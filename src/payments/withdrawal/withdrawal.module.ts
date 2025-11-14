@@ -6,6 +6,7 @@ import { PriceFeedModule } from '@/price-feed/price-feed.module';
 import { PrismaService } from '@/prisma/prisma.service';
 import { WalletModule } from '@/wallet/wallet.module';
 import { PaystackWithdrawalProvider } from './providers/paystack-withdrawal.provider';
+import { CryptoWithdrawalProvider } from './providers/crypto-withdrawal.provider';
 
 @Module({
 	imports: [WalletModule, PriceFeedModule, HttpModule],
@@ -14,6 +15,7 @@ import { PaystackWithdrawalProvider } from './providers/paystack-withdrawal.prov
 		PrismaService,
 		TransactionService,
 		PaystackWithdrawalProvider,
+		CryptoWithdrawalProvider,
 	],
 	exports: [WithdrawalService],
 })

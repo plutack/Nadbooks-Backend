@@ -11,17 +11,18 @@ import {
 	BankWithdrawalProviderInterface,
 	CryptoWithdrawalProviderInterface,
 } from '@/payments/withdrawal/interfaces/withdrawal-provider.interface';
-// import { CryptoWithdrawalProvider } from '@/payments/withdrawal/providers/crypto-withdrawal.provider';
+import { CryptoWithdrawalProvider } from '@/payments/withdrawal/providers/crypto-withdrawal.provider';
 import { PaystackWithdrawalProvider } from '@/payments/withdrawal/providers/paystack-withdrawal.provider';
 import { PriceFeedService } from '@/price-feed/price-feed.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { JwtPayloadType } from '@/types/jwt.type';
 import { WalletService } from '@/wallet/wallet.service';
+import { TransactionService } from '../shared/transaction.service';
 
 export type ExternalPaymentMethod = Exclude<PaymentMethod, 'WALLET'>;
 
 type WithdrawalProviderMap = {
-	// [PaymentMethod.CRYPTO]: CryptoWithdrawalProviderInterface;
+	[PaymentMethod.CRYPTO]: CryptoWithdrawalProviderInterface;
 	[PaymentMethod.PAYSTACK]: BankWithdrawalProviderInterface;
 };
 
@@ -31,13 +32,14 @@ export class WithdrawalService {
 
 	constructor(
 		private readonly db: PrismaService,
+		private readonly transactionService: TransactionService,
 		private readonly walletService: WalletService,
 		private readonly priceFeed: PriceFeedService,
 		private readonly paystackProvider: PaystackWithdrawalProvider,
-		// private readonly cryptoProvider: CryptoWithdrawalProvider,
+		private readonly cryptoProvider: CryptoWithdrawalProvider,
 	) {
 		this.providers = {
-			// [PaymentMethod.CRYPTO]: this.cryptoProvider,
+			[PaymentMethod.CRYPTO]: this.cryptoProvider,
 			[PaymentMethod.PAYSTACK]: this.paystackProvider,
 		};
 	}
@@ -50,7 +52,7 @@ export class WithdrawalService {
 			);
 		}
 
-		return await this.db.$transaction(async (tx) => {
+		await this.db.$transaction(async (tx) => {
 			const wallet = await this.walletService.getWallet(user.sub, tx);
 			const booksAmount = new Decimal(dto.amount);
 
@@ -64,8 +66,8 @@ export class WithdrawalService {
 					: await this.priceFeed.convertBooksToNgn(booksAmount);
 
 			// Create withdrawal record
-			await tx.transaction.create({
-				data: {
+			await this.transactionService.recordTransaction(
+				{
 					amount: converted,
 					type: TransactionType.WITHDRAWAL,
 					senderWalletId: wallet.id,
@@ -73,35 +75,40 @@ export class WithdrawalService {
 					paymentMethod: dto.method,
 					reference: generateRef(TransactionType.WITHDRAWAL, user.sub),
 				},
-			});
+				tx,
+			);
 
 			await this.walletService.debit(user.sub, booksAmount, tx);
 
-			switch (dto.method) {
-				case PaymentMethod.CRYPTO:
-					return (
-						provider as CryptoWithdrawalProviderInterface
-					).initiateWithdrawal({
-						amount: converted.toNumber(),
-						address: dto.walletAddress!,
-					});
+			const result = await (() => {
+				switch (dto.method) {
+					case PaymentMethod.CRYPTO:
+						return (
+							provider as CryptoWithdrawalProviderInterface
+						).initiateWithdrawal({
+							amount: converted.toNumber(),
+							address: dto.walletAddress!,
+						});
 
-				case PaymentMethod.PAYSTACK:
-					return (
-						provider as BankWithdrawalProviderInterface
-					).initiateWithdrawal({
-						amount: converted.toNumber(),
-						reason: `Withdrawal of ${converted.toNumber()} BOOKS`,
-						name: dto.accountName!,
-						accountNumber: dto.accountNumber!,
-						bankCode: dto.bankCode!,
-					});
+					case PaymentMethod.PAYSTACK:
+						return (
+							provider as BankWithdrawalProviderInterface
+						).initiateWithdrawal({
+							amount: converted.toNumber(),
+							reason: `Withdrawal of ${converted.toNumber()} BOOKS`,
+							name: dto.accountName!,
+							accountNumber: dto.accountNumber!,
+							bankCode: dto.bankCode!,
+						});
 
-				default:
-					throw new BadRequestException(
-						`Unsupported withdrawal method: ${dto.method}`,
-					);
-			}
+					default:
+						throw new BadRequestException(
+							`Unsupported withdrawal method: ${dto.method}`,
+						);
+				}
+			})();
+
+			return result;
 		});
 	}
 }

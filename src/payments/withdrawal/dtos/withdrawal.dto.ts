@@ -1,6 +1,7 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { PaymentMethod } from 'generated/prisma';
 
+//TODO: find somewhere to put this. This is littered everywhere
 export type ExternalPaymentMethod = Exclude<PaymentMethod, 'WALLET'>;
 
 export class WithdrawDto {
@@ -10,11 +11,11 @@ export class WithdrawDto {
 
 	@IsOptional()
 	@IsString()
-	accountNumber: string;
+	accountNumber?: string;
 
 	@IsOptional()
 	@IsString()
-	accountName: string;
+	accountName?: string;
 
 	@IsOptional()
 	@IsString()
