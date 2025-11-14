@@ -36,8 +36,8 @@ async function bootstrap() {
 	);
 
 	app.useGlobalFilters(
-		new JwtFilter(),
 		new PrismaFilter(),
+		new JwtFilter(),
 		new ExceptionsFilter(),
 	);
 

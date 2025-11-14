@@ -13,14 +13,14 @@ export class JwtFilter implements ExceptionFilter {
 		const response = http.getResponse();
 
 		const status = HttpStatus.UNAUTHORIZED;
-		let message = 'Unauthorized Exception';
+		let message = 'unauthorizedException';
 		let errors: string[] = [];
 
 		if (exception instanceof TokenExpiredError) {
-			message = 'Unauthorized Exception';
+			message = 'unauthorizedException';
 			errors = ['Token has expired. Please log in again.'];
 		} else if (exception instanceof JsonWebTokenError) {
-			message = 'Unauthorized Exception';
+			message = 'unauthorizedException';
 			errors = [exception.message || 'Invalid token'];
 		}
 

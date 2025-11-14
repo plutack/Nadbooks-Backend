@@ -13,22 +13,27 @@ export class PrismaFilter implements ExceptionFilter {
 		const response = ctx.getResponse();
 
 		let status = HttpStatus.INTERNAL_SERVER_ERROR;
-		let message = 'Internal server error';
+		let message = 'InternalServerErrorException'; // HTTP-level message
+		let errors: string[] = ['Internal server error'];
 
 		switch (exception.code) {
 			case 'P2002':
 				status = HttpStatus.CONFLICT;
-				message = `This entry in the model ${exception.meta?.modelName} already exists.`;
+				message = 'ConflictException';
+				errors = [
+					`Duplicate entry detected in model ${exception.meta?.modelName}`,
+				];
 				break;
 			default:
 				status = HttpStatus.BAD_REQUEST;
-				message = 'Database request failed';
+				message = 'BadRequestException';
+				errors = ['Database request failed'];
 		}
 
 		response.status(status).json({
 			statusCode: status,
 			message,
-			errors: [message],
+			errors,
 		});
 	}
 }
