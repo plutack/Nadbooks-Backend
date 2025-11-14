@@ -1,13 +1,14 @@
-import { ValidationPipe } from '@nestjs/common';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import { AppModule } from '@/app.module';
 import metadata from '@/metadata';
-import { JwtFilter } from './exceptions/jwt/jwt.filter';
-import { PrismaFilter } from './exceptions/prisma/prisma.filter';
-import { ExceptionsFilter } from './exceptions/exceptions.filter';
+import { ExceptionsFilter } from '@/common/exceptions/exceptions.filter';
+import { JwtFilter } from '@/common/exceptions/jwt/jwt.filter';
+import { PrismaFilter } from '@/common/exceptions/prisma/prisma.filter';
+import { ResponseInterceptor } from '@/common/interceptors/response.interceptor';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
@@ -27,9 +28,14 @@ async function bootstrap() {
 	app.enableShutdownHooks();
 	app.use(cookieParser());
 	app.useGlobalPipes(new ValidationPipe());
-	app.useGlobalFilters(new JwtFilter());
-	app.useGlobalFilters(new PrismaFilter());
-	app.useGlobalFilters(new ExceptionsFilter());
+
+	app.useGlobalFilters(
+		new JwtFilter(),
+		new PrismaFilter(),
+		new ExceptionsFilter(),
+	);
+
+	app.useGlobalInterceptors(new ResponseInterceptor());
 
 	app.enableCors({
 		origin: (origin: string | undefined, callback: Function) => {
@@ -42,6 +48,7 @@ async function bootstrap() {
 			) {
 				return callback(null, true);
 			}
+			console.log('something is going on');
 			return callback(new Error('Origin not allowed by CORS'));
 		},
 	});
