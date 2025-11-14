@@ -5,10 +5,9 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import { AppModule } from '@/app.module';
 import metadata from '@/metadata';
-import { ExceptionsFilter } from '@/common/exceptions/exceptions.filter';
-import { JwtFilter } from '@/common/exceptions/jwt/jwt.filter';
-import { PrismaFilter } from '@/common/exceptions/prisma/prisma.filter';
-import { ResponseInterceptor } from '@/common/interceptors/response.interceptor';
+import { ExceptionsFilter } from './exceptions/exceptions.filter';
+import { JwtFilter } from './exceptions/jwt/jwt.filter';
+import { PrismaFilter } from './exceptions/prisma/prisma.filter';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
@@ -17,8 +16,9 @@ async function bootstrap() {
 	const nodeEnv = config.get<string>('NODE_ENV');
 	const rawOrigins = config.get<string>('FRONTEND_ORIGIN_PREFIX');
 
-	if (!nodeEnv || !rawOrigins)
+	if (!nodeEnv || !rawOrigins) {
 		throw new Error('Environment variables not properly set');
+	}
 
 	const frontendOrigins = rawOrigins
 		.split(',')
@@ -37,6 +37,7 @@ async function bootstrap() {
 
 	app.useGlobalInterceptors(new ResponseInterceptor());
 
+	const isDev = nodeEnv === 'development';
 	app.enableCors({
 		origin: (origin: string | undefined, callback: Function) => {
 			if (!origin && nodeEnv === 'development') {
@@ -57,7 +58,7 @@ async function bootstrap() {
 
 	const swaggerConfig = new DocumentBuilder()
 		.setTitle('Nadbooks-Backend')
-		.setDescription(`nadbooks backend API specification`)
+		.setDescription('Nadbooks backend API specification')
 		.setVersion('0.1')
 		.build();
 
@@ -67,4 +68,5 @@ async function bootstrap() {
 
 	await app.listen(config.get('PORT') ?? 3000);
 }
+
 bootstrap();
