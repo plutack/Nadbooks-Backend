@@ -1,36 +1,57 @@
-import { Body, Controller, Post, Query, UseGuards } from '@nestjs/common';
+import {
+	BadRequestException,
+	Body,
+	Controller,
+	Get,
+	Post,
+	Query,
+	UseGuards,
+} from '@nestjs/common';
 import { AuthGuard, CurrentUser } from '@/auth/auth.guard';
-import { DepositService } from '@/payments/deposit/deposit.service';
-import { DepositDto } from '@/payments/deposit/dtos/deposit.dto';
 import { JwtPayloadType } from '@/types/jwt.type';
-import { ExternalPaymentMethod } from '../withdrawal/withdrawal.service';
+import { DepositService } from './deposit.service';
+import { DepositInput, VerifyDepositInput } from './dtos/deposit.dto';
+import { PaymentMethod } from 'generated/prisma';
+
+export type ExternalPaymentMethod = Exclude<PaymentMethod, 'WALLET'>;
 
 @Controller('deposit')
 export class DepositController {
 	constructor(private readonly depositService: DepositService) {}
 
+	/** Initiate a deposit */
 	@Post()
 	@UseGuards(AuthGuard)
 	async initiateDeposit(
-		@Body() depositDto: DepositDto,
+		@Body() depositDto: DepositInput,
 		@CurrentUser() user: JwtPayloadType,
 	) {
+		if (!depositDto.amount || !depositDto.method) {
+			throw new BadRequestException('Amount and method are required');
+		}
+
 		return await this.depositService.initiateDeposit(user, depositDto);
 	}
 
-	@Post('verify')
-	async verifyDeposit(@Query('reference') reference: string) {
-		return await this.depositService.verifyDeposit(reference);
+	/** Verify a deposit */
+	@Get('verify')
+	async verifyDeposit(
+		@Query('method') method: PaymentMethod,
+		@Query() query: VerifyDepositInput,
+	) {
+		if (!method) throw new BadRequestException('Payment method is required');
+
+		return await this.depositService.verifyDeposit(method, query);
 	}
 
+	/** Handle provider webhook */
 	@Post('webhook')
-	async handleWebhook(@Body() payload: any, @Query() query: any) {
+	async handleWebhook(
+		@Body() payload: any,
+		@Query('method') method: PaymentMethod,
+		@Query() query: any,
+	) {
 		const headers = query.headers || {};
-		// const type = query.type as ExternalPaymentMethod;
-		return await this.depositService.handleWebhook(
-			payload,
-			headers,
-			'paystack',
-		);
+		return await this.depositService.handleWebhook(method, payload, headers);
 	}
 }
