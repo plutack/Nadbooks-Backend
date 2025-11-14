@@ -41,7 +41,7 @@ export class BooksController {
 			book?: Express.Multer.File[];
 			bookCover?: Express.Multer.File[];
 		},
-		@Body() body: StoreBookDto,
+		@Body() dto: StoreBookDto,
 		@CurrentUser() user: JwtPayloadType,
 	) {
 		if (!files.book?.[0]) {
@@ -52,7 +52,7 @@ export class BooksController {
 		}
 
 		return this.bookService.storeBook(
-			body,
+			dto,
 			files.book[0],
 			files.bookCover[0],
 			user,
