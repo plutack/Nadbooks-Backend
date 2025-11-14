@@ -1,4 +1,3 @@
-import { JwtPayloadType } from '@/types/jwt.type';
 import {
 	CanActivate,
 	createParamDecorator,
@@ -9,18 +8,23 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { JwtPayloadType } from '@/types/jwt.type';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
 	constructor(private readonly jwtService: JwtService) {}
 	async canActivate(context: ExecutionContext): Promise<boolean> {
-		const request = context.switchToHttp().getRequest();
-		const token = this.extractTokenFromHeader(request);
-		if (!token) {
-			throw new UnauthorizedException();
+		try {
+			const request = context.switchToHttp().getRequest();
+			const token = this.extractTokenFromHeader(request);
+			if (!token) {
+				throw new UnauthorizedException();
+			}
+			request.user = await this.jwtService.verifyAsync(token);
+			return true;
+		} catch (err) {
+			throw new UnauthorizedException(err);
 		}
-		request['user'] = await this.jwtService.verifyAsync(token);
-		return true;
 	}
 
 	private extractTokenFromHeader(request: Request): string | undefined {
