@@ -26,10 +26,16 @@ async function bootstrap() {
 
 	app.enableShutdownHooks();
 	app.use(cookieParser());
-	app.useGlobalPipes(new ValidationPipe());
+	app.useGlobalPipes(
+		new ValidationPipe({
+			transform: true,
+			forbidNonWhitelisted: false,
+			whitelist: true,
+		}),
+	);
 	app.useGlobalFilters(new JwtFilter());
 	app.useGlobalFilters(new PrismaFilter());
-	app.useGlobalFilters(new ExceptionsFilter())
+	app.useGlobalFilters(new ExceptionsFilter());
 
 	app.enableCors({
 		origin: (origin: string | undefined, callback: Function) => {
