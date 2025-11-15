@@ -29,28 +29,30 @@ model User {
   passwordHash  String?        @map("password_hash") @db.VarChar(255)
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
+  isActive      Boolean        @default(true)
+  isVerified    Boolean        @default(false)
   books         Book[]
   bookBookmarks BookBookmark[]
 }
 
 //NOTE: Genre might become an enum.
 model Book {
-  id           String   @id @default(uuid())
-  title        String   @db.VarChar(255)
-  author       String   @db.VarChar(255)
-  genre        String   @db.VarChar(255) 
-  price        Int      
-  isMature     Boolean  @map("is_mature")
-  pageCount    Int      @map("page_count")
-  bookURL      String   @map("book_url") @db.VarChar(255)
-  bookCoverURL String   @map("book_cover_url") @db.VarChar(255)
-  dateUpdated  DateTime @updatedAt @map("date_updated")
-  dateAuthored DateTime @map("date_authored")
-  dateUploaded DateTime @map("date_uploaded")
-  userId       Int      @map("user_id")
-  user         User     @relation(fields: [userId], references: [id])
+  id           String         @id @default(uuid())
+  title        String         @db.VarChar(255)
+  author       String         @db.VarChar(255)
+  genre        String         @db.VarChar(255)
+  price        Int
+  isMature     Boolean        @map("is_mature")
+  pageCount    Int            @map("page_count")
+  bookURL      String         @map("book_url") @db.VarChar(255)
+  bookCoverURL String         @map("book_cover_url") @db.VarChar(255)
+  dateUpdated  DateTime       @updatedAt @map("date_updated")
+  dateAuthored DateTime       @map("date_authored")
+  dateUploaded DateTime       @map("date_uploaded")
+  userId       Int            @map("user_id")
+  user         User           @relation(fields: [userId], references: [id])
   bookmarks    BookBookmark[]
-
+  isVisible    Boolean        @default(true) @map("is_visible")
 
   @@index([author, genre])
 }
@@ -62,7 +64,6 @@ model BookBookmark {
   bookId    String   @map("book_id")
   book      Book     @relation(fields: [bookId], references: [id])
   createdAt DateTime @default(now()) @map("created_at")
+
   @@unique([userId, bookId])
 }
-
-
