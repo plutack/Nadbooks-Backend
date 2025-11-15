@@ -18,11 +18,16 @@ export class PrismaFilter implements ExceptionFilter {
 
 		switch (exception.code) {
 			case 'P2002':
-				status = HttpStatus.CONFLICT;
+				status = HttpStatus.BAD_REQUEST;
 				message = `This entry in the model ${exception.meta?.modelName} already exists.`;
-				error = 'Conflict';
+				error = 'Bad request';
 				response.status(status).json({ status, message, error });
 				break;
+			case 'P2025':
+				status = HttpStatus.NOT_FOUND;
+				message = `The entry in the model ${exception.meta?.modelName} was not found`;
+				error = 'Not found';
+				response.status(status).json({ status, message, error });
 
 			default:
 				response.status(400).json({ status, message, error });

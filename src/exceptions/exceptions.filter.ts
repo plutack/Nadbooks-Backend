@@ -13,7 +13,7 @@ import { error } from 'console';
 export class ExceptionsFilter<HttpException> implements ExceptionFilter {
 	catch(exception: HttpException, host: ArgumentsHost) {
 		const http = host.switchToHttp();
-		const response = http.getResponse();		
+		const response = http.getResponse();
 
 		if (exception instanceof BadRequestException) {
 			response.status(400).json({
@@ -30,11 +30,11 @@ export class ExceptionsFilter<HttpException> implements ExceptionFilter {
 				message: exception.message,
 				error: 'Request timeout',
 			});
-		} else{
+		} else {
 			response.status(500).json({
-				message: String(exception) || "An error occured",
-				error: 'Internal server error'
-			})
+				message: String(exception) || 'An error occured',
+				error: 'Internal server error',
+			});
 		}
 	}
 }
