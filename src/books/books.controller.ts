@@ -12,7 +12,6 @@ import {
 	UploadedFiles,
 	UseGuards,
 } from '@nestjs/common';
-import { ApiOperation } from '@nestjs/swagger';
 import { AuthGuard, CurrentUser } from '@/auth/auth.guard';
 import { BooksService } from '@/books/books.service';
 import {
@@ -28,10 +27,6 @@ export class BooksController {
 	constructor(private bookService: BooksService) {}
 
 	@Get()
-	@ApiOperation({
-		summary: 'Returns the books on the platform',
-		description: 'Returns a paginated list of books on the platform',
-	})
 	getBooks(@Query() query: BookFilterDto) {
 		return this.bookService.getBooks(query);
 	}
