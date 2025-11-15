@@ -7,6 +7,7 @@ import { PrismaModule } from '@/prisma/prisma.module';
 import { BooksModule } from './books/books.module';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { UserModule } from './users/users.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
 	imports: [
@@ -17,8 +18,10 @@ import { UserModule } from './users/users.module';
 		PrismaModule,
 		BooksModule,
 		UserModule,
+		AdminModule,
 	],
 	controllers: [AppController],
+	
 	providers: [AppService],
 })
 export class AppModule {
