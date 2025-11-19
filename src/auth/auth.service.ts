@@ -12,6 +12,7 @@ import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library'
 import { OAuth2Client } from 'google-auth-library';
 import { CreateUserDto, LoginUserDto } from '@/auth/dtos/auth.dto';
 import { PrismaService } from '@/prisma/prisma.service';
+import { JwtPayloadType } from '@/types/jwt.type';
 
 @Injectable()
 export class AuthService {
@@ -99,7 +100,8 @@ export class AuthService {
 			sub: existingUser.id,
 			username: existingUser.username,
 			email: existingUser.email,
-		};
+			role: existingUser.role,
+		} satisfies JwtPayloadType;
 
 		const accessToken = await this.jwt.signAsync(payload);
 
@@ -142,7 +144,8 @@ export class AuthService {
 				sub: existingUser.id,
 				username: existingUser.username,
 				email: existingUser.email,
-			};
+				role: existingUser.role,
+			} satisfies JwtPayloadType;
 			const accessToken = await this.jwt.signAsync(jwtPayload);
 			return {
 				accessToken,
@@ -171,6 +174,7 @@ export class AuthService {
 					lastName: true,
 					email: true,
 					username: true,
+					role: true,
 				},
 			});
 
@@ -178,7 +182,8 @@ export class AuthService {
 				sub: newUser.id,
 				username: newUser.username,
 				email: newUser.email,
-			};
+				role: newUser.role,
+			} satisfies JwtPayloadType;
 			const accessToken = await this.jwt.signAsync(jwtPayload);
 
 			return {
