@@ -1,31 +1,49 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
-import { Injectable } from '@nestjs/common';
+import { JwtPayloadType } from '@/types/jwt.type';
 
 @Injectable()
 export class UserService {
-    constructor(
-        private readonly db: PrismaService
-    ) { }
+	constructor(private readonly db: PrismaService) {}
 
-    userBookmarks(user: JwtPayloadType) {
-        return this.db.bookBookmark.findMany({
-            where: {
-                userId: user.sub
-            },
-            select: {
-                book: true,
-                bookId: false,
-                user: false,
-                userId: false
-            }
-        })
-    }
+	/**
+	 * Returns the profile of the currently authenticated user.
+	 */
+	async getProfile(userId: string) {
+		const existingUser = await this.db.user.findUnique({
+			where: { id: userId },
+			select: {
+				id: true,
+				firstName: true,
+				lastName: true,
+				username: true,
+				email: true,
+				Wallet: {
+					select: {
+						balance: true,
+					},
+				},
+			},
+		});
 
-    booksByUser(user: JwtPayloadType) {
-        return this.db.book.findMany({
-            where: {
-                userId: user.sub
-            }
-        })
-    }
+		if (!existingUser) {
+			throw NotFoundException;
+		}
+
+		return existingUser;
+	}
+
+	/**
+	 * Returns bookmarks of the currently authenticated user.
+	 */
+	async getBookMarkedBooks(userId: string) {
+		const bookmarks = await this.db.bookBookmark.findMany({
+			where: { userId },
+			select: {
+				book: true,
+			},
+		});
+
+		return bookmarks;
+	}
 }

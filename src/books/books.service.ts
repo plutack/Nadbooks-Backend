@@ -5,8 +5,9 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import { StorageService } from '@/storage/storage.service';
-import { BaseFilterQueryType } from '@/types/filters.type';
-import { StoreBookDto, UpdateBookDto } from './dtos/book.dto';
+import { BaseFilterQueryType, BookFilterQueryType } from '@/types/filters.type';
+import { JwtPayloadType } from '@/types/jwt.type';
+import { BookFilterDto, StoreBookDto, UpdateBookDto } from './dtos/book.dto';
 import { FileType, UpdatableBookFields } from './types';
 
 @Injectable()
@@ -21,7 +22,7 @@ export class BooksService {
 	}
 
 	// function to confirm if the file has the right dimensions
-	private validateBookCover(file: Express.Multer.File): boolean {
+	private validateBookCover(_file: Express.Multer.File): boolean {
 		return true;
 	}
 
@@ -57,13 +58,12 @@ export class BooksService {
 		const newBook = await this.db.book.create({
 			data: {
 				...bookDTO,
-				author: user.username, //TODO: maybe we include first and last name in the jwt?
 				bookURL,
 				bookCoverURL,
 				pageCount: Number(bookDTO.pageCount),
 				price: Number(bookDTO.price),
 				isMature: Boolean(bookDTO.isMature),
-				userId: user.sub,
+				authorId: user.sub,
 				dateUploaded: new Date(),
 				dateAuthored: new Date(bookDTO.dateAuthored),
 			},
@@ -80,18 +80,25 @@ export class BooksService {
 		});
 	}
 
-	async getBooks(filters: BaseFilterQueryType) {
+	async getBooks(filters: BookFilterDto) {
+		const where: any = {};
+
+		if (filters.genre) where.genre = filters.genre;
+		if (filters.isMature !== undefined) where.isMature = filters.isMature;
+
+		if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+			where.price = {};
+			if (filters.minPrice !== undefined) where.price.gte = filters.minPrice;
+			if (filters.maxPrice !== undefined) where.price.lte = filters.maxPrice;
+		}
+
 		return await this.db.book.findMany({
-			take: filters.limit || 20,
-			skip: filters.skip || 0,
+			take: filters.limit,
+			skip: filters.skip,
+			where,
 		});
 	}
 
-	/**
-	 * Returns book
-	 *
-	 * Raises an error if the book is not found
-	 */
 	async findBookById(bookId: string) {
 		const book = await this.getBookById(bookId);
 		if (!book) {
@@ -103,15 +110,15 @@ export class BooksService {
 	async getBookByTitle(title: string) {
 		return await this.db.book.findFirst({
 			where: {
-				title: title,
+				title,
 			},
 		});
 	}
 
-	async findUserBookById(id: string, userId: number) {
+	async findAuthorBookById(id: string, authorId: string) {
 		const book = await this.db.book.findFirst({
 			where: {
-				userId: userId,
+				authorId,
 				id,
 			},
 		});
@@ -121,20 +128,21 @@ export class BooksService {
 		return book;
 	}
 
-	async deleteBook(id: string, userId: number) {
-		await this.findUserBookById(id, userId);
+	//FEAT: user should still be able to delete their own books
+	// FIX: what happens when an author delete books that have been bought
+	async deleteBook(id: string, authorId: string) {
+		await this.findAuthorBookById(id, authorId);
 		await this.db.book.delete({
 			where: {
-				userId: userId,
+				authorId,
 				id,
 			},
 		});
-		return true;
 	}
 
 	async updateBook(
 		id: string,
-		userId: number,
+		userId: string,
 		bookDTO: UpdateBookDto,
 		book?: Express.Multer.File,
 		bookCover?: Express.Multer.File,
@@ -147,7 +155,7 @@ export class BooksService {
 			throw new BadRequestException('Please provide fields to be updated');
 		}
 
-		const bookRecord = await this.findUserBookById(id, userId);
+		const bookRecord = await this.findAuthorBookById(id, userId);
 
 		const [bookURL, bookCoverURL] = await Promise.all([
 			book
@@ -175,31 +183,32 @@ export class BooksService {
 		if (bookURL) updateData.bookURL = bookURL;
 		if (bookCoverURL) updateData.bookCoverURL = bookCoverURL;
 
-		return this.db.book.update({
+		await this.db.book.update({
 			where: { id },
 			data: updateData,
 		});
 	}
 
-	async bookmarkBook(userId: number, bookId: string) {
+	async bookmarkBook(userId: string, bookId: string) {
 		await this.findBookById(bookId);
-		// const hasUserBookmarkedBook = await this.db.bookBookmark.findFirst({
-		// 	where:{bookId, userId}
-		// })
+		return await this.db.bookBookmark.create({
+			data: { userId, bookId },
+		});
+	}
 
-		// if (hasUserBookmarkedBook) {
-		// 	throw new BadRequestException("You have already bookmarked this book.")
-		// }
-		await this.db.bookBookmark.create({
-			data: {
-				bookId,
-				userId,
+	async removeBookFromBookmark(userId: string, bookId: string) {
+		return await this.db.bookBookmark.delete({
+			where: {
+				userId_bookId: {
+					userId,
+					bookId,
+				},
 			},
 		});
 	}
 
-	async getUserBookmarkedBooks(userId: number, filters: BaseFilterQueryType) {
-		return this.db.bookBookmark.findMany({
+	async getUserBookmarkedBooks(userId: string, filters: BaseFilterQueryType) {
+		return await this.db.bookBookmark.findMany({
 			where: {
 				userId,
 			},

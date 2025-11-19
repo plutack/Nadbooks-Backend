@@ -1,93 +1,80 @@
 import {
 	BadRequestException,
-	ConflictException,
 	Injectable,
-	InternalServerErrorException,
 	UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
-import { AuthMode } from 'generated/prisma';
-import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
+import { OAuth2Client } from 'google-auth-library';
 import { CreateUserDto, LoginUserDto } from '@/auth/dtos/auth.dto';
 import { PrismaService } from '@/prisma/prisma.service';
-import { OAuth2Client } from 'google-auth-library';
-import { ConfigService } from '@nestjs/config';
+import { JwtPayloadType } from '@/types/jwt.type';
 
 @Injectable()
 export class AuthService {
-	private GOOGLE_CLIENT_ID: string
+	private GOOGLE_CLIENT_ID: string;
 	constructor(
 		private readonly db: PrismaService,
 		private readonly jwt: JwtService,
-		private readonly config: ConfigService
+		config: ConfigService,
 	) {
-		this.GOOGLE_CLIENT_ID = config.get<string>("GOOGLE_CLIENT_ID")!
+		this.GOOGLE_CLIENT_ID = config.get<string>('GOOGLE_CLIENT_ID')!;
 		if (!this.GOOGLE_CLIENT_ID) {
-			throw new Error(
-				"GOOGLE_CLIENT_ID not set"
-			)
+			throw new Error('GOOGLE_CLIENT_ID not set');
 		}
 	}
 
 	async register(dto: CreateUserDto) {
-		try {
-			const passwordHash = await argon.hash(dto.password);
+		const passwordHash = await argon.hash(dto.password);
 
-			const newUser = await this.db.user.create({
-				data: {
-					firstName: dto.firstName,
-					lastName: dto.lastName,
-					authMode: AuthMode.EMAIL,
-					email: dto.email,
-					username: dto.username,
-					passwordHash,
+		const newUser = await this.db.user.create({
+			data: {
+				firstName: dto.firstName,
+				lastName: dto.lastName,
+				email: dto.email,
+				username: dto.username,
+				passwordHash,
+				Wallet: {
+					create: {
+						balance: 0,
+					},
 				},
-				select: {
-					id: true,
-					firstName: true,
-					lastName: true,
-					email: true,
-					username: true,
+			},
+			select: {
+				id: true,
+				firstName: true,
+				lastName: true,
+				email: true,
+				username: true,
+				role: true,
+				Wallet: {
+					select: {
+						balance: true,
+					},
 				},
-			});
+			},
+		});
 
-			return newUser;
-		} catch (err) {
-			if (
-				err instanceof PrismaClientKnownRequestError &&
-				err.code === 'P2002'
-			) {
-				const target = (err.meta?.target as string[])?.[0] ?? 'Field';
-				throw new ConflictException(`${target} already in use`);
-			}
-
-			console.error('Unhandled registration error:', err);
-			throw new InternalServerErrorException('Registration failed');
-		}
+		return newUser;
 	}
 
 	async login(dto: LoginUserDto) {
 		const existingUser = await this.db.user.findFirst({
-			where: {
-				OR: [
-					{ username: dto.username ?? undefined },
-					{ email: dto.email ?? undefined },
-				],
-			},
+			where: { email: dto.email },
 		});
 
 		if (!existingUser) {
 			throw new UnauthorizedException('Invalid credentials');
 		}
 
-		if (existingUser.authMode !== AuthMode.EMAIL) {
-			throw new BadRequestException('Invalid login approach');
+		if (!existingUser.passwordHash) {
+			throw new BadRequestException(
+				'This account cannot login with email/password',
+			);
 		}
-		const isMatch = await argon.verify(
-			existingUser.passwordHash as string,
-			dto.password,
-		);
+
+		const isMatch = await argon.verify(existingUser.passwordHash, dto.password);
 
 		if (!isMatch) {
 			throw new UnauthorizedException('Invalid credentials');
@@ -97,7 +84,8 @@ export class AuthService {
 			sub: existingUser.id,
 			username: existingUser.username,
 			email: existingUser.email,
-		};
+			role: existingUser.role,
+		} satisfies JwtPayloadType;
 
 		const accessToken = await this.jwt.signAsync(payload);
 
@@ -109,29 +97,40 @@ export class AuthService {
 				firstName: existingUser.firstName,
 				lastName: existingUser.lastName,
 				email: existingUser.email,
+				role: existingUser.role,
 			},
 		};
 	}
 
 	async google(token: string) {
-		const client = new OAuth2Client(this.GOOGLE_CLIENT_ID)
-		const ticket = await client.verifyIdToken({
-			idToken: token,
-			audience: this.GOOGLE_CLIENT_ID
-		})
-		const payload = ticket.getPayload()
+		const client = new OAuth2Client(this.GOOGLE_CLIENT_ID);
+
+		let payload;
+		try {
+			const ticket = await client.verifyIdToken({
+				idToken: token,
+				audience: this.GOOGLE_CLIENT_ID,
+			});
+			payload = ticket.getPayload();
+		} catch {
+			throw new UnauthorizedException('Invalid Google token');
+		}
+
+		if (!payload?.email) {
+			throw new BadRequestException('Google token missing email');
+		}
+
 		const existingUser = await this.db.user.findFirst({
-			where: {
-				email: payload?.email
-			}
-		})
-		if (existingUser && existingUser.authMode == "GOOGLE") {
+			where: { email: payload.email },
+		});
+
+		if (existingUser && !existingUser.passwordHash) {
 			const jwtPayload = {
 				sub: existingUser.id,
 				username: existingUser.username,
 				email: existingUser.email,
-			};
-
+				role: existingUser.role,
+			} satisfies JwtPayloadType;
 			const accessToken = await this.jwt.signAsync(jwtPayload);
 			return {
 				accessToken,
@@ -141,16 +140,19 @@ export class AuthService {
 					firstName: existingUser.firstName,
 					lastName: existingUser.lastName,
 					email: existingUser.email,
+					role: existingUser.role,
 				},
 			};
-		} else if (!existingUser) {
+		}
+
+		if (!existingUser) {
 			const newUser = await this.db.user.create({
 				data: {
-					firstName: payload?.given_name!,
-					lastName: payload?.family_name!,
-					authMode: AuthMode.GOOGLE,
-					email: payload?.email!,
-					username: payload?.email!.split('@')[0]!,
+					firstName: payload.given_name!,
+					lastName: payload.family_name!,
+					email: payload.email,
+					username: payload.email.split('@')[0],
+					Wallet: { create: { balance: 0 } },
 				},
 				select: {
 					id: true,
@@ -158,15 +160,18 @@ export class AuthService {
 					lastName: true,
 					email: true,
 					username: true,
+					role: true,
 				},
-			})
+			});
+
 			const jwtPayload = {
 				sub: newUser.id,
 				username: newUser.username,
 				email: newUser.email,
-			};
-
+				role: newUser.role,
+			} satisfies JwtPayloadType;
 			const accessToken = await this.jwt.signAsync(jwtPayload);
+
 			return {
 				accessToken,
 				user: {
@@ -175,10 +180,11 @@ export class AuthService {
 					firstName: newUser.firstName,
 					lastName: newUser.lastName,
 					email: newUser.email,
+					role: newUser.role,
 				},
 			};
-		}else{
-			throw new BadRequestException("Please login via email")
 		}
+
+		throw new BadRequestException('Please login via email/password');
 	}
 }
