@@ -4,11 +4,11 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import { AppModule } from '@/app.module';
-import metadata from '@/metadata';
 import { ExceptionsFilter } from '@/common/exceptions/exceptions.filter';
 import { JwtFilter } from '@/common/exceptions/jwt/jwt.filter';
 import { PrismaFilter } from '@/common/exceptions/prisma/prisma.filter';
 import { ResponseInterceptor } from '@/common/interceptors/response.interceptor';
+import metadata from '@/metadata';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
@@ -32,6 +32,10 @@ async function bootstrap() {
 		new ValidationPipe({
 			transform: true,
 			whitelist: true,
+			exceptionFactory: (errors) => {
+				console.error('Validation errors:', errors);
+				return new BadRequestException(errors);
+			},
 		}),
 	);
 
