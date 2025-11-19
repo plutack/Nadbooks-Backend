@@ -1,19 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { CryptoWithdrawalProviderInterface } from '@/payments/withdrawal/interfaces/withdrawal-provider.interface';
+import { TransactionService } from '@/payments/shared/transaction.service';
+import {
+	CryptoWithdrawalInput,
+	CryptoWithdrawalProviderInterface,
+} from '@/payments/withdrawal/interfaces/provider.interface';
 
-//TODO: properly implement this
 @Injectable()
 export class CryptoWithdrawalProvider
 	implements CryptoWithdrawalProviderInterface
 {
-	async initiateWithdrawal(input: {
-		amount: number;
-		address: string;
-	}): Promise<string> {
-		return await new Promise((resolve) => {
-			setTimeout(() => {
-				resolve('****');
-			}, 500);
+	constructor(private readonly transactionService: TransactionService) {}
+	async initiateWithdrawal(input: CryptoWithdrawalInput): Promise<string> {
+		const tx = await this.transactionService.getTransactionByReference(
+			input.reference,
+		);
+		await this.transactionService.updateTransaction(tx.id, {
+			metadata: {
+				cryptoWalletAddress: input.address,
+				booksAmount: input.amount,
+				hash: input.hash,
+			},
 		});
+
+		return '';
 	}
 }

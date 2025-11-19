@@ -6,24 +6,26 @@ import {
 	TransactionType,
 } from 'generated/prisma';
 import { generateRef } from '@/helpers/functions';
+import { TransactionService } from '@/payments/shared/transaction.service';
 import { WithdrawDto } from '@/payments/withdrawal/dtos/withdrawal.dto';
 import {
-	BankWithdrawalProviderInterface,
+	CryptoWithdrawalInput,
 	CryptoWithdrawalProviderInterface,
-} from '@/payments/withdrawal/interfaces/withdrawal-provider.interface';
+	PaystackWithdrawalInput,
+	PaystackWithdrawalProviderInterface,
+} from '@/payments/withdrawal/interfaces/provider.interface';
 import { CryptoWithdrawalProvider } from '@/payments/withdrawal/providers/crypto-withdrawal.provider';
 import { PaystackWithdrawalProvider } from '@/payments/withdrawal/providers/paystack-withdrawal.provider';
 import { PriceFeedService } from '@/price-feed/price-feed.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { JwtPayloadType } from '@/types/jwt.type';
 import { WalletService } from '@/wallet/wallet.service';
-import { TransactionService } from '../shared/transaction.service';
 
 export type ExternalPaymentMethod = Exclude<PaymentMethod, 'WALLET'>;
 
 type WithdrawalProviderMap = {
 	[PaymentMethod.CRYPTO]: CryptoWithdrawalProviderInterface;
-	[PaymentMethod.PAYSTACK]: BankWithdrawalProviderInterface;
+	[PaymentMethod.PAYSTACK]: PaystackWithdrawalProviderInterface;
 };
 
 @Injectable()
@@ -52,7 +54,7 @@ export class WithdrawalService {
 			);
 		}
 
-		await this.db.$transaction(async (tx) => {
+		return await this.db.$transaction(async (tx) => {
 			const wallet = await this.walletService.getWallet(user.sub, tx);
 			const booksAmount = new Decimal(dto.amount);
 
@@ -60,12 +62,23 @@ export class WithdrawalService {
 				throw new BadRequestException('Insufficient balance');
 			}
 
+			const reference = generateRef(TransactionType.WITHDRAWAL, user.sub);
+
 			const converted =
 				dto.method === PaymentMethod.CRYPTO
 					? await this.priceFeed.convertBooksToMon(booksAmount)
 					: await this.priceFeed.convertBooksToNgn(booksAmount);
 
-			// Create withdrawal record
+			let metadata: any = null;
+
+			if (dto.method === PaymentMethod.CRYPTO) {
+				metadata = {
+					cryptoWalletAddress: dto.walletAddress,
+					booksAmount: dto.amount,
+					hash: dto.hash,
+				};
+			}
+
 			await this.transactionService.recordTransaction(
 				{
 					amount: converted,
@@ -73,42 +86,35 @@ export class WithdrawalService {
 					senderWalletId: wallet.id,
 					status: TransactionStatus.PENDING,
 					paymentMethod: dto.method,
-					reference: generateRef(TransactionType.WITHDRAWAL, user.sub),
+					reference,
+					metadata,
 				},
 				tx,
 			);
 
-			await this.walletService.debit(user.sub, booksAmount, tx);
+			await this.walletService.debit(wallet.id, booksAmount, tx);
 
-			const result = await (() => {
-				switch (dto.method) {
-					case PaymentMethod.CRYPTO:
-						return (
-							provider as CryptoWithdrawalProviderInterface
-						).initiateWithdrawal({
-							amount: converted.toNumber(),
-							address: dto.walletAddress!,
-						});
+			let providerDto: any;
 
-					case PaymentMethod.PAYSTACK:
-						return (
-							provider as BankWithdrawalProviderInterface
-						).initiateWithdrawal({
-							amount: converted.toNumber(),
-							reason: `Withdrawal of ${converted.toNumber()} BOOKS`,
-							name: dto.accountName!,
-							accountNumber: dto.accountNumber!,
-							bankCode: dto.bankCode!,
-						});
+			if (dto.method === PaymentMethod.PAYSTACK) {
+				providerDto = {
+					amount: converted.toNumber(),
+					reason: `Withdrawal of ${converted.toNumber()} BOOKS`,
+					name: dto.accountName,
+					accountNumber: dto.accountNumber,
+					bankCode: dto.bankCode,
+				};
+			}
 
-					default:
-						throw new BadRequestException(
-							`Unsupported withdrawal method: ${dto.method}`,
-						);
-				}
-			})();
+			if (dto.method === PaymentMethod.CRYPTO) {
+				providerDto = {
+					amount: converted.toNumber(),
+					address: dto.walletAddress,
+					hash: dto.hash,
+				};
+			}
 
-			return result;
+			return provider.initiateWithdrawal(providerDto);
 		});
 	}
 }

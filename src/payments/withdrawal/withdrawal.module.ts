@@ -1,22 +1,23 @@
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
-import { TransactionService } from '@/payments/shared/transaction.service';
+import { SharedPaymentsModule } from '@/payments/shared/shared-payments.module';
+import { CryptoWithdrawalProvider } from '@/payments/withdrawal/providers/crypto-withdrawal.provider';
+import { PaystackWithdrawalProvider } from '@/payments/withdrawal/providers/paystack-withdrawal.provider';
+import { WithdrawalController } from '@/payments/withdrawal/withdrawal.controller';
 import { WithdrawalService } from '@/payments/withdrawal/withdrawal.service';
 import { PriceFeedModule } from '@/price-feed/price-feed.module';
 import { PrismaService } from '@/prisma/prisma.service';
 import { WalletModule } from '@/wallet/wallet.module';
-import { PaystackWithdrawalProvider } from './providers/paystack-withdrawal.provider';
-import { CryptoWithdrawalProvider } from './providers/crypto-withdrawal.provider';
 
 @Module({
-	imports: [WalletModule, PriceFeedModule, HttpModule],
+	imports: [WalletModule, PriceFeedModule, HttpModule, SharedPaymentsModule],
 	providers: [
 		WithdrawalService,
 		PrismaService,
-		TransactionService,
 		PaystackWithdrawalProvider,
 		CryptoWithdrawalProvider,
 	],
 	exports: [WithdrawalService],
+	controllers: [WithdrawalController],
 })
 export class WithdrawalModule {}

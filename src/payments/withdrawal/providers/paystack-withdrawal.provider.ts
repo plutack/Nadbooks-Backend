@@ -2,11 +2,11 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { lastValueFrom } from 'rxjs';
-import { BankWithdrawalProviderInterface } from '@/payments/withdrawal/interfaces/withdrawal-provider.interface';
+import { PaystackWithdrawalProviderInterface } from '@/payments/withdrawal/interfaces/provider.interface';
 
 @Injectable()
 export class PaystackWithdrawalProvider
-	implements BankWithdrawalProviderInterface
+	implements PaystackWithdrawalProviderInterface
 {
 	private readonly PAYSTACK_BASE = 'https://api.paystack.co';
 	private readonly secretKey: string;
@@ -15,9 +15,9 @@ export class PaystackWithdrawalProvider
 		private readonly http: HttpService,
 		private readonly config: ConfigService,
 	) {
-		this.secretKey = this.config.get<string>('PAYSTACK_SECRET_KEY', '');
+		this.secretKey = this.config.get<string>('PAYSTACK_SECRET', '');
 		if (!this.secretKey) {
-			throw new Error('PAYSTACK_SECRET_KEY is not set in environment');
+			throw new Error('PAYSTACK_SECRET is not set in environment');
 		}
 	}
 
