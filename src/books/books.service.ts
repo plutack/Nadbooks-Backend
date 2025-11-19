@@ -183,7 +183,7 @@ export class BooksService {
 		if (bookURL) updateData.bookURL = bookURL;
 		if (bookCoverURL) updateData.bookCoverURL = bookCoverURL;
 
-		return this.db.book.update({
+		await this.db.book.update({
 			where: { id },
 			data: updateData,
 		});
@@ -191,17 +191,18 @@ export class BooksService {
 
 	async bookmarkBook(userId: string, bookId: string) {
 		await this.findBookById(bookId);
-		// const hasUserBookmarkedBook = await this.db.bookBookmark.findFirst({
-		// 	where:{bookId, userId}
-		// })
+		return await this.db.bookBookmark.create({
+			data: { userId, bookId },
+		});
+	}
 
-		// if (hasUserBookmarkedBook) {
-		// 	throw new BadRequestException("You have already bookmarked this book.")
-		// }
-		await this.db.bookBookmark.create({
-			data: {
-				bookId,
-				userId,
+	async removeBookFromBookmark(userId: string, bookId: string) {
+		return await this.db.bookBookmark.delete({
+			where: {
+				userId_bookId: {
+					userId,
+					bookId,
+				},
 			},
 		});
 	}

@@ -4,6 +4,7 @@ import {
 	Controller,
 	Delete,
 	Get,
+	HttpCode,
 	Param,
 	Patch,
 	Post,
@@ -63,6 +64,7 @@ export class BooksController {
 	}
 
 	@Patch(':id')
+	@HttpCode(204)
 	@UseGuards(AuthGuard)
 	@UploadBookAndCover()
 	updateBookById(
@@ -84,13 +86,25 @@ export class BooksController {
 		);
 	}
 
-	@Patch('bookmarks/:id')
+	@Post('bookmarks/:id')
 	@UseGuards(AuthGuard)
+	@HttpCode(201)
 	bookmarkBook(@Param('id') id: string, @CurrentUser() user: JwtPayloadType) {
 		return this.bookService.bookmarkBook(user.sub, id);
 	}
 
+	@Delete('bookmarks/:id')
+	@HttpCode(204)
+	@UseGuards(AuthGuard)
+	removeBookFromBookmark(
+		@Param('id') id: string,
+		@CurrentUser() user: JwtPayloadType,
+	) {
+		return this.bookService.removeBookFromBookmark(user.sub, id);
+	}
+
 	@Delete(':id')
+	@HttpCode(204)
 	@UseGuards(AuthGuard)
 	deleteBookById(@Param('id') id: string, @CurrentUser() user: JwtPayloadType) {
 		return this.bookService.deleteBook(id, user.sub);
