@@ -35,8 +35,9 @@ export class WalletService {
 		return wallet;
 	}
 
-	async getWalletById(walletId: string) {
-		const wallet = await this.db.wallet.findUnique({
+	async getWalletById(walletId: string, tx?: Prisma.TransactionClient) {
+		const client = this.getClient(tx);
+		const wallet = await client.wallet.findUnique({
 			where: { id: walletId },
 		});
 
@@ -47,34 +48,41 @@ export class WalletService {
 		return wallet;
 	}
 
-	async credit(userId: string, amount: Decimal, tx?: Prisma.TransactionClient) {
+	async credit(
+		walletId: string,
+		amount: Decimal,
+		tx?: Prisma.TransactionClient,
+	) {
 		if (amount.lessThanOrEqualTo(0)) {
 			throw new BadRequestException('Amount must be greater than zero');
 		}
 
 		const client = this.getClient(tx);
-		const wallet = await this.getWallet(userId, tx);
 
 		return await client.wallet.update({
-			where: { id: wallet.id },
+			where: { id: walletId },
 			data: { balance: { increment: amount } },
 		});
 	}
 
-	async debit(userId: string, amount: Decimal, tx?: Prisma.TransactionClient) {
+	async debit(
+		walletId: string,
+		amount: Decimal,
+		tx?: Prisma.TransactionClient,
+	) {
 		if (amount.lessThanOrEqualTo(0)) {
 			throw new BadRequestException('Amount must be greater than zero');
 		}
 
 		const client = this.getClient(tx);
-		const wallet = await this.getWallet(userId, tx);
+		const wallet = await this.getWalletById(walletId, tx);
 
 		if (wallet.balance < amount) {
 			throw new BadRequestException('Insufficient balance');
 		}
 
 		return await client.wallet.update({
-			where: { id: wallet.id },
+			where: { id: walletId },
 			data: { balance: { decrement: amount } },
 		});
 	}
