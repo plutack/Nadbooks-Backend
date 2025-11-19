@@ -1,14 +1,11 @@
 import {
 	BadRequestException,
-	ConflictException,
 	Injectable,
-	InternalServerErrorException,
 	UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
-import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
 import { OAuth2Client } from 'google-auth-library';
 import { CreateUserDto, LoginUserDto } from '@/auth/dtos/auth.dto';
 import { PrismaService } from '@/prisma/prisma.service';
@@ -50,6 +47,7 @@ export class AuthService {
 				lastName: true,
 				email: true,
 				username: true,
+				role: true,
 				Wallet: {
 					select: {
 						balance: true,
@@ -99,6 +97,7 @@ export class AuthService {
 				firstName: existingUser.firstName,
 				lastName: existingUser.lastName,
 				email: existingUser.email,
+				role: existingUser.role,
 			},
 		};
 	}
@@ -141,6 +140,7 @@ export class AuthService {
 					firstName: existingUser.firstName,
 					lastName: existingUser.lastName,
 					email: existingUser.email,
+					role: existingUser.role,
 				},
 			};
 		}
@@ -180,6 +180,7 @@ export class AuthService {
 					firstName: newUser.firstName,
 					lastName: newUser.lastName,
 					email: newUser.email,
+					role: newUser.role,
 				},
 			};
 		}

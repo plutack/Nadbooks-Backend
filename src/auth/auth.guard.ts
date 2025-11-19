@@ -14,17 +14,13 @@ import { JwtPayloadType } from '@/types/jwt.type';
 export class AuthGuard implements CanActivate {
 	constructor(private readonly jwtService: JwtService) {}
 	async canActivate(context: ExecutionContext): Promise<boolean> {
-		try {
-			const request = context.switchToHttp().getRequest();
-			const token = this.extractTokenFromHeader(request);
-			if (!token) {
-				throw new UnauthorizedException();
-			}
-			request.user = await this.jwtService.verifyAsync(token);
-			return true;
-		} catch (err) {
-			throw new UnauthorizedException(err);
+		const request = context.switchToHttp().getRequest();
+		const token = this.extractTokenFromHeader(request);
+		if (!token) {
+			throw new UnauthorizedException();
 		}
+		request.user = await this.jwtService.verifyAsync(token);
+		return true;
 	}
 
 	private extractTokenFromHeader(request: Request): string | undefined {

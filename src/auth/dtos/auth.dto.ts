@@ -1,4 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
 	IsEmail,
@@ -7,7 +6,6 @@ import {
 	Matches,
 	MaxLength,
 	MinLength,
-	ValidateIf,
 } from 'class-validator';
 
 export class CreateUserDto {
