@@ -9,8 +9,11 @@ import { OrderPaymentModule } from '@/payments/order-payment/order-payment.modul
 import { PrismaModule } from '@/prisma/prisma.module';
 import { UserModule } from '@/users/users.module';
 import { WalletModule } from '@/wallet/wallet.module';
-import { WithdrawalModule } from './payments/withdrawal/withdrawal.module';
-import { PriceFeedModule } from './price-feed/price-feed.module';
+import { DepositModule } from '@/payments/deposit/deposit.module';
+import { WithdrawalModule } from '@/payments/withdrawal/withdrawal.module';
+import { PriceFeedModule } from '@/price-feed/price-feed.module';
+import { TransactionsModule } from '@/transactions/transactions.module';
+import { WebhookModule } from '@/webhook/webhook.module';
 
 @Module({
 	imports: [
@@ -24,7 +27,10 @@ import { PriceFeedModule } from './price-feed/price-feed.module';
 		WalletModule,
 		PriceFeedModule,
 		OrderPaymentModule,
+		DepositModule,
 		WithdrawalModule,
+		WebhookModule,
+		TransactionsModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
