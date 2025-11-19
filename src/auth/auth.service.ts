@@ -29,50 +29,36 @@ export class AuthService {
 	}
 
 	async register(dto: CreateUserDto) {
-		try {
-			const passwordHash = await argon.hash(dto.password);
+		const passwordHash = await argon.hash(dto.password);
 
-			const newUser = await this.db.user.create({
-				data: {
-					firstName: dto.firstName,
-					lastName: dto.lastName,
-					email: dto.email,
-					username: dto.username,
-					passwordHash,
-					Wallet: {
-						create: {
-							balance: 0,
-						},
+		const newUser = await this.db.user.create({
+			data: {
+				firstName: dto.firstName,
+				lastName: dto.lastName,
+				email: dto.email,
+				username: dto.username,
+				passwordHash,
+				Wallet: {
+					create: {
+						balance: 0,
 					},
 				},
-				select: {
-					id: true,
-					firstName: true,
-					lastName: true,
-					email: true,
-					username: true,
-					Wallet: {
-						select: {
-							balance: true,
-						},
+			},
+			select: {
+				id: true,
+				firstName: true,
+				lastName: true,
+				email: true,
+				username: true,
+				Wallet: {
+					select: {
+						balance: true,
 					},
 				},
-			});
+			},
+		});
 
-			return newUser;
-		} catch (err) {
-			console.log(err);
-			if (
-				err instanceof PrismaClientKnownRequestError &&
-				err.code === 'P2002'
-			) {
-				const target = (err.meta?.target as string[])?.[0] ?? 'Field';
-				throw new ConflictException(`${target} already in use`);
-			}
-
-			console.error('Unhandled registration error:', err);
-			throw new InternalServerErrorException('Registration failed');
-		}
+		return newUser;
 	}
 
 	async login(dto: LoginUserDto) {
