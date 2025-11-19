@@ -11,28 +11,22 @@ import { JwtPayloadType } from '@/types/jwt.type';
 import { WalletService } from '@/wallet/wallet.service';
 import { TransactionService } from '../shared/transaction.service';
 import { VerifyPaymentDto } from './dtos/crypto-deposit.dto';
-import { DepositInput } from './dtos/deposit.dto';
 import {
-	DepositProviderInterface,
-	DepositResult,
+	CryptoDepositDto,
+	DepositDto,
+	PaystackDepositDto,
+} from '@/payments/deposit/dtos/deposit.dto';
+import {
+	CryptoDepositProviderInterface,
 	PaymentStatus,
-} from './interfaces/provider.interface';
-import { CryptoDepositProvider } from './providers/crypto-deposit.provider';
-import { PaystackDepositProvider } from './providers/paystack-deposit.provider';
+	PaystackDepositProviderInterface,
+} from '@/payments/deposit/interfaces/provider.interface';
+import { CryptoDepositProvider } from '@/payments/deposit/providers/crypto-deposit.provider';
+import { PaystackDepositProvider } from '@/payments/deposit/providers/paystack-deposit.provider';
 
 type DepositProviderMap = {
-	[PaymentMethod.PAYSTACK]: DepositProviderInterface<
-		DepositInput,
-		DepositResult,
-		VerifyPaymentDto,
-		{ status: PaymentStatus }
-	>;
-	[PaymentMethod.CRYPTO]: DepositProviderInterface<
-		DepositInput,
-		DepositResult,
-		VerifyPaymentDto,
-		{ status: PaymentStatus }
-	>;
+	[PaymentMethod.PAYSTACK]: PaystackDepositProviderInterface;
+	[PaymentMethod.CRYPTO]: CryptoDepositProviderInterface;
 };
 
 @Injectable()
@@ -55,7 +49,7 @@ export class DepositService {
 	}
 
 	/** Initiate a deposit */
-	async initiateDeposit(user: JwtPayloadType, dto: DepositInput) {
+	async initiateDeposit(user: JwtPayloadType, dto: DepositDto) {
 		const provider = this.providers[dto.method];
 		if (!provider)
 			throw new BadRequestException(
@@ -64,14 +58,18 @@ export class DepositService {
 
 		const reference = generateRef(TransactionType.DEPOSIT, user.sub);
 
-		await this.transactionService.recordTransaction({
+		const wallet = await this.walletService.getWallet(user.sub);
+
+		const tx = await this.transactionService.recordTransaction({
 			reference,
 			amount: dto.amount,
 			type: TransactionType.DEPOSIT,
 			paymentMethod: dto.method,
 			status: TransactionStatus.PENDING,
+			recipientWalletId: wallet.id,
 		});
 
+		console.log('tx saved:', tx);
 		let providerDto: any;
 		if (dto.method === PaymentMethod.PAYSTACK) {
 			providerDto = {
@@ -79,16 +77,17 @@ export class DepositService {
 				email: user.email,
 				reference,
 				metadata: { userId: user.sub },
-			};
+			} as PaystackDepositDto;
 		} else {
 			providerDto = {
 				amount: dto.amount,
 				hash: dto.hash,
+				reference,
 				buyerAddress: user.sub,
-			};
+			} as CryptoDepositDto;
 		}
 
-		return provider.initiateDeposit(user, providerDto);
+		return provider.initiateDeposit(providerDto);
 	}
 
 	// Verify deposit
@@ -131,34 +130,43 @@ export class DepositService {
 		return result;
 	}
 
-	/** Handle provider webhook */
-	async handleWebhook(
-		method: PaymentMethod,
-		payload: any,
-		headers?: Record<string, string>,
-	) {
-		const provider = this.providers[method];
-		if (!provider || !provider.handleWebhook) return { received: true };
+	async handleSuccessfulDeposit(data: any) {
+		console.log(data);
+		const txRecord = await this.transactionService.getTransactionByReference(
+			data.reference,
+		);
+		if (!txRecord) return;
+		if (txRecord.status !== TransactionStatus.PENDING) return;
 
-		const event = await provider.handleWebhook(payload, headers);
-		if (!event?.data?.reference) return { received: true };
+		await this.db.$transaction(async (tx) => {
+			// Credit wallet
+			await this.walletService.credit(
+				txRecord.recipientWalletId!,
+				txRecord.amount,
+				tx,
+			);
 
-		const tx = await this.db.transaction.findUnique({
-			where: { reference: event.data.reference },
+			await this.transactionService.updateTransaction(
+				txRecord.id,
+				{ status: TransactionStatus.SUCCESS },
+				tx,
+			);
 		});
-		if (!tx) return { received: true };
 
-		if (
-			event.event === 'charge.success' &&
-			tx.status === TransactionStatus.PENDING
-		) {
-			await this.walletService.credit(tx.recipientWalletId!, tx.amount);
-			await this.db.transaction.update({
-				where: { id: tx.id },
-				data: { status: TransactionStatus.SUCCESS },
-			});
-		}
+		console.log(
+			`Deposit successful: ${txRecord.reference}, credited ${txRecord.amount}`,
+		);
+	}
 
-		return { received: true };
+	async handleFailedDeposit(data: any) {
+		const tx = await this.transactionService.getTransactionByReference(
+			data.reference,
+		);
+		if (!tx) return;
+		if (tx.status !== TransactionStatus.PENDING) return;
+
+		await this.transactionService.updateTransaction(tx.id, {
+			status: TransactionStatus.FAILED,
+		});
 	}
 }

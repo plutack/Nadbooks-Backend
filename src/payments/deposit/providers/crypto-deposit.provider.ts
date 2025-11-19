@@ -5,7 +5,6 @@ import {
 	TransactionStatus,
 	TransactionType,
 } from 'generated/prisma';
-import { generateRef } from '@/helpers/functions';
 import {
 	batchAbi,
 	entryPointAbi,
@@ -16,8 +15,11 @@ import {
 	PaymentStatus,
 } from '@/payments/deposit/interfaces/provider.interface';
 import { TransactionService } from '@/payments/shared/transaction.service';
-import { JwtPayloadType } from '@/types/jwt.type';
-import { DepositInput, VerifyDepositInput } from '../dtos/deposit.dto';
+import {
+	CryptoDepositDto,
+	DepositDto,
+	VerifyDepositInput,
+} from '@/payments/deposit/dtos/deposit.dto';
 
 // TODO: switch to envs
 const RPC_URL = 'https://ethereum-sepolia-rpc.publicnode.com';
@@ -35,7 +37,7 @@ type DecodedTransfer = {
 export class CryptoDepositProvider
 	implements
 		DepositProviderInterface<
-			DepositInput,
+			CryptoDepositDto,
 			DepositResult,
 			VerifyDepositInput,
 			{ status: PaymentStatus }
@@ -132,14 +134,9 @@ export class CryptoDepositProvider
 		return { valid: true, amount: Number(formatEther(amount)) };
 	}
 
-	async initiateDeposit(
-		user: JwtPayloadType,
-		dto: DepositInput,
-	): Promise<DepositResult> {
-		const reference = generateRef(TransactionType.DEPOSIT, user.sub);
-
+	async initiateDeposit(dto: CryptoDepositDto): Promise<DepositResult> {
 		await this.transactionService.recordTransaction({
-			reference,
+			reference: dto.reference,
 			amount: dto.amount,
 			type: TransactionType.DEPOSIT,
 			paymentMethod: PaymentMethod.CRYPTO,
@@ -148,7 +145,7 @@ export class CryptoDepositProvider
 
 		return {
 			status: PaymentStatus.PENDING,
-			reference,
+			reference: dto.reference,
 		};
 	}
 

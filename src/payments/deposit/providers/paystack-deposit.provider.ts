@@ -1,12 +1,9 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import crypto from 'crypto';
-import { TransactionType } from 'generated/prisma';
 import { lastValueFrom } from 'rxjs';
-import { generateRef } from '@/helpers/functions';
 import {
-	DepositInput,
+	PaystackDepositDto,
 	VerifyDepositInput,
 } from '@/payments/deposit/dtos/deposit.dto';
 import {
@@ -20,7 +17,7 @@ import { JwtPayloadType } from '@/types/jwt.type';
 export class PaystackDepositProvider
 	implements
 		DepositProviderInterface<
-			DepositInput,
+			PaystackDepositDto,
 			DepositResult,
 			VerifyDepositInput,
 			{ status: PaymentStatus }
@@ -33,23 +30,20 @@ export class PaystackDepositProvider
 		private readonly http: HttpService,
 		private readonly config: ConfigService,
 	) {
-		this.secretKey = this.config.get<string>('PAYSTACK_SECRET_KEY', '');
-		if (!this.secretKey) throw new Error('PAYSTACK_SECRET_KEY is not set');
+		this.secretKey = this.config.get<string>('PAYSTACK_SECRET', '');
+		if (!this.secretKey) throw new Error('PAYSTACK_SECRET is not set');
 	}
 
-	async initiateDeposit(
-		user: JwtPayloadType,
-		dto: DepositInput,
-	): Promise<DepositResult> {
+	async initiateDeposit(dto: PaystackDepositDto): Promise<DepositResult> {
 		const url = `${this.PAYSTACK_BASE}/transaction/initialize`;
-		const reference = generateRef(TransactionType.DEPOSIT, user.sub);
+		console.log('provider level: ', dto);
 		const response = await lastValueFrom(
 			this.http.post(
 				url,
 				{
 					amount: dto.amount,
 					email: dto.email,
-					reference,
+					reference: dto.reference,
 					metadata: dto.metadata,
 				},
 				{ headers: { Authorization: `Bearer ${this.secretKey}` } },
@@ -89,18 +83,5 @@ export class PaystackDepositProvider
 		}
 
 		return { status: responseStatus };
-	}
-
-	handleWebhook(payload: any, headers: Record<string, string>) {
-		const signature = headers['x-paystack-signature'];
-
-		const hash = crypto
-			.createHmac('sha512', this.secretKey)
-			.update(JSON.stringify(payload))
-			.digest('hex');
-
-		if (hash !== signature) throw new Error('Invalid webhook signature');
-
-		return payload;
 	}
 }

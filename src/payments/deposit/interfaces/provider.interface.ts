@@ -1,4 +1,9 @@
-import { JwtPayloadType } from '@/types/jwt.type';
+import { VerifyPaymentDto } from '@/payments/deposit/dtos/crypto-deposit.dto';
+import {
+	CryptoDepositDto,
+	PaystackDepositDto,
+	VerifyDepositInput,
+} from '@/payments/deposit/dtos/deposit.dto';
 
 export enum PaymentStatus {
 	PENDING = 'pending',
@@ -13,6 +18,10 @@ export interface DepositResult {
 	paymentUrl?: string;
 }
 
+export interface VerifyPaymentResult {
+	status: PaymentStatus;
+}
+
 // Generic interface for all deposit providers
 // Ties initiateDeposit input/output and verifyPayment input/output
 export interface DepositProviderInterface<
@@ -22,7 +31,7 @@ export interface DepositProviderInterface<
 	VerifyOutput,
 > {
 	// Initiate a deposit for a given user
-	initiateDeposit(user: JwtPayloadType, dto: InitInput): Promise<InitOutput>;
+	initiateDeposit(dto: InitInput): Promise<InitOutput>;
 
 	// Verify a completed deposit
 	verifyPayment(input: VerifyInput): Promise<VerifyOutput>;
@@ -30,3 +39,18 @@ export interface DepositProviderInterface<
 	//  webhook handler
 	handleWebhook?(payload: any, headers?: Record<string, string>): Promise<any>;
 }
+export interface PaystackDepositProviderInterface
+	extends DepositProviderInterface<
+		PaystackDepositDto,
+		DepositResult,
+		VerifyDepositInput,
+		VerifyPaymentResult
+	> {}
+
+export interface CryptoDepositProviderInterface
+	extends DepositProviderInterface<
+		CryptoDepositDto,
+		DepositResult,
+		VerifyPaymentDto,
+		VerifyPaymentResult
+	> {}

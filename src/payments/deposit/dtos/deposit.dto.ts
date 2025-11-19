@@ -1,35 +1,52 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString, ValidateIf } from 'class-validator';
 import { PaymentMethod } from 'generated/prisma';
 
 export type ExternalPaymentMethod = Exclude<PaymentMethod, 'WALLET'>;
 
-/** Unified input for initiating a deposit */
-export class DepositInput {
+export class BaseDepositDto {
 	@IsNumber()
 	amount: number;
 
-	// Optional for Paystack
 	@IsOptional()
+	metadata?: Record<string, any>;
+}
+
+export class PaystackDepositDto extends BaseDepositDto {
+	@IsString()
+	email: string;
+
+	@IsString()
+	reference: string;
+}
+
+export class CryptoDepositDto extends BaseDepositDto {
+	@IsString()
+	buyerAddress: string;
+
+	@IsString()
+	reference: string;
+
+	@IsString()
+	hash: string;
+}
+
+export class DepositDto extends BaseDepositDto {
+	@IsString()
+	method: ExternalPaymentMethod;
+
+	// Paystack-specific
+	@ValidateIf((o) => o.method === PaymentMethod.PAYSTACK)
 	@IsString()
 	email?: string;
 
-	// Optional metadata for Paystack
-	@IsOptional()
-	metadata?: Record<string, any>;
-
-	//  Optional for crypto deposits
-	@IsOptional()
+	// Crypto-specific
+	@ValidateIf((o) => o.method === PaymentMethod.CRYPTO)
 	@IsString()
 	buyerAddress?: string;
 
-	// Optional hash for crypto payments
-	@IsOptional()
+	@ValidateIf((o) => o.method === PaymentMethod.CRYPTO)
 	@IsString()
 	hash?: string;
-
-	// payment method allowed
-	@IsString()
-	method: ExternalPaymentMethod;
 }
 
 // Unified input for verifying a deposit

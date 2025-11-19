@@ -1,16 +1,24 @@
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { DepositController } from '@/payments/deposit/deposit.controller';
+import { DepositService } from '@/payments/deposit/deposit.service';
+import { CryptoDepositProvider } from '@/payments/deposit/providers/crypto-deposit.provider';
+import { PaystackDepositProvider } from '@/payments/deposit/providers/paystack-deposit.provider';
+import { SharedPaymentsModule } from '@/payments/shared/shared-payments.module';
 import { PriceFeedModule } from '@/price-feed/price-feed.module';
 import { PrismaModule } from '@/prisma/prisma.module';
 import { WalletModule } from '@/wallet/wallet.module';
-import { DepositService } from './deposit.service';
-import { PaystackDepositProvider } from './providers/paystack-deposit.provider';
 
 @Module({
-	imports: [HttpModule, PrismaModule, WalletModule, PriceFeedModule],
+	imports: [
+		HttpModule,
+		PrismaModule,
+		WalletModule,
+		PriceFeedModule,
+		SharedPaymentsModule,
+	],
 	controllers: [DepositController],
-	providers: [DepositService, PaystackDepositProvider],
+	providers: [DepositService, PaystackDepositProvider, CryptoDepositProvider],
 	exports: [DepositService],
 })
 export class DepositModule {}

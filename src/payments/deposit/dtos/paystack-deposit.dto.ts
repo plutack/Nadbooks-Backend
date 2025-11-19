@@ -13,7 +13,7 @@ export class BankDepositInput {
 	metadata?: Record<string, any>;
 
 	@IsString()
-	reference: string; // reference is required for Paystack
+	reference: string;
 }
 
 // Input type for verifying a Paystack deposit
