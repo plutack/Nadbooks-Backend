@@ -6,6 +6,10 @@ import {
 	TransactionType,
 } from 'generated/prisma';
 import {
+	CryptoDepositDto,
+	VerifyDepositInput,
+} from '@/payments/deposit/dtos/deposit.dto';
+import {
 	batchAbi,
 	entryPointAbi,
 } from '@/payments/deposit/interfaces/crypto.interface';
@@ -15,11 +19,6 @@ import {
 	PaymentStatus,
 } from '@/payments/deposit/interfaces/provider.interface';
 import { TransactionService } from '@/payments/shared/transaction.service';
-import {
-	CryptoDepositDto,
-	DepositDto,
-	VerifyDepositInput,
-} from '@/payments/deposit/dtos/deposit.dto';
 
 // TODO: switch to envs
 const RPC_URL = 'https://ethereum-sepolia-rpc.publicnode.com';
@@ -107,31 +106,24 @@ export class CryptoDepositProvider
 	private isValidTransaction(
 		decodedTransfer: DecodedTransfer | null,
 		dto: VerifyDepositInput,
-	): { valid: boolean; reason?: string; amount?: number } {
-		if (!decodedTransfer)
-			return { valid: false, reason: 'Invalid transaction data' };
-
+	): Boolean {
+		if (!decodedTransfer) return false;
 		const [recipient, amount] = decodedTransfer.transfer;
-
 		if (recipient.toLowerCase() !== centralWallet.toLowerCase()) {
-			return { valid: false, reason: 'Wrong recipient wallet' };
+			return false;
 		}
-
 		if (Number(dto.transferedAmount) !== Number(formatEther(amount))) {
-			return { valid: false, reason: 'Invalid transfer amount' };
+			return false;
 		}
-
 		if (decodedTransfer.to.toLowerCase() !== contractAddress.toLowerCase()) {
-			return { valid: false, reason: 'Invalid contract' };
+			return false;
 		}
-
 		if (
 			decodedTransfer.sender.toLowerCase() !== dto.buyerAddress!.toLowerCase()
 		) {
-			return { valid: false, reason: 'Invalid sender address' };
+			return false;
 		}
-
-		return { valid: true, amount: Number(formatEther(amount)) };
+		return true;
 	}
 
 	async initiateDeposit(dto: CryptoDepositDto): Promise<DepositResult> {
@@ -154,36 +146,24 @@ export class CryptoDepositProvider
 	}> {
 		try {
 			const tx = await provider.getTransaction(dto.hash!);
-
 			if (!tx) {
-				// No such transaction exists
 				return { status: PaymentStatus.FAILED };
 			}
-
 			if (!tx.blockNumber) {
-				// Transaction is still pending
 				return { status: PaymentStatus.PENDING };
 			}
-
-			// Transaction is mined, get the receipt
 			const receipt = await provider.getTransactionReceipt(dto.hash!);
 
 			if (!receipt) {
-				// Should rarely happen, but receipt missing
 				return { status: PaymentStatus.PENDING };
 			}
-
 			if (receipt.status === 0) {
-				// Transaction reverted
 				return { status: PaymentStatus.FAILED };
 			}
 
-			// Transaction succeeded, now validate details
 			const decodedTransfer = this.decodeTransfer(tx);
-			const validation = this.isValidTransaction(decodedTransfer, dto);
 
-			if (!validation.valid) {
-				console.log('Transaction content invalid:', validation.reason);
+			if (this.isValidTransaction(decodedTransfer, dto)) {
 				return { status: PaymentStatus.FAILED };
 			}
 

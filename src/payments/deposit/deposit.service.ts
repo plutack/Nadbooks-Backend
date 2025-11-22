@@ -23,6 +23,7 @@ import {
 } from '@/payments/deposit/interfaces/provider.interface';
 import { CryptoDepositProvider } from '@/payments/deposit/providers/crypto-deposit.provider';
 import { PaystackDepositProvider } from '@/payments/deposit/providers/paystack-deposit.provider';
+import { ExternalPaymentMethod } from '../withdrawal/dtos/withdrawal.dto';
 
 type DepositProviderMap = {
 	[PaymentMethod.PAYSTACK]: PaystackDepositProviderInterface;
@@ -31,7 +32,7 @@ type DepositProviderMap = {
 
 @Injectable()
 export class DepositService {
-	private providers: DepositProviderMap;
+	providers: DepositProviderMap;
 
 	constructor(
 		private readonly db: PrismaService,
@@ -39,12 +40,12 @@ export class DepositService {
 		private readonly priceFeed: PriceFeedService,
 		private readonly transactionService: TransactionService,
 
-		private readonly paystackProvider: PaystackDepositProvider,
-		private readonly cryptoProvider: CryptoDepositProvider,
+		paystackProvider: PaystackDepositProvider,
+		cryptoProvider: CryptoDepositProvider,
 	) {
 		this.providers = {
-			[PaymentMethod.PAYSTACK]: this.paystackProvider,
-			[PaymentMethod.CRYPTO]: this.cryptoProvider,
+			[PaymentMethod.PAYSTACK]: paystackProvider,
+			[PaymentMethod.CRYPTO]: cryptoProvider,
 		};
 	}
 
@@ -130,7 +131,7 @@ export class DepositService {
 		return result;
 	}
 
-	async handleSuccessfulDeposit(data: any) {
+	async handleSuccessfulPaystackDeposit(data: any) {
 		console.log(data);
 		const txRecord = await this.transactionService.getTransactionByReference(
 			data.reference,
@@ -158,7 +159,7 @@ export class DepositService {
 		);
 	}
 
-	async handleFailedDeposit(data: any) {
+	async handleFailedPaystackDeposit(data: any) {
 		const tx = await this.transactionService.getTransactionByReference(
 			data.reference,
 		);
