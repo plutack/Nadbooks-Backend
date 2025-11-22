@@ -1,21 +1,20 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import { DepositService } from '@/payments/deposit/deposit.service';
 import { WithdrawalService } from '@/payments/withdrawal/withdrawal.service';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class WebhookService {
-	private readonly secretKey: string;
+	private readonly paystackSecret: string;
+	private readonly alchemySecret: string;
 	constructor(
 		private readonly depositService: DepositService,
 		private readonly withdrawalService: WithdrawalService,
-		private readonly config: ConfigService,
+		config: ConfigService,
 	) {
-		this.secretKey = this.config.get<string>('PAYSTACK_SECRET', '');
-		if (!this.secretKey) {
-			throw new Error('PAYSTACK_SECRET is not set in environment');
-		}
+		this.paystackSecret = config.getOrThrow<string>('PAYSTACK_SECRET', '');
+		this.alchemySecret = config.getOrThrow<string>('ALCHEMY_SECRET', '');
 	}
 
 	// Verify Paystack signature
@@ -31,32 +30,47 @@ export class WebhookService {
 	async handlePaystackWebhook(payload: any, headers: any) {
 		const signature = headers['x-paystack-signature'];
 
-		if (!this.verifySignature(payload, signature, this.secretKey)) {
-			console.warn('Invalid Paystack signature');
+		if (!this.verifySignature(payload, signature, this.paystackSecret)) {
 			return { status: 'unauthorized' };
 		}
 
 		// Dispatch based on Paystack event types
 		switch (payload.event) {
 			case 'charge.success':
-				await this.depositService.handleSuccessfulDeposit(payload.data);
+				await this.depositService.handleSuccessfulPaystackDeposit(payload.data);
 				break;
 
 			case 'charge.failed':
-				await this.depositService.handleFailedDeposit(payload.data);
+				await this.depositService.handleFailedPaystackDeposit(payload.data);
 				break;
 
-			// case 'transfer.success':
-			// 	await this.withdrawalService.applyWithdrawalWebhook(payload.data);
-			// 	break;
+			case 'transfer.success':
+				await this.withdrawalService.handleSuccessfulPaystackWithdrawal(
+					payload.data,
+				);
+				break;
 
-			// case 'transfer.failed':
-			// 	await this.withdrawalService.handleFailedWithdrawal(payload.data);
-			// 	break;
+			case 'transfer.failed':
+				await this.withdrawalService.handleFailedPaystackWithdrawal(
+					payload.data,
+				);
+				break;
 
 			default:
 				console.warn('Unknown Paystack webhook event:', payload.event);
 		}
+
+		return { status: 'success' };
+	}
+
+	handleCryptoWebhook(payload: any, headers: any) {
+		const signature = headers['X-Alchemy-Signature'];
+
+		if (!this.verifySignature(payload, signature, this.alchemySecret)) {
+			return { status: 'unauthorized' };
+		}
+
+		// have a look at alchemy eventss
 
 		return { status: 'success' };
 	}
