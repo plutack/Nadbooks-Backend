@@ -113,6 +113,7 @@ model Transaction {
   senderWalletId    String?           @map("sender_wallet_id")
   recipientWalletId String?           @map("recipient_wallet_id")
   reference         String            @unique
+  hash              String?           @unique
   status            TransactionStatus @default(PENDING)
   description       String?
   reason            String?
