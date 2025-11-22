@@ -21,24 +21,12 @@ export class DropboxService implements IStorageService {
 	private readonly logger = new Logger(DropboxService.name);
 
 	constructor(config: ConfigService) {
-		this.ACCESS_TOKEN = config.get<string>('DROPBOX_ACCESS_TOKEN')!;
-		this.AUTH_CODE = config.get<string>('DROPBOX_AUTH_CODE')!;
-		this.APP_KEY = config.get<string>('DROPBOX_APP_KEY')!;
-		this.APP_SECRET = config.get<string>('DROPBOX_APP_SECRET')!;
-		this.REDIRECT_URI = config.get<string>('DROPBOX_REDIRECT_URI')!;
-		this.REFRESH_TOKEN = config.get<string>('DROPBOX_REFRESH_TOKEN')!;
-		if (
-			!this.ACCESS_TOKEN ||
-			!this.AUTH_CODE ||
-			!this.APP_KEY ||
-			!this.APP_SECRET ||
-			!this.REDIRECT_URI ||
-			!this.REFRESH_TOKEN
-		) {
-			throw new Error(
-				'Dropbox access token, app key, app secret or auth code not set',
-			);
-		}
+		this.ACCESS_TOKEN = config.getOrThrow<string>('DROPBOX_ACCESS_TOKEN')!;
+		this.AUTH_CODE = config.getOrThrow<string>('DROPBOX_AUTH_CODE')!;
+		this.APP_KEY = config.getOrThrow<string>('DROPBOX_APP_KEY')!;
+		this.APP_SECRET = config.getOrThrow<string>('DROPBOX_APP_SECRET')!;
+		this.REDIRECT_URI = config.getOrThrow<string>('DROPBOX_REDIRECT_URI')!;
+		this.REFRESH_TOKEN = config.getOrThrow<string>('DROPBOX_REFRESH_TOKEN')!;
 	}
 
 	private async getDropboxClient(): Promise<Dropbox> {

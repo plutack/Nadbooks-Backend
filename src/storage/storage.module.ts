@@ -11,7 +11,7 @@ import { DropboxService } from './providers/dropbox/dropbox.service';
 		{
 			provide: STORAGE_SERVICE,
 			useFactory(config: ConfigService) {
-				const provider = config.get<string>('STORAGE_PROVIDER');
+				const provider = config.getOrThrow<string>('STORAGE_PROVIDER');
 				switch (provider) {
 					case 'dropbox':
 						return new DropboxService(config);

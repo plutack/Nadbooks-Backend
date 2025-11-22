@@ -15,7 +15,7 @@ export class PrismaService
 	private readonly logger = new Logger('Database Core');
 	constructor(config: ConfigService) {
 		super({
-			datasourceUrl: config.get('DATABASE_URL'),
+			datasourceUrl: config.getOrThrow('DATABASE_URL'),
 		});
 	}
 
