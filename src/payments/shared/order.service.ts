@@ -87,5 +87,11 @@ export class OrderService {
 	 */
 	async updateOrderStatus(orderId, status: OrderStatus) {}
 
-	async getUserOrder(userId: string) {}
+	async getUserOrder(userId: string) {
+		const orders = await this.db.order.findMany({
+			where: { userId },
+			orderBy: { createdAt: 'desc' },
+		});
+		return orders;
+	}
 }
