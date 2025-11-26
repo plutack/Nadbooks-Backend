@@ -31,6 +31,7 @@ model User {
   updatedAt     DateTime       @updatedAt @map("updated_at")
   isActive      Boolean        @default(true)
   isVerified    Boolean        @default(false)
+  isAdmin       Boolean        @default(false)
   books         Book[]
   bookBookmarks BookBookmark[]
 }
