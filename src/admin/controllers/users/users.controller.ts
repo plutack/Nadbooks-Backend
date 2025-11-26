@@ -32,17 +32,17 @@ export class UsersController {
 	}
 
 	@Get(':id')
-	getUserById(@Param('id') id: number) {
+	getUserById(@Param('id') id: string) {
 		return this.adminUserService.findUserById(id);
 	}
 
 	@Patch(':id')
-	updateUserById(@Param('id') id: number, @Body() body: EditUserDto) {
+	updateUserById(@Param('id') id: string, @Body() body: EditUserDto) {
 		return this.adminUserService.updateUser(id, body);
 	}
 
 	@Patch('/activate/:id')
-	activateUser(@Param('id') id: number) {
+	activateUser(@Param('id') id: string) {
 		return this.adminUserService.updateUserActiveState(
 			id,
 			UserActivation.ACTIVATE,
@@ -50,7 +50,7 @@ export class UsersController {
 	}
 
 	@Patch('/deactivate/:id')
-	deactivateUser(@Param('id') id: number) {
+	deactivateUser(@Param('id') id: string) {
 		return this.adminUserService.updateUserActiveState(
 			id,
 			UserActivation.DEACTIVATE,
@@ -58,7 +58,7 @@ export class UsersController {
 	}
 
 	@Patch('/verify/:id')
-	verifyById(@Param('id') id: number) {
+	verifyById(@Param('id') id: string) {
 		return this.adminUserService.updateUserVerification(
 			id,
 			UserVerification.VERIFY,
