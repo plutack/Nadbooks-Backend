@@ -57,6 +57,7 @@ model User {
   role          Role           @default(USER)
   isActive      Boolean        @default(true)
   isVerified    Boolean        @default(false)
+  isAdmin       Boolean        @default(false)
   books         Book[]
   bookBookmarks BookBookmark[]
   Wallet        Wallet?
