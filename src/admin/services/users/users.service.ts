@@ -75,4 +75,16 @@ export class UsersService {
 			data: { isVerified: verification },
 		});
 	}
+
+	async isAdmin(userId: number) {
+		const admin = await this.db.user.findFirst({
+			where: { id: userId, isAdmin: true },
+		});
+
+		if (!admin) {
+			return false;
+		}
+
+		return true;
+	}
 }
