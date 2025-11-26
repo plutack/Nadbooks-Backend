@@ -19,14 +19,14 @@ export class UsersService {
 		isVerified: true,
 	};
 	constructor(private readonly db: PrismaService) {}
-	private async getUserById(userId: number) {
+	private async getUserById(userId: string) {
 		return await this.db.user.findFirst({
 			where: { id: userId },
 			select: this.fieldsToSelect,
 		});
 	}
 
-	async findUserById(userId: number) {
+	async findUserById(userId: string) {
 		const user = await this.getUserById(userId);
 		if (!user) {
 			throw new NotFoundException('User not found');
@@ -42,14 +42,14 @@ export class UsersService {
 		});
 	}
 
-	async updateUser(userId: number, payload: EditUserDto) {
+	async updateUser(userId: string, payload: EditUserDto) {
 		return await this.db.user.update({
 			where: { id: userId },
 			data: cleanObject(payload),
 		});
 	}
 
-	async updateUserActiveState(userId: number, action: UserActivation) {
+	async updateUserActiveState(userId: string, action: UserActivation) {
 		let activation: boolean;
 		if (action === UserActivation.ACTIVATE) {
 			activation = true;
@@ -63,7 +63,7 @@ export class UsersService {
 		});
 	}
 
-	async updateUserVerification(userId: number, action: UserVerification) {
+	async updateUserVerification(userId: string, action: UserVerification) {
 		let verification: boolean;
 		if (action === UserVerification.VERIFY) {
 			verification = true;
@@ -76,9 +76,9 @@ export class UsersService {
 		});
 	}
 
-	async isAdmin(userId: number) {
+	async isAdmin(userId: string) {
 		const admin = await this.db.user.findFirst({
-			where: { id: userId, isAdmin: true },
+			where: { id: userId, role: 'ADMIN' },
 		});
 
 		if (!admin) {
