@@ -1,14 +1,24 @@
 import { EditUserDto } from '@/admin/dto/users/edit-user.dto';
 import { UserActivation } from '@/admin/dto/users/update-user-activation.dto';
 import { UserVerification } from '@/admin/dto/users/verify-user.dto';
+import { AdminAuthGuard } from '@/admin/guards/admin.guard';
 import { UsersService } from '@/admin/services/users/users.service';
 import { BaseFilterQueryType } from '@/types/filters.type';
-import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
-import { ApiOperation } from '@nestjs/swagger';
+import {
+	Body,
+	Controller,
+	Get,
+	Param,
+	Patch,
+	Query,
+	UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { ApiTags } from '@nestjs/swagger';
-
-@Controller('admin/users')
 @ApiTags('Admin Users')
+@Controller('admin/users')
+@ApiBearerAuth()
+@UseGuards(AdminAuthGuard)
 export class UsersController {
 	constructor(private readonly adminUserService: UsersService) {}
 

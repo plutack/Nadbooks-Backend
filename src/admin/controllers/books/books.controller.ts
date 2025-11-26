@@ -1,9 +1,12 @@
 import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
 import { AdminEditBookDto } from '@/admin/dto/books/edit-book.dto';
+import { AdminAuthGuard } from '@/admin/guards/admin.guard';
 import { AdminBooksService } from '@/admin/services/books/books.service';
 import { BaseFilterQueryType } from '@/types/filters.type';
 
 @Controller('admin/books')
+@ApiBearerAuth()
+@UseGuards(AdminAuthGuard)
 export class AdminBooksController {
 	constructor(private adminBookService: AdminBooksService) {}
 
