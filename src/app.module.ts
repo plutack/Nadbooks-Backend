@@ -3,10 +3,17 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from '@/app.controller';
 import { AppService } from '@/app.service';
 import { AuthModule } from '@/auth/auth.module';
+import { BooksModule } from '@/books/books.module';
+import { LoggerMiddleware } from '@/middlewares/logger.middleware';
+import { OrderPaymentModule } from '@/payments/order-payment/order-payment.module';
 import { PrismaModule } from '@/prisma/prisma.module';
-import { BooksModule } from './books/books.module';
-import { LoggerMiddleware } from './middlewares/logger.middleware';
-import { UserModule } from './users/users.module';
+import { UserModule } from '@/users/users.module';
+import { WalletModule } from '@/wallet/wallet.module';
+import { DepositModule } from '@/payments/deposit/deposit.module';
+import { WithdrawalModule } from '@/payments/withdrawal/withdrawal.module';
+import { PriceFeedModule } from '@/price-feed/price-feed.module';
+import { TransactionsModule } from '@/transactions/transactions.module';
+import { WebhookModule } from '@/webhook/webhook.module';
 import { AdminModule } from './admin/admin.module';
 
 @Module({
@@ -18,6 +25,13 @@ import { AdminModule } from './admin/admin.module';
 		PrismaModule,
 		BooksModule,
 		UserModule,
+		WalletModule,
+		PriceFeedModule,
+		OrderPaymentModule,
+		DepositModule,
+		WithdrawalModule,
+		WebhookModule,
+		TransactionsModule,
 		AdminModule,
 	],
 	controllers: [AppController],

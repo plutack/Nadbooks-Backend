@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { JwtPayloadType } from '@/types/jwt.type';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -18,7 +19,7 @@ export class AuthGuard implements CanActivate {
 		if (!token) {
 			throw new UnauthorizedException();
 		}
-		request['user'] = await this.jwtService.verifyAsync(token);
+		request.user = await this.jwtService.verifyAsync(token);
 		return true;
 	}
 

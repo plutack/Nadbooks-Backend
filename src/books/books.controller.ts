@@ -4,32 +4,35 @@ import {
 	Controller,
 	Delete,
 	Get,
+	HttpCode,
 	Param,
 	Patch,
 	Post,
 	Query,
-	Req,
 	UploadedFiles,
 	UseGuards,
 } from '@nestjs/common';
-import { Request } from 'express';
-import { AuthGuard, CurrentUser } from '@/auth/auth.guard';
-import { UploadBookAndCover } from '@/helpers/decorators/upload-book.decorator';
-import { BaseFilterQueryType } from '@/types/filters.type';
-import { BooksService } from './books.service';
-import { StoreBookDto, UpdateBookDto } from './dtos/book.dto';
 import { ApiOperation } from '@nestjs/swagger';
+import { AuthGuard, CurrentUser } from '@/auth/auth.guard';
+import { BooksService } from '@/books/books.service';
+import {
+	BookFilterDto,
+	StoreBookDto,
+	UpdateBookDto,
+} from '@/books/dtos/book.dto';
+import { UploadBookAndCover } from '@/helpers/decorators/upload-book.decorator';
+import { JwtPayloadType } from '@/types/jwt.type';
 
 @Controller('books')
 export class BooksController {
-	constructor(private bookService: BooksService) { }
+	constructor(private bookService: BooksService) {}
 
 	@Get()
 	@ApiOperation({
 		summary: "Returns non banned books on the platform",
 		description: "Returns a paginated list of visible books on the platform"
 	})
-	getBooks(@Query() query: BaseFilterQueryType) {
+	getBooks(@Query() query: BookFilterDto) {
 		return this.bookService.getBooks(query);
 	}
 
@@ -42,18 +45,18 @@ export class BooksController {
 			book?: Express.Multer.File[];
 			bookCover?: Express.Multer.File[];
 		},
-		@Body() body: StoreBookDto,
+		@Body() dto: StoreBookDto,
 		@CurrentUser() user: JwtPayloadType,
 	) {
 		if (!files.book?.[0]) {
-			throw new BadRequestException('Book file (book) is required');
+			throw new BadRequestException('Book file is required');
 		}
 		if (!files.bookCover?.[0]) {
-			throw new BadRequestException('Book cover (bookCover) is required');
+			throw new BadRequestException('Book cover file is required');
 		}
 
 		return this.bookService.storeBook(
-			body,
+			dto,
 			files.book[0],
 			files.bookCover[0],
 			user,
@@ -61,6 +64,7 @@ export class BooksController {
 	}
 
 	@Patch(':id')
+	@HttpCode(204)
 	@UseGuards(AuthGuard)
 	@UploadBookAndCover()
 	updateBookById(
@@ -71,29 +75,38 @@ export class BooksController {
 			bookCover?: Express.Multer.File[];
 		},
 		@Body() body: UpdateBookDto,
-		@Req() request: Request,
+		@CurrentUser() user: JwtPayloadType,
 	) {
 		return this.bookService.updateBook(
 			id,
-			(request?.user as JwtPayloadType).sub,
+			user.sub,
 			body,
 			files.book?.[0],
 			files.bookCover?.[0],
 		);
 	}
 
-	@Patch('bookmarks/:id')
+	@Post('bookmarks/:id')
 	@UseGuards(AuthGuard)
+	@HttpCode(201)
 	bookmarkBook(@Param('id') id: string, @CurrentUser() user: JwtPayloadType) {
 		return this.bookService.bookmarkBook(user.sub, id);
 	}
 
-	@Delete(':id')
+	@Delete('bookmarks/:id')
+	@HttpCode(204)
 	@UseGuards(AuthGuard)
-	deleteBookById(@Param('id') id: string, @Req() request: Request) {
-		return this.bookService.deleteBook(
-			id,
-			(request?.user as JwtPayloadType).sub,
-		);
+	removeBookFromBookmark(
+		@Param('id') id: string,
+		@CurrentUser() user: JwtPayloadType,
+	) {
+		return this.bookService.removeBookFromBookmark(user.sub, id);
+	}
+
+	@Delete(':id')
+	@HttpCode(204)
+	@UseGuards(AuthGuard)
+	deleteBookById(@Param('id') id: string, @CurrentUser() user: JwtPayloadType) {
+		return this.bookService.deleteBook(id, user.sub);
 	}
 }
