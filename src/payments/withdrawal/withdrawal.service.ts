@@ -30,19 +30,19 @@ type WithdrawalProviderMap = {
 
 @Injectable()
 export class WithdrawalService {
-	private providers: WithdrawalProviderMap;
+	providers: WithdrawalProviderMap;
 
 	constructor(
 		private readonly db: PrismaService,
 		private readonly transactionService: TransactionService,
 		private readonly walletService: WalletService,
 		private readonly priceFeed: PriceFeedService,
-		private readonly paystackProvider: PaystackWithdrawalProvider,
-		private readonly cryptoProvider: CryptoWithdrawalProvider,
+		paystackProvider: PaystackWithdrawalProvider,
+		cryptoProvider: CryptoWithdrawalProvider,
 	) {
 		this.providers = {
-			[PaymentMethod.CRYPTO]: this.cryptoProvider,
-			[PaymentMethod.PAYSTACK]: this.paystackProvider,
+			[PaymentMethod.CRYPTO]: cryptoProvider,
+			[PaymentMethod.PAYSTACK]: paystackProvider,
 		};
 	}
 
@@ -54,67 +54,73 @@ export class WithdrawalService {
 			);
 		}
 
-		return await this.db.$transaction(async (tx) => {
-			const wallet = await this.walletService.getWallet(user.sub, tx);
-			const booksAmount = new Decimal(dto.amount);
+		const reference = generateRef(TransactionType.WITHDRAWAL, user.sub);
+		const wallet = await this.walletService.getWallet(user.sub);
 
-			if (wallet.balance < booksAmount) {
-				throw new BadRequestException('Insufficient balance');
-			}
+		const booksAmount = new Decimal(dto.amount);
 
-			const reference = generateRef(TransactionType.WITHDRAWAL, user.sub);
+		if (dto.method === PaymentMethod.CRYPTO) {
+		}
 
-			const converted =
-				dto.method === PaymentMethod.CRYPTO
-					? await this.priceFeed.convertBooksToMon(booksAmount)
-					: await this.priceFeed.convertBooksToNgn(booksAmount);
-
-			let metadata: any = null;
-
-			if (dto.method === PaymentMethod.CRYPTO) {
-				metadata = {
-					cryptoWalletAddress: dto.walletAddress,
-					booksAmount: dto.amount,
-					hash: dto.hash,
-				};
-			}
-
-			await this.transactionService.recordTransaction(
-				{
-					amount: converted,
-					type: TransactionType.WITHDRAWAL,
-					senderWalletId: wallet.id,
-					status: TransactionStatus.PENDING,
-					paymentMethod: dto.method,
-					reference,
-					metadata,
-				},
-				tx,
-			);
-
-			await this.walletService.debit(wallet.id, booksAmount, tx);
-
-			let providerDto: any;
-
-			if (dto.method === PaymentMethod.PAYSTACK) {
-				providerDto = {
-					amount: converted.toNumber(),
-					reason: `Withdrawal of ${converted.toNumber()} BOOKS`,
-					name: dto.accountName,
-					accountNumber: dto.accountNumber,
-					bankCode: dto.bankCode,
-				};
-			}
-
-			if (dto.method === PaymentMethod.CRYPTO) {
-				providerDto = {
-					amount: converted.toNumber(),
-					address: dto.walletAddress,
-					hash: dto.hash,
-				};
-			}
-
-			return provider.initiateWithdrawal(providerDto);
+		const tx = await this.transactionService.recordTransaction({
+			amount: booksAmount,
+			type: TransactionType.WITHDRAWAL,
+			senderWalletId: wallet.id,
+			status: TransactionStatus.PENDING,
+			paymentMethod: dto.method,
+			reference,
+			recipientWalletId: wallet.id,
 		});
+		let providerDto: any;
+
+		if (dto.method === PaymentMethod.PAYSTACK) {
+			providerDto = {
+				amount: dto.amount,
+				reason: `Withdrawal of ${dto.amount} BOOKS`,
+				name: dto.accountName!,
+				accountNumber: dto.accountNumber!,
+				bankCode: dto.bankCode!,
+			} satisfies PaystackWithdrawalInput;
+		}
+
+		if (dto.method === PaymentMethod.CRYPTO) {
+			providerDto = {
+				amount: dto.amount,
+				recieverAddress: dto.walletAddress!,
+				reference,
+			} satisfies CryptoWithdrawalInput;
+		}
+
+		const result = await provider.initiateWithdrawal(providerDto);
+
+		if (dto.method === PaymentMethod.CRYPTO) {
+			this.transactionService.updateTransaction(tx.id, { hash: result });
+		}
+
+		return result;
+
+		// return await this.db.$transaction(async (tx) => {
+		// 	if (wallet.balance < booksAmount) {
+		// 		throw new BadRequestException('Insufficient balance');
+		// 	}
+
+		// 	await this.transactionService.recordTransaction(
+		// 		{
+		// 			amount: converted,
+		// 			type: TransactionType.WITHDRAWAL,
+		// 			senderWalletId: wallet.id,
+		// 			status: TransactionStatus.PENDING,
+		// 			paymentMethod: dto.method,
+		// 			reference,
+		// 			metadata,
+		// 		},
+		// 		tx,
+		// 	);
+
+		// 	await this.walletService.debit(wallet.id, booksAmount, tx);
 	}
+
+	async handleSuccessfulPaystackWithdrawal(data: any) {}
+
+	async handleFailedPaystackWithdrawal(data: any) {}
 }

@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { lastValueFrom } from 'rxjs';
-import { PaystackWithdrawalProviderInterface } from '@/payments/withdrawal/interfaces/provider.interface';
+import { PaystackWithdrawalInput, PaystackWithdrawalProviderInterface } from '@/payments/withdrawal/interfaces/provider.interface';
 
 @Injectable()
 export class PaystackWithdrawalProvider
@@ -13,12 +13,9 @@ export class PaystackWithdrawalProvider
 
 	constructor(
 		private readonly http: HttpService,
-		private readonly config: ConfigService,
+		config: ConfigService,
 	) {
-		this.secretKey = this.config.get<string>('PAYSTACK_SECRET', '');
-		if (!this.secretKey) {
-			throw new Error('PAYSTACK_SECRET is not set in environment');
-		}
+		this.secretKey = config.getOrThrow<string>('PAYSTACK_SECRET');
 	}
 
 	/** Create a transfer recipient and return the recipient_code */
@@ -49,13 +46,7 @@ export class PaystackWithdrawalProvider
 	}
 
 	/** Initiate a bank withdrawal */
-	async initiateWithdrawal(input: {
-		amount: number;
-		reason: string;
-		accountNumber: string;
-		bankCode: string;
-		name: string;
-	}): Promise<string> {
+	async initiateWithdrawal(input: PaystackWithdrawalInput): Promise<string> {
 		const recipientCode = await this.createTransferRecipient({
 			accountNumber: input.accountNumber,
 			bankCode: input.bankCode,

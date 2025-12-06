@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { formatEther, Interface, JsonRpcProvider } from 'ethers';
 import {
 	PaymentMethod,
@@ -21,10 +22,8 @@ import {
 import { TransactionService } from '@/payments/shared/transaction.service';
 
 // TODO: switch to envs
-const RPC_URL = 'https://ethereum-sepolia-rpc.publicnode.com';
 const contractAddress = '0x743d45BB0926a1EaCD97a06d8e7e92BEe2f7632b';
 const centralWallet = '0x9735300E77182c6381a776da2e318ae9C20aF099';
-const provider = new JsonRpcProvider(RPC_URL);
 
 type DecodedTransfer = {
 	sender: string;
@@ -42,7 +41,14 @@ export class CryptoDepositProvider
 			{ status: PaymentStatus }
 		>
 {
-	constructor(private readonly transactionService: TransactionService) {}
+	private readonly provider: JsonRpcProvider;
+	constructor(
+		private readonly transactionService: TransactionService,
+		config: ConfigService,
+	) {
+		const rpcUrl = config.getOrThrow<string>('ALCHEMY_RPC_URL');
+		this.provider = this.provider = new JsonRpcProvider(rpcUrl);
+	}
 	private decodeNormalTransaction(tx: any): DecodedTransfer {
 		const iface = new Interface([
 			'function transfer(address to, uint256 amount)',
@@ -145,14 +151,14 @@ export class CryptoDepositProvider
 		status: PaymentStatus;
 	}> {
 		try {
-			const tx = await provider.getTransaction(dto.hash!);
+			const tx = await this.provider.getTransaction(dto.hash!);
 			if (!tx) {
 				return { status: PaymentStatus.FAILED };
 			}
 			if (!tx.blockNumber) {
 				return { status: PaymentStatus.PENDING };
 			}
-			const receipt = await provider.getTransactionReceipt(dto.hash!);
+			const receipt = await this.provider.getTransactionReceipt(dto.hash!);
 
 			if (!receipt) {
 				return { status: PaymentStatus.PENDING };
