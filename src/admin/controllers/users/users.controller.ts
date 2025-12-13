@@ -13,20 +13,13 @@ import {
 	Query,
 	UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
-import { ApiTags } from '@nestjs/swagger';
-@ApiTags('Admin Users')
+
 @Controller('admin/users')
-@ApiBearerAuth()
 @UseGuards(AdminAuthGuard)
 export class UsersController {
 	constructor(private readonly adminUserService: UsersService) {}
 
 	@Get()
-	@ApiOperation({
-		summary: 'Returns the users on the platform',
-		description: 'Returns a paginated list of users on the platform',
-	})
 	getUsers(@Query() { limit, skip }: BaseFilterQueryType) {
 		return this.adminUserService.getUsers(limit, skip);
 	}
