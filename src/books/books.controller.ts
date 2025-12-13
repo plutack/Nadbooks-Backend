@@ -29,8 +29,8 @@ export class BooksController {
 
 	@Get()
 	@ApiOperation({
-		summary: "Returns non banned books on the platform",
-		description: "Returns a paginated list of visible books on the platform"
+		summary: 'Returns non banned books on the platform',
+		description: 'Returns a paginated list of visible books on the platform',
 	})
 	getBooks(@Query() query: BookFilterDto) {
 		return this.bookService.getBooks(query);
