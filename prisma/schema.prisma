@@ -60,6 +60,7 @@ model User {
   books         Book[]
   bookBookmarks BookBookmark[]
   Wallet        Wallet?
+  promotedBy    String
   Order         Order[]
 }
 
