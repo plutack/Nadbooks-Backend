@@ -11,20 +11,13 @@ import {
 	Query,
 	UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
-@ApiTags('Admin Books')
 @Controller('admin/books')
-@ApiBearerAuth()
 @UseGuards(AdminAuthGuard)
 export class AdminBooksController {
 	constructor(private adminBookService: AdminBooksService) {}
 
 	@Get()
-	@ApiOperation({
-		summary: 'Returns the books on the platform',
-		description: 'Returns a paginated list of books on the platform',
-	})
 	getBooks(@Query() { limit, skip }: BaseFilterQueryType) {
 		return this.adminBookService.getBooks(limit, skip);
 	}
