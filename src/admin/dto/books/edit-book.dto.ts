@@ -1,19 +1,9 @@
-import {
-	IsBoolean,
-	IsInt,
-	IsNumber,
-	IsOptional,
-	IsString,
-} from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString } from 'class-validator';
 
-export  class AdminEditBookDto {
+export class AdminEditBookDto {
 	@IsOptional()
 	@IsString()
 	genre: string;
-
-	@IsOptional()
-	@IsNumber()
-	price: number;
 
 	@IsOptional()
 	@IsBoolean()
