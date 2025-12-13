@@ -10,10 +10,6 @@ export class UsersService {
 	private readonly fieldsToSelect = {
 		id: true,
 		firstName: true,
-		lastName: true,
-		username: true,
-		email: true,
-		authMode: true,
 		createdAt: true,
 		updatedAt: true,
 		isVerified: true,
