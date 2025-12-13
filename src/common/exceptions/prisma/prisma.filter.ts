@@ -27,9 +27,9 @@ export class PrismaFilter implements ExceptionFilter {
 			case 'P2025':
 				status = HttpStatus.NOT_FOUND;
 				message = `The entry in the model ${exception.meta?.modelName} was not found`;
-				error = 'Not found';
-				response.status(status).json({ status, message, error });
-
+				errors = ['Not found'];
+				response?.status(status)?.json({ status, message, errors });
+				break;
 			default:
 				status = HttpStatus.BAD_REQUEST;
 				message = 'BadRequestException';
