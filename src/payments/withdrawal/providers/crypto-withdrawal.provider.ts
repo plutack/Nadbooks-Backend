@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JsonRpcProvider, parseEther, Wallet } from 'ethers';
-import { TransactionStatus } from 'generated/prisma';
-import { TransactionService } from '@/payments/shared/transaction.service';
 import {
 	CryptoWithdrawalInput,
 	CryptoWithdrawalProviderInterface,
@@ -15,10 +13,7 @@ export class CryptoWithdrawalProvider
 	provider: JsonRpcProvider;
 	private readonly wallet: Wallet;
 
-	constructor(
-		config: ConfigService,
-		private readonly transactionService: TransactionService,
-	) {
+	constructor(config: ConfigService) {
 		const rpcUrl = config.getOrThrow<string>('ALCHEMY_RPC_URL');
 
 		this.provider = new JsonRpcProvider(rpcUrl);
@@ -33,33 +28,25 @@ export class CryptoWithdrawalProvider
 	 * This performs a native MON/ETH transfer.
 	 */
 	async initiateWithdrawal(input: CryptoWithdrawalInput): Promise<string> {
+		const txData = {
+			to: input.recieverAddress,
+			value: parseEther(input.amount.toString()),
+		};
+
+		let gasLimit: bigint;
 		try {
-			const txData = {
-				to: input.recieverAddress,
-				value: parseEther(input.amount.toString()),
-			};
-
-			let gasLimit: bigint;
-			try {
-				gasLimit = await this.wallet.estimateGas(txData);
-			} catch {
-				gasLimit = 21_000n; // fallback
-			}
-
-			const safeGasLimit = (gasLimit * 120n) / 100n;
-
-			const tx = await this.wallet.sendTransaction({
-				...txData,
-				gasLimit: safeGasLimit,
-			});
-
-			return tx.hash;
-		} catch (error) {
-			await this.transactionService.updateTransaction(input.reference, {
-				status: TransactionStatus.FAILED,
-				metadata: { error: error.message },
-			});
-			throw error;
+			gasLimit = await this.wallet.estimateGas(txData);
+		} catch {
+			gasLimit = 21_000n; // fallback
 		}
+
+		const safeGasLimit = (gasLimit * 120n) / 100n;
+
+		const tx = await this.wallet.sendTransaction({
+			...txData,
+			gasLimit: safeGasLimit,
+		});
+
+		return tx.hash;
 	}
 }

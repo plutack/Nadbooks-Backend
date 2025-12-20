@@ -5,16 +5,16 @@ import {
 	TransactionType,
 } from 'generated/prisma';
 import { generateRef } from '@/helpers/functions';
-import { PriceFeedService } from '@/price-feed/price-feed.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { JwtPayloadType } from '@/types/jwt.type';
 import { WalletService } from '@/wallet/wallet.service';
 import { TransactionService } from '../shared/transaction.service';
-import { VerifyPaymentDto } from './dtos/crypto-deposit.dto';
+
 import {
 	CryptoDepositDto,
 	DepositDto,
 	PaystackDepositDto,
+	VerifyDepositInput,
 } from '@/payments/deposit/dtos/deposit.dto';
 import {
 	CryptoDepositProviderInterface,
@@ -37,7 +37,6 @@ export class DepositService {
 	constructor(
 		private readonly db: PrismaService,
 		private readonly walletService: WalletService,
-		private readonly priceFeed: PriceFeedService,
 		private readonly transactionService: TransactionService,
 
 		paystackProvider: PaystackDepositProvider,
@@ -68,6 +67,7 @@ export class DepositService {
 			paymentMethod: dto.method,
 			status: TransactionStatus.PENDING,
 			recipientWalletId: wallet.id,
+			hash: dto.method === PaymentMethod.CRYPTO ? dto.hash : undefined,
 		});
 
 		console.log('tx saved:', tx);
@@ -92,20 +92,12 @@ export class DepositService {
 	}
 
 	// Verify deposit
-	async verifyDeposit(
-		method: PaymentMethod,
-		input: {
-			reference?: string;
-			hash?: string;
-			buyerAddress?: string;
-			amount?: number;
-		},
-	) {
+	async verifyDeposit(method: PaymentMethod, input: VerifyDepositInput) {
 		const provider = this.providers[method];
 		if (!provider)
 			throw new BadRequestException(`Unsupported method: ${method}`);
 
-		const result = await provider.verifyPayment(input as any);
+		const result = await provider.verifyPayment(input);
 
 		// Update wallet & transaction if successful
 		const isSuccess =

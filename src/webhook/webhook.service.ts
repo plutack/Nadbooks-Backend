@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
+import { PaymentMethod } from 'generated/prisma';
 import { DepositService } from '@/payments/deposit/deposit.service';
 import { WithdrawalService } from '@/payments/withdrawal/withdrawal.service';
 
@@ -63,14 +64,30 @@ export class WebhookService {
 		return { status: 'success' };
 	}
 
-	handleCryptoWebhook(payload: any, headers: any) {
-		const signature = headers['X-Alchemy-Signature'];
+	async handleCryptoWebhook(payload: any, headers: any) {
+		const signature = headers['x-alchemy-signature'];
 
 		if (!this.verifySignature(payload, signature, this.alchemySecret)) {
 			return { status: 'unauthorized' };
 		}
 
-		// have a look at alchemy eventss
+		const activities = payload.event?.activity;
+
+		if (!activities || !Array.isArray(activities)) {
+			return { status: 'success' };
+		}
+
+		for (const activity of activities) {
+			try {
+				await this.depositService.verifyDeposit(PaymentMethod.CRYPTO, {
+					hash: activity.hash,
+					buyerAddress: activity.fromAddress,
+					transferedAmount: activity.value,
+				} as any);
+			} catch (e) {
+				console.error('Error processing crypto webhook activity:', e);
+			}
+		}
 
 		return { status: 'success' };
 	}

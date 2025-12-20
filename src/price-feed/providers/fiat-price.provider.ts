@@ -14,7 +14,7 @@ export class FiatPriceConvertService {
 		this.secret = config.getOrThrow('CURRENCYFREAK_SECRET');
 	}
 
-	async getNGNtoUSD(): Promise<number> {
+	async getUSDToNGNRate(): Promise<number> {
 		const { data } = await lastValueFrom(
 			this.http.get<{ rates: { NGN: number } }>(
 				`${this.baseUrl}/rates/latest`,

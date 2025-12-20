@@ -33,10 +33,8 @@ export class WithdrawalService {
 	providers: WithdrawalProviderMap;
 
 	constructor(
-		private readonly db: PrismaService,
 		private readonly transactionService: TransactionService,
 		private readonly walletService: WalletService,
-		private readonly priceFeed: PriceFeedService,
 		paystackProvider: PaystackWithdrawalProvider,
 		cryptoProvider: CryptoWithdrawalProvider,
 	) {
@@ -91,33 +89,24 @@ export class WithdrawalService {
 			} satisfies CryptoWithdrawalInput;
 		}
 
-		const result = await provider.initiateWithdrawal(providerDto);
+		try {
+			const result = await provider.initiateWithdrawal(providerDto);
 
-		if (dto.method === PaymentMethod.CRYPTO) {
-			this.transactionService.updateTransaction(tx.id, { hash: result });
+			if (dto.method === PaymentMethod.CRYPTO) {
+				await this.transactionService.updateTransaction(tx.id, {
+					hash: result,
+					status: TransactionStatus.SUCCESS,
+				});
+			}
+
+			return result;
+		} catch (error) {
+			await this.transactionService.updateTransaction(tx.id, {
+				status: TransactionStatus.FAILED,
+				metadata: { error: error.message },
+			});
+			throw error;
 		}
-
-		return result;
-
-		// return await this.db.$transaction(async (tx) => {
-		// 	if (wallet.balance < booksAmount) {
-		// 		throw new BadRequestException('Insufficient balance');
-		// 	}
-
-		// 	await this.transactionService.recordTransaction(
-		// 		{
-		// 			amount: converted,
-		// 			type: TransactionType.WITHDRAWAL,
-		// 			senderWalletId: wallet.id,
-		// 			status: TransactionStatus.PENDING,
-		// 			paymentMethod: dto.method,
-		// 			reference,
-		// 			metadata,
-		// 		},
-		// 		tx,
-		// 	);
-
-		// 	await this.walletService.debit(wallet.id, booksAmount, tx);
 	}
 
 	async handleSuccessfulPaystackWithdrawal(data: any) {}

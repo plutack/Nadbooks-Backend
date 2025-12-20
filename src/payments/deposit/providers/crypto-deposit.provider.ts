@@ -21,10 +21,6 @@ import {
 } from '@/payments/deposit/interfaces/provider.interface';
 import { TransactionService } from '@/payments/shared/transaction.service';
 
-// TODO: switch to envs
-const contractAddress = '0x743d45BB0926a1EaCD97a06d8e7e92BEe2f7632b';
-const centralWallet = '0x9735300E77182c6381a776da2e318ae9C20aF099';
-
 type DecodedTransfer = {
 	sender: string;
 	to: string;
@@ -42,12 +38,15 @@ export class CryptoDepositProvider
 		>
 {
 	private readonly provider: JsonRpcProvider;
-	constructor(
-		private readonly transactionService: TransactionService,
-		config: ConfigService,
-	) {
+	private readonly contractAddress: string;
+	private readonly centralWallet: string;
+
+	constructor(config: ConfigService) {
 		const rpcUrl = config.getOrThrow<string>('ALCHEMY_RPC_URL');
-		this.provider = this.provider = new JsonRpcProvider(rpcUrl);
+		this.provider = new JsonRpcProvider(rpcUrl);
+
+		this.contractAddress = config.getOrThrow<string>('SMART_CONTRACT_ADDRESS');
+		this.centralWallet = config.getOrThrow<string>('CENTRAL_WALLET_ADDRESS');
 	}
 	private decodeNormalTransaction(tx: any): DecodedTransfer {
 		const iface = new Interface([
@@ -103,7 +102,7 @@ export class CryptoDepositProvider
 	}
 
 	private decodeTransfer(tx: any): DecodedTransfer | null {
-		if (tx.to?.toLowerCase() === contractAddress.toLowerCase()) {
+		if (tx.to?.toLowerCase() === this.contractAddress.toLowerCase()) {
 			return this.decodeNormalTransaction(tx);
 		}
 		return this.decodeEmailTransaction(tx);
@@ -115,13 +114,15 @@ export class CryptoDepositProvider
 	): Boolean {
 		if (!decodedTransfer) return false;
 		const [recipient, amount] = decodedTransfer.transfer;
-		if (recipient.toLowerCase() !== centralWallet.toLowerCase()) {
+		if (recipient.toLowerCase() !== this.centralWallet.toLowerCase()) {
 			return false;
 		}
 		if (Number(dto.transferedAmount) !== Number(formatEther(amount))) {
 			return false;
 		}
-		if (decodedTransfer.to.toLowerCase() !== contractAddress.toLowerCase()) {
+		if (
+			decodedTransfer.to.toLowerCase() !== this.contractAddress.toLowerCase()
+		) {
 			return false;
 		}
 		if (
@@ -133,18 +134,10 @@ export class CryptoDepositProvider
 	}
 
 	async initiateDeposit(dto: CryptoDepositDto): Promise<DepositResult> {
-		await this.transactionService.recordTransaction({
-			reference: dto.reference,
-			amount: dto.amount,
-			type: TransactionType.DEPOSIT,
-			paymentMethod: PaymentMethod.CRYPTO,
-			status: TransactionStatus.PENDING,
-		});
-
-		return {
+		return await Promise.resolve({
 			status: PaymentStatus.PENDING,
 			reference: dto.reference,
-		};
+		});
 	}
 
 	async verifyPayment(dto: VerifyDepositInput): Promise<{
