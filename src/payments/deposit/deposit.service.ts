@@ -5,16 +5,16 @@ import {
 	TransactionType,
 } from 'generated/prisma';
 import { generateRef } from '@/helpers/functions';
-import { PriceFeedService } from '@/price-feed/price-feed.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { JwtPayloadType } from '@/types/jwt.type';
 import { WalletService } from '@/wallet/wallet.service';
 import { TransactionService } from '../shared/transaction.service';
-import { VerifyPaymentDto } from './dtos/crypto-deposit.dto';
+
 import {
 	CryptoDepositDto,
 	DepositDto,
 	PaystackDepositDto,
+	VerifyDepositInput,
 } from '@/payments/deposit/dtos/deposit.dto';
 import {
 	CryptoDepositProviderInterface,
@@ -23,6 +23,7 @@ import {
 } from '@/payments/deposit/interfaces/provider.interface';
 import { CryptoDepositProvider } from '@/payments/deposit/providers/crypto-deposit.provider';
 import { PaystackDepositProvider } from '@/payments/deposit/providers/paystack-deposit.provider';
+import { ExternalPaymentMethod } from '../withdrawal/dtos/withdrawal.dto';
 
 type DepositProviderMap = {
 	[PaymentMethod.PAYSTACK]: PaystackDepositProviderInterface;
@@ -31,20 +32,19 @@ type DepositProviderMap = {
 
 @Injectable()
 export class DepositService {
-	private providers: DepositProviderMap;
+	providers: DepositProviderMap;
 
 	constructor(
 		private readonly db: PrismaService,
 		private readonly walletService: WalletService,
-		private readonly priceFeed: PriceFeedService,
 		private readonly transactionService: TransactionService,
 
-		private readonly paystackProvider: PaystackDepositProvider,
-		private readonly cryptoProvider: CryptoDepositProvider,
+		paystackProvider: PaystackDepositProvider,
+		cryptoProvider: CryptoDepositProvider,
 	) {
 		this.providers = {
-			[PaymentMethod.PAYSTACK]: this.paystackProvider,
-			[PaymentMethod.CRYPTO]: this.cryptoProvider,
+			[PaymentMethod.PAYSTACK]: paystackProvider,
+			[PaymentMethod.CRYPTO]: cryptoProvider,
 		};
 	}
 
@@ -67,6 +67,7 @@ export class DepositService {
 			paymentMethod: dto.method,
 			status: TransactionStatus.PENDING,
 			recipientWalletId: wallet.id,
+			hash: dto.method === PaymentMethod.CRYPTO ? dto.hash : undefined,
 		});
 
 		console.log('tx saved:', tx);
@@ -91,20 +92,12 @@ export class DepositService {
 	}
 
 	// Verify deposit
-	async verifyDeposit(
-		method: PaymentMethod,
-		input: {
-			reference?: string;
-			hash?: string;
-			buyerAddress?: string;
-			amount?: number;
-		},
-	) {
+	async verifyDeposit(method: PaymentMethod, input: VerifyDepositInput) {
 		const provider = this.providers[method];
 		if (!provider)
 			throw new BadRequestException(`Unsupported method: ${method}`);
 
-		const result = await provider.verifyPayment(input as any);
+		const result = await provider.verifyPayment(input);
 
 		// Update wallet & transaction if successful
 		const isSuccess =
@@ -130,7 +123,7 @@ export class DepositService {
 		return result;
 	}
 
-	async handleSuccessfulDeposit(data: any) {
+	async handleSuccessfulPaystackDeposit(data: any) {
 		console.log(data);
 		const txRecord = await this.transactionService.getTransactionByReference(
 			data.reference,
@@ -158,7 +151,7 @@ export class DepositService {
 		);
 	}
 
-	async handleFailedDeposit(data: any) {
+	async handleFailedPaystackDeposit(data: any) {
 		const tx = await this.transactionService.getTransactionByReference(
 			data.reference,
 		);

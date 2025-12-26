@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { TransactionService } from '@/payments/shared/transaction.service';
+import { ConfigService } from '@nestjs/config';
+import { JsonRpcProvider, parseEther, Wallet } from 'ethers';
 import {
 	CryptoWithdrawalInput,
 	CryptoWithdrawalProviderInterface,
@@ -9,19 +10,43 @@ import {
 export class CryptoWithdrawalProvider
 	implements CryptoWithdrawalProviderInterface
 {
-	constructor(private readonly transactionService: TransactionService) {}
+	provider: JsonRpcProvider;
+	private readonly wallet: Wallet;
+
+	constructor(config: ConfigService) {
+		const rpcUrl = config.getOrThrow<string>('ALCHEMY_RPC_URL');
+
+		this.provider = new JsonRpcProvider(rpcUrl);
+
+		const privateKey = config.getOrThrow<string>('CENTRAL_WALLET_PRIVATE_KEY');
+
+		this.wallet = new Wallet(privateKey, this.provider);
+	}
+
+	/**
+	 * Initiates a blockchain withdrawal and returns the transaction hash.
+	 * This performs a native MON/ETH transfer.
+	 */
 	async initiateWithdrawal(input: CryptoWithdrawalInput): Promise<string> {
-		const tx = await this.transactionService.getTransactionByReference(
-			input.reference,
-		);
-		await this.transactionService.updateTransaction(tx.id, {
-			metadata: {
-				cryptoWalletAddress: input.address,
-				booksAmount: input.amount,
-				hash: input.hash,
-			},
+		const txData = {
+			to: input.recieverAddress,
+			value: parseEther(input.amount.toString()),
+		};
+
+		let gasLimit: bigint;
+		try {
+			gasLimit = await this.wallet.estimateGas(txData);
+		} catch {
+			gasLimit = 21_000n; // fallback
+		}
+
+		const safeGasLimit = (gasLimit * 120n) / 100n;
+
+		const tx = await this.wallet.sendTransaction({
+			...txData,
+			gasLimit: safeGasLimit,
 		});
 
-		return '';
+		return tx.hash;
 	}
 }

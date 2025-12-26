@@ -1,7 +1,6 @@
-import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
 import { Decimal } from '@prisma/client/runtime/library';
-import { firstValueFrom } from 'rxjs';
+import { FiatPriceConvertService } from './providers/fiat-price.provider';
 
 export enum ConversionDirection {
 	NGN_TO_BOOKS = 'NGN_TO_BOOKS',
@@ -12,7 +11,7 @@ export enum ConversionDirection {
 export class PriceFeedService {
 	private readonly logger = new Logger(PriceFeedService.name);
 
-	constructor(private readonly httpService: HttpService) {}
+	constructor(private readonly fiatConvertService: FiatPriceConvertService) {}
 
 	async getConversionPreview(amount: number, direction: ConversionDirection) {
 		const decimalAmount = new Decimal(amount);
@@ -36,15 +35,15 @@ export class PriceFeedService {
 				amountOut: amountInBooks,
 			};
 		}
-	} /**
+	}
+
+	/**
 	 * Fetch the latest NGN → BOOKS rate from an external source
 	 */
 	private async fetchBooksPerNgnRate(): Promise<Decimal> {
-		const response = await firstValueFrom(
-			this.httpService.get('https://api.example.com/rates/ngn-books'),
-		);
+		const USDtoNGNRate = await this.fiatConvertService.getUSDToNGNRate();
 
-		const rate = new Decimal(response.data.rate);
+		const rate = new Decimal(USDtoNGNRate);
 		this.logger.debug(`Fetched fresh NGN_TO_BOOKS_RATE: ${rate.toString()}`);
 		return rate;
 	}
@@ -59,11 +58,5 @@ export class PriceFeedService {
 		const booksPerNgn = await this.fetchBooksPerNgnRate();
 		const ngnPerBook = new Decimal(1).div(booksPerNgn);
 		return amountBooks.mul(ngnPerBook);
-	}
-
-	async convertBooksToMon(amountBooks: Decimal): Promise<Decimal> {
-		// TODO: Replace with actual conversion logic
-		const booksPerMonad = new Decimal(100);
-		return amountBooks.div(booksPerMonad);
 	}
 }

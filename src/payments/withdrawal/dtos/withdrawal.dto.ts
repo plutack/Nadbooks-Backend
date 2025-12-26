@@ -1,10 +1,4 @@
-import {
-	IsNotEmpty,
-	IsNumber,
-	IsOptional,
-	IsString,
-	ValidateIf,
-} from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, ValidateIf } from 'class-validator';
 import { PaymentMethod } from 'generated/prisma';
 
 export type ExternalPaymentMethod = Exclude<PaymentMethod, 'WALLET'>;
@@ -32,9 +26,6 @@ export class PaystackWithdrawDto extends BaseWithdrawDto {
 export class CryptoWithdrawDto extends BaseWithdrawDto {
 	@IsString()
 	walletAddress: string;
-
-	@IsString()
-	hash: string;
 }
 
 // Unified DTO for requesting a withdrawal
@@ -44,29 +35,24 @@ export class WithdrawDto extends BaseWithdrawDto {
 	method: ExternalPaymentMethod;
 
 	// Paystack-specific fields
-	@ValidateIf((o) => o.method === PaymentMethod.PAYSTACK)
+	@ValidateIf((o: WithdrawDto) => o.method === PaymentMethod.PAYSTACK)
 	@IsString()
 	@IsNotEmpty()
 	accountNumber?: string;
 
-	@ValidateIf((o) => o.method === PaymentMethod.PAYSTACK)
+	@ValidateIf((o: WithdrawDto) => o.method === PaymentMethod.PAYSTACK)
 	@IsString()
 	@IsNotEmpty()
 	accountName?: string;
 
-	@ValidateIf((o) => o.method === PaymentMethod.PAYSTACK)
+	@ValidateIf((o: WithdrawDto) => o.method === PaymentMethod.PAYSTACK)
 	@IsString()
 	@IsNotEmpty()
 	bankCode?: string;
 
 	// Crypto-specific fields
-	@ValidateIf((o) => o.method === PaymentMethod.CRYPTO)
+	@ValidateIf((o: WithdrawDto) => o.method === PaymentMethod.CRYPTO)
 	@IsString()
 	@IsNotEmpty()
 	walletAddress?: string;
-
-	@ValidateIf((o) => o.method === PaymentMethod.CRYPTO)
-	@IsString()
-	@IsNotEmpty()
-	hash?: string;
 }

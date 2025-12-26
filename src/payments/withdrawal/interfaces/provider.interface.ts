@@ -12,9 +12,8 @@ export type PaystackWithdrawalInput = {
 
 export type CryptoWithdrawalInput = {
 	amount: number;
-	address: string;
 	reference: string;
-	hash: string;
+	recieverAddress: string;
 };
 
 export interface PaystackWithdrawalProviderInterface

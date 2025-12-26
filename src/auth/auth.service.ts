@@ -19,10 +19,7 @@ export class AuthService {
 		private readonly jwt: JwtService,
 		config: ConfigService,
 	) {
-		this.GOOGLE_CLIENT_ID = config.get<string>('GOOGLE_CLIENT_ID')!;
-		if (!this.GOOGLE_CLIENT_ID) {
-			throw new Error('GOOGLE_CLIENT_ID not set');
-		}
+		this.GOOGLE_CLIENT_ID = config.getOrThrow<string>('GOOGLE_CLIENT_ID');
 	}
 
 	async register(dto: CreateUserDto) {

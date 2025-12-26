@@ -14,12 +14,8 @@ async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 	const config = app.get(ConfigService);
 
-	const nodeEnv = config.get<string>('NODE_ENV');
-	const rawOrigins = config.get<string>('FRONTEND_ORIGIN_PREFIX');
-
-	if (!nodeEnv || !rawOrigins) {
-		throw new Error('Environment variables not properly set');
-	}
+	const nodeEnv = config.getOrThrow<string>('NODE_ENV');
+	const rawOrigins = config.getOrThrow<string>('FRONTEND_ORIGIN_PREFIX');
 
 	const frontendOrigins = rawOrigins
 		.split(',')
@@ -55,17 +51,7 @@ async function bootstrap() {
 
 	app.setGlobalPrefix('api');
 
-	const swaggerConfig = new DocumentBuilder()
-		.setTitle('Nadbooks-Backend')
-		.setDescription('Nadbooks backend API specification')
-		.setVersion('0.1')
-		.build();
-
-	await SwaggerModule.loadPluginMetadata(metadata);
-	const apiDoc = () => SwaggerModule.createDocument(app, swaggerConfig);
-	SwaggerModule.setup('api/docs', app, apiDoc);
-
-	await app.listen(config.get('PORT') ?? 3000);
+	await app.listen(config.getOrThrow('PORT', 3000));
 }
 
 bootstrap();
