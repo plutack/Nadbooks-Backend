@@ -51,16 +51,6 @@ async function bootstrap() {
 
 	app.setGlobalPrefix('api');
 
-	const swaggerConfig = new DocumentBuilder()
-		.setTitle('Nadbooks-Backend')
-		.setDescription('Nadbooks backend API specification')
-		.setVersion('0.1')
-		.build();
-
-	await SwaggerModule.loadPluginMetadata(metadata);
-	const apiDoc = () => SwaggerModule.createDocument(app, swaggerConfig);
-	SwaggerModule.setup('api/docs', app, apiDoc);
-
 	await app.listen(config.get('PORT', 3000));
 }
 
