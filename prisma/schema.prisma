@@ -55,6 +55,8 @@ model User {
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
   role          Role           @default(USER)
+  isActive      Boolean        @default(true)
+  isVerified    Boolean        @default(false)
   books         Book[]
   bookBookmarks BookBookmark[]
   Wallet        Wallet?
@@ -74,10 +76,11 @@ model Book {
   dateUpdated  DateTime       @updatedAt @map("date_updated")
   dateAuthored DateTime       @map("date_authored")
   dateUploaded DateTime       @map("date_uploaded")
-  authorId     String         @map("author_id") // <- renamed
+  authorId     String         @map("author_id")
   author       User           @relation(fields: [authorId], references: [id])
   bookmarks    BookBookmark[]
   OrderBook    OrderBook[]
+  isVisible    Boolean        @default(true) @map("is_visible")
 
   @@index([genre])
 }
