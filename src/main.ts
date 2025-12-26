@@ -51,7 +51,7 @@ async function bootstrap() {
 
 	app.setGlobalPrefix('api');
 
-	await app.listen(config.get('PORT', 3000));
+	await app.listen(config.getOrThrow('PORT', 3000));
 }
 
 bootstrap();
