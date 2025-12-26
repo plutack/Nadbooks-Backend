@@ -76,7 +76,7 @@ export class BooksService {
 	 */
 	async getBookById(bookId: string) {
 		return await this.db.book.findFirst({
-			where: { id: bookId, isVisible: true },
+			where: { id: bookId },
 		});
 	}
 
@@ -93,9 +93,9 @@ export class BooksService {
 		}
 
 		return await this.db.book.findMany({
-			take: filters.limit || 20,
-			skip: filters.skip || 0,
-			where: { isVisible: true },
+			take: filters.limit,
+			skip: filters.skip,
+			where,
 		});
 	}
 
