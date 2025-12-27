@@ -18,7 +18,7 @@ export class UserService {
 				lastName: true,
 				username: true,
 				email: true,
-				Wallet: {
+				wallet: {
 					select: {
 						balance: true,
 					},
