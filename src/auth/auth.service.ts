@@ -32,7 +32,7 @@ export class AuthService {
 				email: dto.email,
 				username: dto.username,
 				passwordHash,
-				Wallet: {
+				wallet: {
 					create: {
 						balance: 0,
 					},
@@ -45,7 +45,7 @@ export class AuthService {
 				email: true,
 				username: true,
 				role: true,
-				Wallet: {
+				wallet: {
 					select: {
 						balance: true,
 					},
@@ -149,7 +149,7 @@ export class AuthService {
 					lastName: payload.family_name!,
 					email: payload.email,
 					username: payload.email.split('@')[0],
-					Wallet: { create: { balance: 0 } },
+					wallet: { create: { balance: 0 } },
 				},
 				select: {
 					id: true,
