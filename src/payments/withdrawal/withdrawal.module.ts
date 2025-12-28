@@ -6,14 +6,12 @@ import { PaystackWithdrawalProvider } from '@/payments/withdrawal/providers/pays
 import { WithdrawalController } from '@/payments/withdrawal/withdrawal.controller';
 import { WithdrawalService } from '@/payments/withdrawal/withdrawal.service';
 import { PriceFeedModule } from '@/price-feed/price-feed.module';
-import { PrismaService } from '@/prisma/prisma.service';
 import { WalletModule } from '@/wallet/wallet.module';
 
 @Module({
 	imports: [WalletModule, PriceFeedModule, HttpModule, SharedPaymentsModule],
 	providers: [
 		WithdrawalService,
-		PrismaService,
 		PaystackWithdrawalProvider,
 		CryptoWithdrawalProvider,
 	],

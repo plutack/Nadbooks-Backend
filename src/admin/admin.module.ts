@@ -1,13 +1,11 @@
-import { Module } from '@nestjs/common';
-import { AdminBooksService } from './services/books/books.service';
-import { PrismaModule } from '@/prisma/prisma.module';
-import { AdminBooksController } from './controllers/books/books.controller';
-import { UsersService } from './services/users/users.service';
-import { UsersController } from './controllers/users/users.controller';
+import { Module } from "@nestjs/common";
+import { BooksModule } from "@/books/books.module";
+import { UserModule } from "@/users/users.module";
+import { AdminBooksController } from "@/admin/controllers/books/books.controller";
+import { UsersController } from "@/admin/controllers/users/users.controller";
 
 @Module({
-	imports: [PrismaModule],
-	providers: [AdminBooksService, UsersService],
+	imports: [UserModule, BooksModule],
 	controllers: [AdminBooksController, UsersController],
 })
 export class AdminModule {}

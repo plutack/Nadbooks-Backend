@@ -6,13 +6,11 @@ import { CryptoDepositProvider } from '@/payments/deposit/providers/crypto-depos
 import { PaystackDepositProvider } from '@/payments/deposit/providers/paystack-deposit.provider';
 import { SharedPaymentsModule } from '@/payments/shared/shared-payments.module';
 import { PriceFeedModule } from '@/price-feed/price-feed.module';
-import { PrismaModule } from '@/prisma/prisma.module';
 import { WalletModule } from '@/wallet/wallet.module';
 
 @Module({
 	imports: [
 		HttpModule,
-		PrismaModule,
 		WalletModule,
 		PriceFeedModule,
 		SharedPaymentsModule,
