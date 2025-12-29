@@ -9,9 +9,9 @@ import {
 	IsNumberString,
 	IsOptional,
 	IsString,
-	Min,
 } from 'class-validator';
 import * as multipartUtil from '@/helpers/dto/multipart.util';
+import { BaseFilterDto } from '@/common/dto/filters.dto';
 
 export class StoreBookDto {
 	@IsNotEmpty()
@@ -55,19 +55,7 @@ export const StoreBookMultipartDto = multipartUtil.MultipartFileDto(
 	['book', 'bookCover'],
 );
 
-export class BookFilterDto {
-	@IsOptional()
-	@Type(() => Number)
-	@IsInt()
-	@Min(0)
-	limit?: number = 20;
-
-	@IsOptional()
-	@Type(() => Number)
-	@IsInt()
-	@Min(0)
-	skip?: number = 0;
-
+export class BookFilterDto extends BaseFilterDto {
 	@IsOptional()
 	@IsString()
 	genre?: string;

@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import { JwtPayloadType } from '@/types/jwt.type';
+import { Role } from 'generated/prisma';
+import { UnauthorizedException, BadRequestException } from '@nestjs/common';
 
 @Injectable()
 export class UserService {
@@ -45,5 +47,134 @@ export class UserService {
 		});
 
 		return bookmarks;
+	}
+
+	// Admin functionality consolidated below
+
+	async findUserById(userId: string) {
+		const user = await this.db.user.findUnique({
+			where: { id: userId },
+			select: {
+				id: true,
+				firstName: true,
+				createdAt: true,
+				updatedAt: true,
+				isVerified: true,
+				username: true,
+				email: true,
+				isActive: true, // Added isActive as it might be needed for admin view
+			},
+		});
+
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+
+		return user;
+	}
+
+	async getUsers(limit: number = 10, skip: number = 0) {
+		return await this.db.user.findMany({
+			select: {
+				id: true,
+				firstName: true,
+				createdAt: true,
+				updatedAt: true,
+				isVerified: true,
+			},
+			take: limit,
+			skip,
+		});
+	}
+
+	async updateUser(userId: string, payload: any) {
+		// Using any for payload here to avoid circular dependencies if DTO is in admin
+		// Ideally DTOs should be shared or defined in a common place
+		// For now simple cleanObject approach
+		return await this.db.user.update({
+			where: { id: userId },
+			data: payload, // Assuming payload is already clean or cleanObject is handled in controller
+		});
+	}
+
+	async updateUserActiveState(userId: string, activate: boolean) {
+		// TODO: send an email
+		return await this.db.user.update({
+			where: { id: userId },
+			data: { isActive: activate },
+		});
+	}
+
+	async updateUserVerification(userId: string, verify: boolean) {
+		return await this.db.user.update({
+			where: { id: userId },
+			data: { isVerified: verify },
+		});
+	}
+
+	async updateUserRole(
+		requesterId: string,
+		targetUserId: string,
+		newRole: Role,
+	) {
+		const requester = await this.db.user.findUnique({
+			where: { id: requesterId },
+			select: { role: true },
+		});
+
+		if (!requester) {
+			throw new UnauthorizedException('Requester not found');
+		}
+
+		if (requester.role !== Role.SUPER_ADMIN && requester.role !== Role.ADMIN) {
+			throw new UnauthorizedException('Insufficient permissions');
+		}
+
+		const targetUser = await this.db.user.findUnique({
+			where: { id: targetUserId },
+			select: { role: true },
+		});
+
+		if (!targetUser) {
+			throw new NotFoundException('User not found');
+		}
+
+		// LOGIC:
+		// 1. SUPER_ADMIN can do anything (assign ADMIN, SUPER_ADMIN).
+		// 2. ADMIN can only assign ADMIN. Cannot assign SUPER_ADMIN.
+		// 3. ADMIN cannot demote/change another ADMIN or SUPER_ADMIN (effectively "removing" admin).
+		//    - If target is ADMIN, requester must be SUPER_ADMIN to change it.
+		//    - If target is SUPER_ADMIN, requester must be SUPER_ADMIN (conceptually).
+		// 4. ADMIN can promote USER to ADMIN.
+
+		if (requester.role === Role.ADMIN) {
+			if (newRole === Role.SUPER_ADMIN) {
+				throw new UnauthorizedException('Admins cannot create Super Admins');
+			}
+			if (
+				targetUser.role === Role.ADMIN ||
+				targetUser.role === Role.SUPER_ADMIN
+			) {
+				throw new UnauthorizedException('Admins cannot modify other Admins');
+			}
+		}
+
+		return await this.db.$transaction(async (tx) => {
+			const updatedUser = await tx.user.update({
+				where: { id: targetUserId },
+				data: { role: newRole },
+			});
+
+			await tx.roleChange.create({
+				data: {
+					fromRole: targetUser.role,
+					toRole: newRole,
+					changedById: requesterId,
+					userId: targetUserId,
+				},
+			});
+
+			return updatedUser;
+		});
 	}
 }
