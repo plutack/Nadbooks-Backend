@@ -86,4 +86,9 @@ export class BookFilterDto {
 	@Transform(({ value }) => value === 'true')
 	@IsBoolean()
 	isMature?: boolean;
+
+	@IsOptional()
+	@Transform(({ value }) => value === 'true')
+	@IsBoolean()
+	includeHidden?: boolean;
 }

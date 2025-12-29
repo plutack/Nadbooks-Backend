@@ -3,7 +3,7 @@ import { UserActivation } from '@/admin/dto/users/update-user-activation.dto';
 import { UserVerification } from '@/admin/dto/users/verify-user.dto';
 import { AuthGuard } from '@/auth/auth.guard';
 import { UserService } from '@/users/users.service';
-import { BaseFilterQueryType } from '@/types/filters.type';
+import { BaseFilterDto } from '@/common/dto/filters.dto';
 import { RolesGuard } from '@/auth/guards/roles.guard';
 import { Roles } from '@/auth/decorators/roles.decorator';
 import { Role } from 'generated/prisma';
@@ -29,7 +29,7 @@ export class UsersController {
 	constructor(private readonly userService: UserService) {}
 
 	@Get()
-	getUsers(@Query() { limit, skip }: BaseFilterQueryType) {
+	getUsers(@Query() { limit, skip }: BaseFilterDto) {
 		return this.userService.getUsers(limit, skip);
 	}
 

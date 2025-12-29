@@ -10,7 +10,7 @@ import {
 import { AdminEditBookDto } from '@/admin/dto/books/edit-book.dto';
 import { AuthGuard } from '@/auth/auth.guard';
 import { BooksService } from '@/books/books.service';
-import { BaseFilterQueryType } from '@/types/filters.type';
+import { BaseFilterDto } from '@/common/dto/filters.dto';
 import { RolesGuard } from '@/auth/guards/roles.guard';
 import { Roles } from '@/auth/decorators/roles.decorator';
 import { Role } from 'generated/prisma';
@@ -22,7 +22,7 @@ export class AdminBooksController {
 	constructor(private booksService: BooksService) {}
 
 	@Get()
-	getBooks(@Query() { limit, skip }: BaseFilterQueryType) {
+	getBooks(@Query() { limit, skip }: BaseFilterDto) {
 		return this.booksService.getBooks({ limit, skip, includeHidden: true });
 	}
 
