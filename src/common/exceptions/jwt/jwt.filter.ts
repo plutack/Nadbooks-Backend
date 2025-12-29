@@ -3,11 +3,13 @@ import {
 	Catch,
 	ExceptionFilter,
 	HttpStatus,
+	Logger,
 } from '@nestjs/common';
 import { JsonWebTokenError, TokenExpiredError } from '@nestjs/jwt';
 
 @Catch(TokenExpiredError, JsonWebTokenError)
 export class JwtFilter implements ExceptionFilter {
+	constructor(private readonly _logger: Logger) {}
 	catch(exception: TokenExpiredError | JsonWebTokenError, host: ArgumentsHost) {
 		const http = host.switchToHttp();
 		const response = http.getResponse();
