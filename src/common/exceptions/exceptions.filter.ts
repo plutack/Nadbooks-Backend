@@ -4,11 +4,15 @@ import {
 	ExceptionFilter,
 	HttpException,
 	HttpStatus,
+	LoggerService,
 } from '@nestjs/common';
 
-@Catch(HttpException)
+@Catch()
 export class ExceptionsFilter implements ExceptionFilter {
-	catch(exception: HttpException, host: ArgumentsHost) {
+	constructor(
+		private readonly logger: LoggerService,
+	) {}
+	catch(exception: unknown, host: ArgumentsHost) {
 		const ctx = host.switchToHttp();
 		const response = ctx.getResponse();
 
@@ -16,7 +20,6 @@ export class ExceptionsFilter implements ExceptionFilter {
 		let message: string;
 		let errors: string[];
 
-		console.log(exception);
 		if (exception instanceof HttpException) {
 			status = exception.getStatus();
 			const raw = exception.getResponse();
@@ -28,10 +31,20 @@ export class ExceptionsFilter implements ExceptionFilter {
 				message = exception.name;
 				errors = Array.isArray(body.message) ? body.message : [body.message];
 			}
+			this.logger.error(exception);
+		} else if (
+			exception instanceof Error &&
+			exception.message === 'Origin not allowed by CORS'
+		) {
+			status = HttpStatus.FORBIDDEN;
+			message = 'ForbiddenResource';
+			errors = ['Origin not allowed'];
+			this.logger.warn(`[CORS] Blocked request from unauthorized origin`);
 		} else {
 			status = HttpStatus.INTERNAL_SERVER_ERROR;
 			message = 'InternalServerErrorException';
 			errors = ['Internal server error'];
+			this.logger.error(exception);
 		}
 
 		response.status(status).json({
