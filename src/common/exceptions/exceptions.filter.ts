@@ -4,14 +4,12 @@ import {
 	ExceptionFilter,
 	HttpException,
 	HttpStatus,
-	LoggerService,
+	Logger,
 } from '@nestjs/common';
 
 @Catch()
 export class ExceptionsFilter implements ExceptionFilter {
-	constructor(
-		private readonly logger: LoggerService,
-	) {}
+	constructor(private readonly logger: Logger) {}
 	catch(exception: unknown, host: ArgumentsHost) {
 		const ctx = host.switchToHttp();
 		const response = ctx.getResponse();
