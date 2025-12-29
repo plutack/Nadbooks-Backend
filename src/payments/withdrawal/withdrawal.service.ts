@@ -16,8 +16,6 @@ import {
 } from '@/payments/withdrawal/interfaces/provider.interface';
 import { CryptoWithdrawalProvider } from '@/payments/withdrawal/providers/crypto-withdrawal.provider';
 import { PaystackWithdrawalProvider } from '@/payments/withdrawal/providers/paystack-withdrawal.provider';
-import { PriceFeedService } from '@/price-feed/price-feed.service';
-import { PrismaService } from '@/prisma/prisma.service';
 import { JwtPayloadType } from '@/types/jwt.type';
 import { WalletService } from '@/wallet/wallet.service';
 

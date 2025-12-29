@@ -8,7 +8,6 @@ import { ExceptionsFilter } from '@/common/exceptions/exceptions.filter';
 import { JwtFilter } from '@/common/exceptions/jwt/jwt.filter';
 import { PrismaFilter } from '@/common/exceptions/prisma/prisma.filter';
 import { ResponseInterceptor } from '@/common/interceptors/response.interceptor';
-import metadata from '@/metadata';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);

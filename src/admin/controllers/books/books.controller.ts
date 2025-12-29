@@ -8,32 +8,36 @@ import {
 	UseGuards,
 } from '@nestjs/common';
 import { AdminEditBookDto } from '@/admin/dto/books/edit-book.dto';
-import { AdminAuthGuard } from '@/admin/guards/admin.guard';
-import { AdminBooksService } from '@/admin/services/books/books.service';
-import { BaseFilterQueryType } from '@/types/filters.type';
+import { AuthGuard } from '@/auth/auth.guard';
+import { BooksService } from '@/books/books.service';
+import { BaseFilterDto } from '@/common/dto/filters.dto';
+import { RolesGuard } from '@/auth/guards/roles.guard';
+import { Roles } from '@/auth/decorators/roles.decorator';
+import { Role } from 'generated/prisma';
 
 @Controller('admin/books')
-@UseGuards(AdminAuthGuard)
+@UseGuards(AuthGuard, RolesGuard)
+@Roles(Role.ADMIN, Role.SUPER_ADMIN)
 export class AdminBooksController {
-	constructor(private adminBookService: AdminBooksService) {}
+	constructor(private booksService: BooksService) {}
 
 	@Get()
-	getBooks(@Query() { limit, skip }: BaseFilterQueryType) {
-		return this.adminBookService.getBooks(limit, skip);
+	getBooks(@Query() { limit, skip }: BaseFilterDto) {
+		return this.booksService.getBooks({ limit, skip, includeHidden: true });
 	}
 
 	@Get(':id')
 	getBookById(@Param('id') id: string) {
-		return this.adminBookService.findBookById(id);
+		return this.booksService.findBookById(id);
 	}
 
 	@Patch(':id')
 	updateBookById(@Param('id') id: string, @Body() body: AdminEditBookDto) {
-		return this.adminBookService.update(id, body);
+		return this.booksService.adminUpdateBook(id, body);
 	}
 
 	@Patch('/ban/:id')
 	banBookById(@Param('id') id: string) {
-		return this.adminBookService.banBook(id);
+		return this.booksService.banBook(id);
 	}
 }

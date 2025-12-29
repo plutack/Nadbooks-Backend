@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
 import { SharedPaymentsModule } from '@/payments/shared/shared-payments.module';
 import { TransactionService } from '@/payments/shared/transaction.service';
-import { PrismaModule } from '@/prisma/prisma.module';
 import { TransactionsController } from '@/transactions/transactions.controller';
 
 @Module({
-	imports: [SharedPaymentsModule, PrismaModule],
+	imports: [SharedPaymentsModule],
 	controllers: [TransactionsController],
-	providers: [TransactionService],
+	providers: [TransactionService],	
 })
 export class TransactionsModule {}

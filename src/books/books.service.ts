@@ -5,10 +5,15 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import { StorageService } from '@/storage/storage.service';
-import { BaseFilterQueryType, BookFilterQueryType } from '@/types/filters.type';
+import { BaseFilterDto } from '@/common/dto/filters.dto';
 import { JwtPayloadType } from '@/types/jwt.type';
-import { BookFilterDto, StoreBookDto, UpdateBookDto } from './dtos/book.dto';
-import { FileType, UpdatableBookFields } from './types';
+import {
+	BookFilterDto,
+	StoreBookDto,
+	UpdateBookDto,
+} from '@/books/dtos/book.dto';
+import { FileType, UpdatableBookFields } from '@/books/types';
+import { AdminEditBookDto } from '@/admin/dto/books/edit-book.dto';
 
 @Injectable()
 export class BooksService {
@@ -92,10 +97,14 @@ export class BooksService {
 			if (filters.maxPrice !== undefined) where.price.lte = filters.maxPrice;
 		}
 
+		if (!filters.includeHidden) {
+			where.isVisible = true;
+		}
+
 		return await this.db.book.findMany({
 			take: filters.limit || 20,
 			skip: filters.skip || 0,
-			where: { isVisible: true },
+			where,
 		});
 	}
 
@@ -207,7 +216,7 @@ export class BooksService {
 		});
 	}
 
-	async getUserBookmarkedBooks(userId: string, filters: BaseFilterQueryType) {
+	async getUserBookmarkedBooks(userId: string, filters: BaseFilterDto) {
 		return await this.db.bookBookmark.findMany({
 			where: {
 				userId,
@@ -221,5 +230,21 @@ export class BooksService {
 			take: filters.limit || 20,
 			skip: filters.skip || 0,
 		});
+	}
+
+	async banBook(bookId: string) {
+		const book = await this.db.book.update({
+			where: { id: bookId },
+			data: { isVisible: false },
+		});
+		return book;
+	}
+
+	async adminUpdateBook(bookId: string, payload: AdminEditBookDto) {
+		const book = await this.db.book.update({
+			where: { id: bookId },
+			data: payload,
+		});
+		return book;
 	}
 }
