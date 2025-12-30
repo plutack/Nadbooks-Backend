@@ -9,12 +9,7 @@ import { PriceFeedModule } from '@/price-feed/price-feed.module';
 import { WalletModule } from '@/wallet/wallet.module';
 
 @Module({
-	imports: [
-		HttpModule,
-		WalletModule,
-		PriceFeedModule,
-		SharedPaymentsModule,
-	],
+	imports: [HttpModule, WalletModule, PriceFeedModule, SharedPaymentsModule],
 	controllers: [DepositController],
 	providers: [DepositService, PaystackDepositProvider, CryptoDepositProvider],
 	exports: [DepositService],

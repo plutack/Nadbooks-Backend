@@ -111,7 +111,7 @@ export class CryptoDepositProvider
 	private isValidTransaction(
 		decodedTransfer: DecodedTransfer | null,
 		dto: VerifyDepositInput,
-	): Boolean {
+	): boolean {
 		if (!decodedTransfer) return false;
 		const [recipient, amount] = decodedTransfer.transfer;
 		if (recipient.toLowerCase() !== this.centralWallet.toLowerCase()) {

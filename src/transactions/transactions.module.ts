@@ -6,6 +6,6 @@ import { TransactionsController } from '@/transactions/transactions.controller';
 @Module({
 	imports: [SharedPaymentsModule],
 	controllers: [TransactionsController],
-	providers: [TransactionService],	
+	providers: [TransactionService],
 })
 export class TransactionsModule {}
