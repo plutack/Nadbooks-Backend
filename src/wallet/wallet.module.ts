@@ -3,7 +3,7 @@ import { WalletService } from '@/wallet/wallet.service';
 
 @Module({
 	imports: [],
-	providers: [ WalletService],
+	providers: [WalletService],
 	exports: [WalletService],
 })
 export class WalletModule {}

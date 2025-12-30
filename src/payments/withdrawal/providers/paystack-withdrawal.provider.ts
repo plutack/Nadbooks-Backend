@@ -2,7 +2,10 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { lastValueFrom } from 'rxjs';
-import { PaystackWithdrawalInput, PaystackWithdrawalProviderInterface } from '@/payments/withdrawal/interfaces/provider.interface';
+import {
+	PaystackWithdrawalInput,
+	PaystackWithdrawalProviderInterface,
+} from '@/payments/withdrawal/interfaces/provider.interface';
 
 @Injectable()
 export class PaystackWithdrawalProvider

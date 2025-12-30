@@ -6,7 +6,6 @@ import { AuthService } from '@/auth/auth.service';
 import { GoogleStrategy } from '@/auth/strategies/google.strategy';
 import { JWTStrategy } from '@/auth/strategies/jwt.strategy';
 
-
 @Global()
 @Module({
 	imports: [
