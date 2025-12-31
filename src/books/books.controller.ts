@@ -26,6 +26,19 @@ import { JwtPayloadType } from '@/types/jwt.type';
 export class BooksController {
 	constructor(private bookService: BooksService) {}
 
+	@Get('me/deleted')
+	@UseGuards(AuthGuard)
+	getDeletedBooks(@CurrentUser() user: JwtPayloadType) {
+		return this.bookService.getDeletedBooks(user.sub);
+	}
+
+	@Post(':id/restore')
+	@UseGuards(AuthGuard)
+	@HttpCode(200)
+	restoreBook(@Param('id') id: string, @CurrentUser() user: JwtPayloadType) {
+		return this.bookService.restoreBook(id, user);
+	}
+
 	@Get()
 	getBooks(@Query() query: BookFilterDto) {
 		return this.bookService.getBooks(query);

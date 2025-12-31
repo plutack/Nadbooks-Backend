@@ -8,12 +8,13 @@ import {
 	UseGuards,
 } from '@nestjs/common';
 import { AdminEditBookDto } from '@/admin/dto/books/edit-book.dto';
-import { AuthGuard } from '@/auth/auth.guard';
+import { AuthGuard, CurrentUser } from '@/auth/auth.guard';
 import { BooksService } from '@/books/books.service';
 import { BaseFilterDto } from '@/common/dto/filters.dto';
 import { RolesGuard } from '@/auth/guards/roles.guard';
 import { Roles } from '@/auth/decorators/roles.decorator';
 import { Role } from 'generated/prisma';
+import { JwtPayloadType } from '@/types/jwt.type';
 
 @Controller('admin/books')
 @UseGuards(AuthGuard, RolesGuard)
@@ -37,7 +38,7 @@ export class AdminBooksController {
 	}
 
 	@Patch('/ban/:id')
-	banBookById(@Param('id') id: string) {
-		return this.booksService.banBook(id);
+	banBookById(@Param('id') id: string, @CurrentUser() user: JwtPayloadType) {
+		return this.booksService.banBook(id, user.sub);
 	}
 }
