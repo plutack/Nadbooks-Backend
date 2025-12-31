@@ -4,6 +4,7 @@ import {
 	RequestMethod,
 	ValidationPipe,
 	BadRequestException,
+	Logger,
 } from '@nestjs/common';
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
@@ -38,6 +39,7 @@ import { WebhookModule } from '@/webhook/webhook.module';
 		WalletModule,
 		PriceFeedModule,
 		OrderPaymentModule,
+
 		DepositModule,
 		WithdrawalModule,
 		WebhookModule,
@@ -46,6 +48,7 @@ import { WebhookModule } from '@/webhook/webhook.module';
 	controllers: [AppController],
 	providers: [
 		AppService,
+		Logger,
 		{
 			provide: APP_FILTER,
 			useClass: PrismaFilter,
