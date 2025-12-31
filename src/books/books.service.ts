@@ -1,5 +1,6 @@
 import {
 	BadRequestException,
+	ForbiddenException,
 	Injectable,
 	NotFoundException,
 } from '@nestjs/common';
@@ -14,6 +15,7 @@ import {
 } from '@/books/dtos/book.dto';
 import { FileType, UpdatableBookFields } from '@/books/types';
 import { AdminEditBookDto } from '@/admin/dto/books/edit-book.dto';
+import { Role } from 'generated/prisma';
 
 @Injectable()
 export class BooksService {
@@ -81,7 +83,7 @@ export class BooksService {
 	 */
 	async getBookById(bookId: string) {
 		return await this.db.book.findFirst({
-			where: { id: bookId, isVisible: true },
+			where: { id: bookId, isDeleted: false },
 		});
 	}
 
@@ -98,7 +100,7 @@ export class BooksService {
 		}
 
 		if (!filters.includeHidden) {
-			where.isVisible = true;
+			where.isDeleted = false;
 		}
 
 		return await this.db.book.findMany({
@@ -141,10 +143,13 @@ export class BooksService {
 	// FIX: what happens when an author delete books that have been bought
 	async deleteBook(id: string, authorId: string) {
 		await this.findAuthorBookById(id, authorId);
-		await this.db.book.delete({
+		await this.db.book.update({
 			where: {
-				authorId,
 				id,
+			},
+			data: {
+				isDeleted: true,
+				deletedById: authorId,
 			},
 		});
 	}
@@ -232,12 +237,48 @@ export class BooksService {
 		});
 	}
 
-	async banBook(bookId: string) {
+	async banBook(bookId: string, adminId: string) {
 		const book = await this.db.book.update({
 			where: { id: bookId },
-			data: { isVisible: false },
+			data: { isDeleted: true, deletedById: adminId },
 		});
 		return book;
+	}
+
+	async getDeletedBooks(authorId: string) {
+		return await this.db.book.findMany({
+			where: {
+				authorId,
+				isDeleted: true,
+			},
+		});
+	}
+
+	async restoreBook(bookId: string, user: JwtPayloadType) {
+		const book = await this.db.book.findFirst({
+			where: { id: bookId, isDeleted: true },
+		});
+
+		if (!book) {
+			throw new NotFoundException('Book not found');
+		}
+
+		const isAdmin = user.role === Role.ADMIN || user.role === Role.SUPER_ADMIN;
+		const isDeleter = book.deletedById === user.sub;
+
+		if (!isAdmin && !isDeleter) {
+			throw new ForbiddenException(
+				'You are not allowed to restore this book. It may have been deleted by an administrator.',
+			);
+		}
+
+		return await this.db.book.update({
+			where: { id: bookId },
+			data: {
+				isDeleted: false,
+				deletedById: null,
+			},
+		});
 	}
 
 	async adminUpdateBook(bookId: string, payload: AdminEditBookDto) {
