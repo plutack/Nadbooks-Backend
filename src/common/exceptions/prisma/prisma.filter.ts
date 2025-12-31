@@ -9,7 +9,8 @@ import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library'
 
 @Catch(PrismaClientKnownRequestError)
 export class PrismaFilter implements ExceptionFilter {
-	constructor(private readonly _logger: Logger) {}
+	constructor(private readonly logger: Logger) {}
+
 	catch(exception: PrismaClientKnownRequestError, host: ArgumentsHost) {
 		const ctx = host.switchToHttp();
 		const response = ctx.getResponse();
@@ -31,6 +32,8 @@ export class PrismaFilter implements ExceptionFilter {
 				message = 'BadRequestException';
 				errors = ['Database request failed'];
 		}
+
+		this.logger.error(exception);
 
 		response.status(status).json({
 			statusCode: status,
