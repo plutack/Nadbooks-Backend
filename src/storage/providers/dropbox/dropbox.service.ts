@@ -101,23 +101,39 @@ export class DropboxService implements IStorageService {
 		fileName: string,
 	) {
 		const dropboxClient = await this.getDropboxClient();
-		// pathName should be genre/fileName
-		// const sharedLinks = await dropboxClient.sharingListSharedLinks({})
 		file.filename = fileName;
 		const pathName = `/nadbooks/${file.filename}`;
+
+		// 1. Upload the file (overwrite existing)
 		await dropboxClient.filesUpload({
 			path: pathName,
 			contents: file.buffer,
 			mode: { '.tag': 'overwrite' },
 		});
-		const sharedLinkMetadata =
-			await dropboxClient.sharingCreateSharedLinkWithSettings({
-				path: pathName,
-				settings: {
-					requested_visibility: { '.tag': 'public' },
-				},
-			});
-		const rawUrl = sharedLinkMetadata.result.url;
+
+		// 2. Check for existing shared links
+		const existingLinks = await dropboxClient.sharingListSharedLinks({
+			path: pathName,
+			direct_only: true,
+		});
+
+		let rawUrl: string;
+
+		if (existingLinks.result.links.length > 0) {
+			// Use the existing link
+			rawUrl = existingLinks.result.links[0].url;
+		} else {
+			// Create a new shared link
+			const sharedLinkMetadata =
+				await dropboxClient.sharingCreateSharedLinkWithSettings({
+					path: pathName,
+					settings: {
+						requested_visibility: { '.tag': 'public' },
+					},
+				});
+			rawUrl = sharedLinkMetadata.result.url;
+		}
+
 		const directUrl = rawUrl
 			.replace('www.dropbox.com', 'dl.dropboxusercontent.com')
 			.replace('?dl=0', '');
