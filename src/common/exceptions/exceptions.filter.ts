@@ -6,6 +6,7 @@ import {
 	HttpStatus,
 	Logger,
 } from '@nestjs/common';
+import { JsonWebTokenError } from 'jsonwebtoken';
 
 @Catch()
 export class ExceptionsFilter implements ExceptionFilter {
@@ -42,7 +43,14 @@ export class ExceptionsFilter implements ExceptionFilter {
 			status = HttpStatus.INTERNAL_SERVER_ERROR;
 			message = 'InternalServerErrorException';
 			errors = ['Internal server error'];
-			this.logger.error(exception);
+			this.logger.error(
+				`Unhandled exception: ${exception instanceof Error ? exception.message : exception}`,
+				(exception as any).stack,
+				(exception as any).constructor?.name,
+			);
+			this.logger.warn(
+				`Debug: Is instanceof JsonWebTokenError? ${exception instanceof JsonWebTokenError}`,
+			);
 		}
 
 		response.status(status).json({

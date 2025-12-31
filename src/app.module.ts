@@ -51,15 +51,15 @@ import { WebhookModule } from '@/webhook/webhook.module';
 		Logger,
 		{
 			provide: APP_FILTER,
+			useClass: ExceptionsFilter,
+		},
+		{
+			provide: APP_FILTER,
 			useClass: PrismaFilter,
 		},
 		{
 			provide: APP_FILTER,
 			useClass: JwtFilter,
-		},
-		{
-			provide: APP_FILTER,
-			useClass: ExceptionsFilter,
 		},
 		{
 			provide: APP_PIPE,
