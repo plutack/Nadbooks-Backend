@@ -1,10 +1,12 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { ImageProcessingService } from './image-processing.service';
 import sharp from 'sharp';
-import { Logger } from '@nestjs/common';
 
-export class ImageProcessor {
-	private static readonly logger = new Logger(ImageProcessor.name);
+@Injectable()
+export class SharpImageProcessingService implements ImageProcessingService {
+	private readonly logger = new Logger(SharpImageProcessingService.name);
 
-	static async resizeAndOptimize(buffer: Buffer): Promise<Buffer> {
+	async resizeAndOptimize(buffer: Buffer): Promise<Buffer> {
 		try {
 			const image = sharp(buffer);
 			const metadata = await image.metadata();
@@ -19,7 +21,7 @@ export class ImageProcessor {
 					height: 2560,
 					fit: 'inside',
 					withoutEnlargement: true,
-					})
+				})
 				.jpeg({
 					quality: 80,
 				})
