@@ -96,22 +96,22 @@ export class DropboxService implements IStorageService {
 		}
 	}
 	async storeFile(
-		FileType: FileType,
+		fileType: FileType,
 		file: Express.Multer.File,
 		fileName: string,
 	) {
 		const dropboxClient = await this.getDropboxClient();
+		let buffer = file.buffer;
+
 		file.filename = fileName;
 		const pathName = `/nadbooks/${file.filename}`;
 
-		// 1. Upload the file (overwrite existing)
 		await dropboxClient.filesUpload({
 			path: pathName,
-			contents: file.buffer,
+			contents: buffer,
 			mode: { '.tag': 'overwrite' },
 		});
 
-		// 2. Check for existing shared links
 		const existingLinks = await dropboxClient.sharingListSharedLinks({
 			path: pathName,
 			direct_only: true,
@@ -120,10 +120,8 @@ export class DropboxService implements IStorageService {
 		let rawUrl: string;
 
 		if (existingLinks.result.links.length > 0) {
-			// Use the existing link
 			rawUrl = existingLinks.result.links[0].url;
 		} else {
-			// Create a new shared link
 			const sharedLinkMetadata =
 				await dropboxClient.sharingCreateSharedLinkWithSettings({
 					path: pathName,
