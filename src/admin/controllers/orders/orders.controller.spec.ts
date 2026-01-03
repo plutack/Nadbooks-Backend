@@ -1,26 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AdminBooksController } from './books.controller';
-import { BooksService } from '@/books/books.service';
+import { AdminOrdersController } from './orders.controller';
+import { OrderService } from '@/payments/shared/order.service';
 import { AuthGuard } from '@/auth/auth.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
 
-describe('AdminBooksController', () => {
-	let controller: AdminBooksController;
+describe('AdminOrdersController', () => {
+	let controller: AdminOrdersController;
 
-	const mockBooksService = {
-		getBooks: jest.fn(),
-		findBookById: jest.fn(),
-		adminUpdateBook: jest.fn(),
-		banBook: jest.fn(),
+	const mockOrderService = {
+		getAllOrders: jest.fn(),
 	};
 
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
-			controllers: [AdminBooksController],
+			controllers: [AdminOrdersController],
 			providers: [
 				{
-					provide: BooksService,
-					useValue: mockBooksService,
+					provide: OrderService,
+					useValue: mockOrderService,
 				},
 			],
 		})
@@ -30,7 +27,7 @@ describe('AdminBooksController', () => {
 			.useValue({ canActivate: () => true })
 			.compile();
 
-		controller = module.get<AdminBooksController>(AdminBooksController);
+		controller = module.get<AdminOrdersController>(AdminOrdersController);
 	});
 
 	it('should be defined', () => {

@@ -3,6 +3,7 @@ import {
 	Body,
 	Controller,
 	Get,
+	Param,
 	Post,
 	Query,
 	UseGuards,
@@ -12,6 +13,7 @@ import { AuthGuard, CurrentUser } from '@/auth/auth.guard';
 import { JwtPayloadType } from '@/types/jwt.type';
 import { DepositService } from './deposit.service';
 import { DepositDto, VerifyDepositInput } from './dtos/deposit.dto';
+import { UppercasePipe } from '@/common/pipes/uppercase.pipe';
 
 export type ExternalPaymentMethod = Exclude<PaymentMethod, 'WALLET'>;
 
@@ -30,13 +32,11 @@ export class DepositController {
 	}
 
 	// Verify a deposit
-	@Get('verify')
+	@Get('verify/:method')
 	async verifyDeposit(
-		@Query('method') method: ExternalPaymentMethod,
+		@Param('method', UppercasePipe) method: ExternalPaymentMethod,
 		@Query() query: VerifyDepositInput,
 	) {
-		if (!method) throw new BadRequestException('Payment method is required');
-
 		return await this.depositService.verifyDeposit(method, query);
 	}
 }

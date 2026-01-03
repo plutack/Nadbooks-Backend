@@ -1,20 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { TransactionsController } from './transactions.controller';
+import { AdminTransactionsController } from './transactions.controller';
 import { TransactionService } from '@/payments/shared/transaction.service';
 import { AuthGuard } from '@/auth/auth.guard';
+import { RolesGuard } from '@/auth/guards/roles.guard';
 
-describe('TransactionsController', () => {
-	let controller: TransactionsController;
+describe('AdminTransactionsController', () => {
+	let controller: AdminTransactionsController;
 
 	const mockTransactionService = {
 		getAllTransactions: jest.fn(),
 		getTransactionsByUser: jest.fn(),
-		getTransactionByReference: jest.fn(),
 	};
 
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
-			controllers: [TransactionsController],
+			controllers: [AdminTransactionsController],
 			providers: [
 				{
 					provide: TransactionService,
@@ -24,9 +24,13 @@ describe('TransactionsController', () => {
 		})
 			.overrideGuard(AuthGuard)
 			.useValue({ canActivate: () => true })
+			.overrideGuard(RolesGuard)
+			.useValue({ canActivate: () => true })
 			.compile();
 
-		controller = module.get<TransactionsController>(TransactionsController);
+		controller = module.get<AdminTransactionsController>(
+			AdminTransactionsController,
+		);
 	});
 
 	it('should be defined', () => {
