@@ -16,7 +16,6 @@ import {
 import { FileType, UpdatableBookFields } from '@/books/types';
 import { AdminEditBookDto } from '@/admin/dto/books/edit-book.dto';
 import { Role } from 'generated/prisma';
-import { ImageProcessor } from '@/common/utils/image.processor';
 
 @Injectable()
 export class BooksService {
@@ -29,32 +28,22 @@ export class BooksService {
 		return `${bookName}-cover`;
 	}
 
-	private async processBookCover(
-		file: Express.Multer.File,
-	): Promise<Buffer | null> {
-		return await ImageProcessor.resizeAndOptimize(file.buffer);
+	// function to confirm if the file has the right dimensions
+	private validateBookCover(_file: Express.Multer.File): boolean {
+		return true;
 	}
 
-	private async uploadCover(
+	private uploadCover(
 		cover: Express.Multer.File,
 		title: string,
 	): Promise<string> {
-		const processedBuffer = await this.processBookCover(cover);
-
-		if (!processedBuffer) {
-			throw new BadRequestException('Invalid book cover image');
+		if (!this.validateBookCover(cover)) {
+			throw new BadRequestException('Invalid book cover');
 		}
-
-		// Update buffer with processed image
-		const processedFile = {
-			...cover,
-			buffer: processedBuffer,
-			mimetype: 'image/jpeg', // We converted to jpeg
-		};
 
 		return this.storageService.storeFile(
 			FileType.COVER,
-			processedFile,
+			cover,
 			this.getBookCoverName(title),
 		);
 	}
