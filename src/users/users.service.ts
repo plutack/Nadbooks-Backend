@@ -63,7 +63,6 @@ export class UserService {
 				username: true,
 				email: true,
 				isActive: true, // Added isActive as it might be needed for admin view
-				role: true,
 			},
 		});
 
@@ -98,26 +97,7 @@ export class UserService {
 		});
 	}
 
-	async updateUserActiveState(
-		requesterRole: Role,
-		userId: string,
-		activate: boolean,
-	) {
-		const target = await this.db.user.findUnique({
-			where: { id: userId },
-			select: { role: true },
-		});
-		if (!target) throw new NotFoundException('User not found');
-
-		// Enforce Hierarchy
-		if (requesterRole === Role.ADMIN) {
-			if (target.role === Role.ADMIN || target.role === Role.SUPER_ADMIN) {
-				throw new UnauthorizedException(
-					'Admins cannot update status of other Admins',
-				);
-			}
-		}
-
+	async updateUserActiveState(userId: string, activate: boolean) {
 		// TODO: send an email
 		return await this.db.user.update({
 			where: { id: userId },
@@ -134,11 +114,19 @@ export class UserService {
 
 	async updateUserRole(
 		requesterId: string,
-		requesterRole: Role,
 		targetUserId: string,
 		newRole: Role,
 	) {
-		if (requesterRole !== Role.SUPER_ADMIN && requesterRole !== Role.ADMIN) {
+		const requester = await this.db.user.findUnique({
+			where: { id: requesterId },
+			select: { role: true },
+		});
+
+		if (!requester) {
+			throw new UnauthorizedException('Requester not found');
+		}
+
+		if (requester.role !== Role.SUPER_ADMIN && requester.role !== Role.ADMIN) {
 			throw new UnauthorizedException('Insufficient permissions');
 		}
 
@@ -159,7 +147,7 @@ export class UserService {
 		//    - If target is SUPER_ADMIN, requester must be SUPER_ADMIN (conceptually).
 		// 4. ADMIN can promote USER to ADMIN.
 
-		if (requesterRole === Role.ADMIN) {
+		if (requester.role === Role.ADMIN) {
 			if (newRole === Role.SUPER_ADMIN) {
 				throw new UnauthorizedException('Admins cannot create Super Admins');
 			}

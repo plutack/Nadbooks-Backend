@@ -1,12 +1,4 @@
-import {
-	Body,
-	Controller,
-	Get,
-	Param,
-	Patch,
-	Query,
-	HttpCode,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
 import { AdminEditBookDto } from '@/admin/dto/books/edit-book.dto';
 import { AuthGuard, CurrentUser } from '@/auth/auth.guard';
 import { BooksService } from '@/books/books.service';
@@ -26,17 +18,15 @@ export class AdminBooksController {
 
 	@Get(':id')
 	getBookById(@Param('id') id: string) {
-		return this.booksService.findBookById(id, true);
+		return this.booksService.findBookById(id);
 	}
 
 	@Patch(':id')
-	@HttpCode(204)
 	updateBookById(@Param('id') id: string, @Body() body: AdminEditBookDto) {
 		return this.booksService.adminUpdateBook(id, body);
 	}
 
 	@Patch('/ban/:id')
-	@HttpCode(204)
 	banBookById(@Param('id') id: string, @CurrentUser() user: JwtPayloadType) {
 		return this.booksService.banBook(id, user.sub);
 	}

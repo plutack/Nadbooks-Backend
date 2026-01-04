@@ -16,10 +16,6 @@ export interface DepositResult {
 	hash?: string; // optional (tx hash or payment reference)
 	reference?: string;
 	paymentUrl?: string;
-	destinationAddress?: string;
-	amount?: string | number;
-	currency?: string;
-	message?: string;
 }
 
 export interface VerifyPaymentResult {

@@ -179,6 +179,12 @@ components:
         orderId: { type: string, format: uuid }
 
     # Admin
+    AdminEditUserDto:
+      type: object
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        username: { type: string }
 
     AdminUpdateUserRoleDto:
       type: object
@@ -557,6 +563,23 @@ paths:
       responses:
         '200':
           description: User details
+
+    patch:
+      tags: [Admin]
+      summary: Update user details
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminEditUserDto'
+      responses:
+        '200':
+          description: Updated
 
   /admin/users/activate/{id}:
     patch:
