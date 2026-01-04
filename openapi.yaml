@@ -1,0 +1,715 @@
+openapi: 3.0.0
+info:
+  title: Nadbooks Backend API
+  description: API documentation for Nadbooks Backend
+  version: 0.0.1
+servers:
+  - url: http://localhost:3000/api
+    description: Local Development Server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # Enums
+    PaymentMethod:
+      type: string
+      enum: [PAYSTACK, CRYPTO, WALLET]
+    TransactionType:
+      type: string
+      enum: [DEPOSIT, WITHDRAWAL, ORDER]
+    TransactionStatus:
+      type: string
+      enum: [PENDING, SUCCESS, FAILED]
+    OrderStatus:
+      type: string
+      enum: [PENDING, PAID, FAILED, CANCELLED, COMPLETED]
+    Role:
+      type: string
+      enum: [USER, ADMIN, SUPER_ADMIN]
+
+    # Auth & Users
+    CreateUserDto:
+      type: object
+      required: [firstName, lastName, email, username, password]
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        email: { type: string, format: email }
+        username: { type: string, minLength: 4 }
+        password: { type: string, minLength: 8 }
+
+    LoginUserDto:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+
+    GoogleAuthDto:
+      type: object
+      required: [token]
+      properties:
+        token: { type: string }
+
+    UserProfile:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        firstName: { type: string }
+        lastName: { type: string }
+        username: { type: string }
+        email: { type: string }
+        role: { $ref: '#/components/schemas/Role' }
+        isActive: { type: boolean }
+        isVerified: { type: boolean }
+
+    # Books
+    StoreBookDto:
+      type: object
+      required: [title, genre, price, isMature, pageCount, dateAuthored]
+      properties:
+        title: { type: string }
+        genre: { type: string }
+        price: { type: number }
+        isMature: { type: boolean }
+        pageCount: { type: number }
+        dateAuthored: { type: string, format: date-time }
+        book: { type: string, format: binary }
+        bookCover: { type: string, format: binary }
+
+    UpdateBookDto:
+      type: object
+      properties:
+        title: { type: string }
+        genre: { type: string }
+        price: { type: number }
+        isMature: { type: boolean }
+        pageCount: { type: number }
+        dateAuthored: { type: string, format: date-time }
+        book: { type: string, format: binary }
+        bookCover: { type: string, format: binary }
+
+    Book:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        genre: { type: string }
+        price: { type: integer }
+        isMature: { type: boolean }
+        pageCount: { type: integer }
+        bookURL: { type: string }
+        bookCoverURL: { type: string }
+        authorId: { type: string }
+
+    # Orders
+    CreateOrderDto:
+      type: object
+      required: [bookIds]
+      properties:
+        bookIds:
+          type: array
+          items: { type: string, format: uuid }
+
+    Order:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/OrderStatus' }
+        totalAmount: { type: integer }
+        userId: { type: string, format: uuid }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        books:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                {
+                  type: string,
+                  format: uuid,
+                  description: 'Order Book Item ID',
+                }
+              orderId: { type: string, format: uuid }
+              bookId: { type: string, format: uuid }
+              price: { type: integer, description: 'Price at purchase time' }
+              # Flattened Book Details
+              title: { type: string }
+              authorId: { type: string, format: uuid }
+              bookCoverURL: { type: string }
+              pageCount: { type: integer }
+
+    # Payments
+    DepositDto:
+      type: object
+      required: [amount, method]
+      properties:
+        amount: { type: number }
+        method: { type: string, enum: [PAYSTACK, CRYPTO] }
+        metadata: { type: object }
+        email: { type: string, description: 'Required for PAYSTACK' }
+        buyerAddress: { type: string, description: 'Required for CRYPTO' }
+        hash: { type: string, description: 'Required for CRYPTO' }
+
+    WithdrawDto:
+      type: object
+      required: [amount, method]
+      properties:
+        amount: { type: number }
+        method: { type: string, enum: [PAYSTACK, CRYPTO] }
+        accountNumber: { type: string, description: 'Required for PAYSTACK' }
+        accountName: { type: string, description: 'Required for PAYSTACK' }
+        bankCode: { type: string, description: 'Required for PAYSTACK' }
+        walletAddress: { type: string, description: 'Required for CRYPTO' }
+
+    CreateCheckoutDto:
+      type: object
+      required: [paymentMethod]
+      properties:
+        paymentMethod: { $ref: '#/components/schemas/PaymentMethod' }
+        bookIds:
+          type: array
+          items: { type: string, format: uuid }
+        orderId: { type: string, format: uuid }
+
+    # Admin
+
+    AdminUpdateUserRoleDto:
+      type: object
+      required: [role]
+      properties:
+        role: { $ref: '#/components/schemas/Role' }
+
+    AdminEditBookDto:
+      type: object
+      properties:
+        genre: { type: string }
+        isMature: { type: boolean }
+        pageCount: { type: integer }
+
+security:
+  - bearerAuth: []
+
+paths:
+  # --- Auth ---
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserDto'
+      responses:
+        '201':
+          description: User registered successfully
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginUserDto'
+      responses:
+        '201': # NestJS default for POST
+          description: Login successful
+
+  /auth/google:
+    post:
+      tags: [Auth]
+      summary: Google Authentication
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoogleAuthDto'
+      responses:
+        '201':
+          description: Auth successful
+
+  # --- Users ---
+  /me:
+    get:
+      tags: [Users]
+      summary: Get current user profile
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+
+  /me/bookmarks:
+    get:
+      tags: [Users]
+      summary: Get current user bookmarks
+      responses:
+        '200':
+          description: List of bookmarked books
+
+  # --- Transactions ---
+  /transactions:
+    get:
+      tags: [Transactions]
+      summary: Get current user transactions
+      parameters:
+        - in: query
+          name: type
+          schema:
+            $ref: '#/components/schemas/TransactionType'
+        - in: query
+          name: status
+          schema:
+            $ref: '#/components/schemas/TransactionStatus'
+      responses:
+        '200':
+          description: List of transactions
+
+  /transactions/{reference}:
+    get:
+      tags: [Transactions]
+      summary: Get transaction by reference
+      parameters:
+        - in: path
+          name: reference
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Transaction details
+        '404':
+          description: Not found
+
+  # --- Books ---
+  /books:
+    get:
+      tags: [Books]
+      summary: Get list of books (public)
+      security: []
+      parameters:
+        - in: query
+          name: genre
+          schema: { type: string }
+        - in: query
+          name: minPrice
+          schema: { type: integer }
+        - in: query
+          name: maxPrice
+          schema: { type: integer }
+        - in: query
+          name: isMature
+          schema: { type: boolean }
+        - in: query
+          name: includeHidden
+          schema: { type: boolean }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 20 }
+        - in: query
+          name: skip
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          description: List of books
+
+    post:
+      tags: [Books]
+      summary: Upload a new book (Author)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StoreBookDto'
+      responses:
+        '201':
+          description: Book created
+
+  /books/{id}:
+    patch:
+      tags: [Books]
+      summary: Update a book
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UpdateBookDto'
+      responses:
+        '204':
+          description: Updated successfully
+
+    delete:
+      tags: [Books]
+      summary: Delete a book
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Deleted successfully
+
+  /books/{id}/restore:
+    post:
+      tags: [Books]
+      summary: Restore a deleted book
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Restored successfully
+
+  /books/me/deleted:
+    get:
+      tags: [Books]
+      summary: Get my deleted books
+      responses:
+        '200':
+          description: List of deleted books
+
+  /books/bookmarks/{id}:
+    post:
+      tags: [Books]
+      summary: Bookmark a book
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '201':
+          description: Bookmarked
+
+    delete:
+      tags: [Books]
+      summary: Remove bookmark
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Bookmark removed
+
+  # --- Orders ---
+  /orders:
+    get:
+      tags: [Orders]
+      summary: Get my orders
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, default: 20 }
+        - in: query
+          name: skip
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          description: List of orders
+
+    post:
+      tags: [Orders]
+      summary: Create a new order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderDto'
+      responses:
+        '201':
+          description: Order created
+
+  /orders/{id}:
+    get:
+      tags: [Orders]
+      summary: Get order details
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Order details
+
+  # --- Payments ---
+  /payments/deposit:
+    post:
+      tags: [Payments]
+      summary: Initiate a deposit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepositDto'
+      responses:
+        '201':
+          description: Deposit initiated
+
+  /payments/verify/{method}:
+    get:
+      tags: [Payments]
+      summary: Verify a deposit (Paystack/Crypto)
+      security: [] # Likely public or specific logic needed
+      parameters:
+        - in: path
+          name: method
+          required: true
+          schema: { type: string, enum: [PAYSTACK, CRYPTO] }
+        - in: query
+          name: reference
+          schema: { type: string }
+        - in: query
+          name: hash
+          schema: { type: string }
+        - in: query
+          name: buyerAddress
+          schema: { type: string }
+        - in: query
+          name: transferedAmount
+          schema: { type: number }
+      responses:
+        '200':
+          description: Verification result
+
+  /withdrawal:
+    post:
+      tags: [Payments]
+      summary: Initiate a withdrawal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WithdrawDto'
+      responses:
+        '201':
+          description: Withdrawal initiated
+
+  /checkout:
+    post:
+      tags: [Payments]
+      summary: Create checkout for order or books
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCheckoutDto'
+      responses:
+        '201':
+          description: Checkout created
+
+  # --- Admin Users ---
+  /admin/users:
+    get:
+      tags: [Admin]
+      summary: List all users
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer }
+        - in: query
+          name: skip
+          schema: { type: integer }
+      responses:
+        '200':
+          description: List of users
+
+  /admin/users/{id}:
+    get:
+      tags: [Admin]
+      summary: Get user details
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: User details
+
+  /admin/users/activate/{id}:
+    patch:
+      tags: [Admin]
+      summary: Activate user
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Activated
+
+  /admin/users/deactivate/{id}:
+    patch:
+      tags: [Admin]
+      summary: Deactivate user
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Deactivated
+
+  /admin/users/verify/{id}:
+    patch:
+      tags: [Admin]
+      summary: Verify user
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Verified
+
+  /admin/users/role/{id}:
+    patch:
+      tags: [Admin]
+      summary: Change user role
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUpdateUserRoleDto'
+      responses:
+        '200':
+          description: Role updated
+
+  # --- Admin Books ---
+  /admin/books:
+    get:
+      tags: [Admin]
+      summary: List all books (including hidden)
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer }
+        - in: query
+          name: skip
+          schema: { type: integer }
+      responses:
+        '200':
+          description: List of books
+
+  /admin/books/{id}:
+    get:
+      tags: [Admin]
+      summary: Get book details
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Book details
+
+    patch:
+      tags: [Admin]
+      summary: Update book
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminEditBookDto'
+      responses:
+        '200':
+          description: Updated
+
+  /admin/books/ban/{id}:
+    patch:
+      tags: [Admin]
+      summary: Ban/Unpublish book
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Book banned
+
+  # --- Admin Transactions ---
+  /admin/transactions:
+    get:
+      tags: [Admin]
+      summary: List all transactions
+      parameters:
+        - in: query
+          name: userId
+          schema: { type: string }
+        - in: query
+          name: type
+          schema:
+            $ref: '#/components/schemas/TransactionType'
+        - in: query
+          name: status
+          schema:
+            $ref: '#/components/schemas/TransactionStatus'
+      responses:
+        '200':
+          description: List of transactions
+
+  # --- Admin Orders ---
+  /admin/orders:
+    get:
+      tags: [Admin]
+      summary: List all orders
+      parameters:
+        - in: query
+          name: userId
+          schema: { type: string }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 20 }
+        - in: query
+          name: skip
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          description: List of orders

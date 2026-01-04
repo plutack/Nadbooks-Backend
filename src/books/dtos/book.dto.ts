@@ -37,11 +37,6 @@ export class StoreBookDto {
 	@IsBooleanString()
 	isMature: boolean;
 
-	// TODO: probably can get this with a processor
-	@IsNotEmpty()
-	@IsNumberString()
-	pageCount: number;
-
 	@IsNotEmpty()
 	@IsDate()
 	@Type(() => Date)

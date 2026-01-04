@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { OrderStatus, Prisma } from 'generated/prisma';
 import { PrismaService } from '@/prisma/prisma.service';
+import { BaseFilterDto } from '@/common/dto/filters.dto';
 
 @Injectable()
 export class OrderService {
@@ -10,6 +11,23 @@ export class OrderService {
 		return tx ?? this.db;
 	}
 
+	private serializeOrder(order: any) {
+		if (!order.books) return order;
+
+		return {
+			...order,
+			books: order.books.map((item) => {
+				const { book, ...itemData } = item;
+				return {
+					...itemData,
+					...book,
+					id: itemData.id,
+					price: itemData.price,
+				};
+			}),
+		};
+	}
+
 	async createOrder(
 		userId: string,
 		bookIds: string[],
@@ -17,7 +35,6 @@ export class OrderService {
 	) {
 		const client = this.getClient(tx);
 
-		// Create the order (without book reference)
 		const order = await client.order.create({
 			data: {
 				userId,
@@ -59,18 +76,22 @@ export class OrderService {
 			},
 		});
 
-		return updatedOrder;
+		return this.serializeOrder(updatedOrder);
 	}
 	async getOrderById(orderId: string) {
 		const order = await this.db.order.findUnique({
 			where: { id: orderId },
+			include: {
+				books: { include: { book: true } },
+				user: true,
+			},
 		});
 
 		if (!order) {
 			throw new Error('Order not found');
 		}
 
-		return order;
+		return this.serializeOrder(order);
 	}
 
 	async markAsPaid(orderId: string, tx?: Prisma.TransactionClient) {
@@ -87,11 +108,36 @@ export class OrderService {
 	 */
 	async updateOrderStatus(orderId, status: OrderStatus) {}
 
-	async getUserOrder(userId: string) {
+	async getAllOrders(filter?: { userId?: string } & BaseFilterDto) {
+		const where: Prisma.OrderWhereInput = {};
+
+		if (filter?.userId) {
+			where.userId = filter.userId;
+		}
+
+		const orders = await this.db.order.findMany({
+			where,
+			include: {
+				books: { include: { book: true } },
+				user: true,
+			},
+			orderBy: { createdAt: 'desc' },
+			take: filter?.limit,
+			skip: filter?.skip,
+		});
+		return orders.map((order) => this.serializeOrder(order));
+	}
+
+	async getUserOrder(userId: string, filter?: BaseFilterDto) {
 		const orders = await this.db.order.findMany({
 			where: { userId },
+			include: {
+				books: { include: { book: true } },
+			},
 			orderBy: { createdAt: 'desc' },
+			take: filter?.limit,
+			skip: filter?.skip,
 		});
-		return orders;
+		return orders.map((order) => this.serializeOrder(order));
 	}
 }

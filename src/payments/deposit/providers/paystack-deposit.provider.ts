@@ -11,7 +11,6 @@ import {
 	DepositResult,
 	PaymentStatus,
 } from '@/payments/deposit/interfaces/provider.interface';
-import { JwtPayloadType } from '@/types/jwt.type';
 
 @Injectable()
 export class PaystackDepositProvider
