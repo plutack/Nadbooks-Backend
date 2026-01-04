@@ -1,0 +1,1328 @@
+{
+  "yaakVersion": "2025.9.3",
+  "yaakSchema": 4,
+  "timestamp": "2026-01-04T06:35:15.605304886",
+  "resources": {
+    "workspaces": [
+      {
+        "model": "workspace",
+        "id": "wk_aWSGCfNc2u",
+        "createdAt": "2026-01-03T08:11:31.064445937",
+        "updatedAt": "2026-01-04T06:12:19.880909319",
+        "authentication": {
+          "disabled": false,
+          "token": "${[bearerToken]}"
+        },
+        "authenticationType": "bearer",
+        "description": "API documentation for Nadbooks Backend",
+        "headers": [],
+        "name": "nadbooks backend API",
+        "encryptionKeyChallenge": "eUE0azNuQwE8Hb2JHBIu38PSqKpfPAzrypo+3ihMXEfQt3piANTrfU8NT0ko2xCU30aq/HpZ/aV4YMy5cmidAfG04QWDgYbohuBe4zxryWjwBcHtMm31j9NIm3tdzRsj7r8=",
+        "settingValidateCertificates": true,
+        "settingFollowRedirects": true,
+        "settingRequestTimeout": 0
+      }
+    ],
+    "environments": [],
+    "folders": [
+      {
+        "model": "folder",
+        "id": "fl_yZ6CmXp3zY",
+        "createdAt": "2026-01-03T08:11:31.074578336",
+        "updatedAt": "2026-01-03T08:11:31.074578542",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_KikbWGHHL3",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "{id}",
+        "sortPriority": 42.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_KikbWGHHL3",
+        "createdAt": "2026-01-03T08:11:31.074432340",
+        "updatedAt": "2026-01-03T08:11:31.074432450",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_6f5CBhWZYt",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "books",
+        "sortPriority": 40.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_cd3YF8aonm",
+        "createdAt": "2026-01-03T08:11:31.074290892",
+        "updatedAt": "2026-01-03T08:11:31.074290998",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_SEqF8Bwtyk",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "{id}",
+        "sortPriority": 33.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_SEqF8Bwtyk",
+        "createdAt": "2026-01-03T08:11:31.074216047",
+        "updatedAt": "2026-01-03T08:11:31.074216149",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_6f5CBhWZYt",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "users",
+        "sortPriority": 31.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_6f5CBhWZYt",
+        "createdAt": "2026-01-03T08:11:31.074136403",
+        "updatedAt": "2026-01-03T08:11:31.074136479",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": null,
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "admin",
+        "sortPriority": 30.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_T4MtiwMhZT",
+        "createdAt": "2026-01-03T08:11:31.074059734",
+        "updatedAt": "2026-01-03T08:11:31.074059830",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": null,
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "payments",
+        "sortPriority": 25.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_M4KUCsUaGD",
+        "createdAt": "2026-01-03T08:11:31.073982172",
+        "updatedAt": "2026-01-03T08:11:31.073982341",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": null,
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "orders",
+        "sortPriority": 21.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_K22RjDaQJx",
+        "createdAt": "2026-01-03T08:11:31.073894773",
+        "updatedAt": "2026-01-03T08:11:31.073894872",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_qQLUyAwnNn",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "bookmarks/{id}",
+        "sortPriority": 18.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_6L6h7JtEkT",
+        "createdAt": "2026-01-03T08:11:31.073776950",
+        "updatedAt": "2026-01-03T08:11:31.073777051",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_qQLUyAwnNn",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "{id}",
+        "sortPriority": 13.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_qQLUyAwnNn",
+        "createdAt": "2026-01-03T08:11:31.073640452",
+        "updatedAt": "2026-01-03T08:11:31.073640547",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": null,
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "books",
+        "sortPriority": 10.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_nBdcUgyNio",
+        "createdAt": "2026-01-03T08:11:31.073475831",
+        "updatedAt": "2026-01-03T08:11:31.073475932",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": null,
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "transactions",
+        "sortPriority": 7.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_9FBADt3LvS",
+        "createdAt": "2026-01-03T08:11:31.073313512",
+        "updatedAt": "2026-01-03T08:11:31.073313726",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": null,
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "me",
+        "sortPriority": 4.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_Sn8urEhUTK",
+        "createdAt": "2026-01-03T08:11:31.073010775",
+        "updatedAt": "2026-01-03T08:11:31.073011176",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": null,
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "auth",
+        "sortPriority": 0.0
+      }
+    ],
+    "httpRequests": [
+      {
+        "model": "http_request",
+        "id": "rq_9LZjkeGzgo",
+        "createdAt": "2026-01-04T05:41:34.358202193",
+        "updatedAt": "2026-01-04T05:47:44.064995389",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_qQLUyAwnNn",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "Retrieve detailed information for a specific public book.\n\n#### **Path Parameters**\n\n| Parameter | Type | Required | Description |\n| :--- | :--- | :--- | :--- |\n| `id` | `string` (UUID) | Yes | The unique identifier of the book. |\n\n#### **Success Response**\n\n**200 OK**\n\n```json\n{\n  \"id\": \"uuid-string\",\n  \"title\": \"The Great Novel\",\n  \"bookURL\": \"[https://storage.example.com/books/novel.pdf](https://storage.example.com/books/novel.pdf)\",\n  \"bookCoverURL\": \"[https://storage.example.com/covers/novel.jpg](https://storage.example.com/covers/novel.jpg)\",\n  \"genre\": \"FICTION\",\n  \"price\": 19.99,\n  \"pageCount\": 350,\n  \"isMature\": false,\n  \"authorId\": \"author-uuid\",\n  \"dateAuthored\": \"2024-01-01T00:00:00.000Z\",\n  \"dateUploaded\": \"2024-01-01T00:00:00.000Z\"\n}",
+        "headers": [],
+        "method": "GET",
+        "name": "Get book details",
+        "sortPriority": 14.333333333333334,
+        "url": "${[baseUrl]}/admin/books/:id",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":id",
+            "value": "<uuid>",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_ftoV3qJhqX",
+        "createdAt": "2026-01-03T08:11:31.072786784",
+        "updatedAt": "2026-01-03T15:19:41.882429407",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_6f5CBhWZYt",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "List all orders",
+        "sortPriority": 47.0,
+        "url": "${[baseUrl]}/admin/orders",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": "userId",
+            "value": "<string>",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_LnYyvLBJ8x",
+        "createdAt": "2026-01-03T08:11:31.072494443",
+        "updatedAt": "2026-01-03T08:11:31.072494753",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_6f5CBhWZYt",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "[object Object]",
+        "headers": [],
+        "method": "GET",
+        "name": "List all transactions",
+        "sortPriority": 46.0,
+        "url": "${[baseUrl]}/admin/transactions",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": "userId",
+            "value": "<string>",
+            "id": null
+          },
+          {
+            "enabled": true,
+            "name": "type",
+            "value": "<string>",
+            "id": null
+          },
+          {
+            "enabled": true,
+            "name": "status",
+            "value": "<string>",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_iasgnSacu7",
+        "createdAt": "2026-01-03T08:11:31.072131909",
+        "updatedAt": "2026-01-04T05:37:45.106151364",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_yZ6CmXp3zY",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "Ban and unpublish a book. This action hides the book from the platform.\n\n- **Path Parameters**:\n    - `id`: The UUID of the book to ban.\n\n#### **Success Response**\n\n**204 No Content**",
+        "headers": [],
+        "method": "PATCH",
+        "name": "Ban/Unpublish book",
+        "sortPriority": 14.333333333333334,
+        "url": "${[baseUrl]}/admin/books/ban/:id",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":id",
+            "value": "<uuid>",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_YoUnE3frvg",
+        "createdAt": "2026-01-03T08:11:31.071883841",
+        "updatedAt": "2026-01-04T06:10:30.153535004",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_yZ6CmXp3zY",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"genre\": \"<string>\",\n  \"isMature\": \"<boolean>\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "Update a book’s editable fields.\n\n**Path Parameters**:\n  - `id`: The UUID of the book to update.\n\n#### **Request Body**\n\n```json\n{\n\n  \"genre\": \"FICTION\",            // optional\n  \"isMature\": false              // optional\n}",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": null
+          }
+        ],
+        "method": "PATCH",
+        "name": "Update book",
+        "sortPriority": 44.0,
+        "url": "${[baseUrl]}/admin/books/:id",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":id",
+            "value": "<uuid>",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_MCpZDsnnng",
+        "createdAt": "2026-01-03T08:11:31.071600434",
+        "updatedAt": "2026-01-04T05:46:54.332508769",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_yZ6CmXp3zY",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "Retrieve detailed information for a specific public book.\n\n\n#### **Path Parameters**\n\n| Parameter | Type | Required | Description |\n| :--- | :--- | :--- | :--- |\n| `id` | `string` (UUID) | Yes | The unique identifier of the book. |\n\n#### **Success Response**\n\n**200 OK**\n\n```json\n{\n  \"id\": \"uuid-string\",\n  \"title\": \"The Great Novel\",\n  \"bookURL\": \"[https://storage.example.com/books/novel.pdf](https://storage.example.com/books/novel.pdf)\",\n  \"bookCoverURL\": \"[https://storage.example.com/covers/novel.jpg](https://storage.example.com/covers/novel.jpg)\",\n  \"genre\": \"FICTION\",\n  \"price\": 19.99,\n  \"pageCount\": 350,\n  \"isMature\": false,\n  \"authorId\": \"author-uuid\",\n  \"dateAuthored\": \"2024-01-01T00:00:00.000Z\",\n  \"dateUploaded\": \"2024-01-01T00:00:00.000Z\"\n}",
+        "headers": [],
+        "method": "GET",
+        "name": "Get book details",
+        "sortPriority": 43.0,
+        "url": "${[baseUrl]}/admin/books/:id",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":id",
+            "value": "<uuid>",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_o7GCYreokj",
+        "createdAt": "2026-01-03T08:11:31.071346847",
+        "updatedAt": "2026-01-04T05:34:23.218368077",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_KikbWGHHL3",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "Fetch a list of books with optional filtering and pagination. This endpoint supports filtering by genre, price range, and maturity rating. Results are paginated using limit and skip.\n\n## Query Parameters\n| Parameter  | Type    | Required | Default | Description |\n| ---------- | ---------- | ------------------- | ------- | ---------------------------------------------------------------------------------------------------------- |\n| `limit`    | number  | no       | `20`    | Maximum number of books to return.                                                                         |\n| `skip`     | number  | no       | `0`     | Number of books to skip. Used for pagination. For example, page 3 with 20 per page → `skip = 40`.          |\n| `genre`    | string  | no       | —       | Filter books by genre (e.g., `Fantasy`, `Crime`).                                                          |\n| `minPrice` | number  | no       | —       | Return books with price **≥ minPrice**.                                                                    |\n| `maxPrice` | number  | no       | —       | Return books with price **≤ maxPrice**.                                                                    |\n| `isMature` | boolean | no       | —       | Filter by maturity rating. `true` = mature content, `false` = non-mature. Must be a boolean, not a string. |\n\n| `incluceHidden` | boolean | no       | —       | Filter by isVisble., `false` (only an admin can set this to true)|\n\n\nResponse Object \n\n```\n{\n  \"statusCode\": 200,\n  \"message\": \"Success\",\n  \"errors\": null,\n  \"data\": []\n}\n```",
+        "headers": [],
+        "method": "GET",
+        "name": "List all books (including hidden)",
+        "sortPriority": 41.0,
+        "url": "${[baseUrl]}/admin/books",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": "limit",
+            "value": "<integer>",
+            "id": null
+          },
+          {
+            "enabled": true,
+            "name": "skip",
+            "value": "<integer>",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_XBfStsuBMy",
+        "createdAt": "2026-01-03T08:11:31.071030961",
+        "updatedAt": "2026-01-03T17:06:54.989990016",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_cd3YF8aonm",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"role\": \"<string>\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "### **Change User Role**\n\nAssign a new role to a user.\n\n\n    - `id`: The UUID of the user whose role you want to change.\n\n#### **Request Body**\n\n```json\n{\n  \"role\": \"ADMIN\"\n}\n\nReturns 204",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": null
+          }
+        ],
+        "method": "PATCH",
+        "name": "Change user role",
+        "sortPriority": 3.777777777777778,
+        "url": "${[baseUrl]}/admin/users/role/:id",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":id",
+            "value": "<string>",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_c684X99VD7",
+        "createdAt": "2026-01-03T08:11:31.070702215",
+        "updatedAt": "2026-01-03T17:21:11.950076609",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_cd3YF8aonm",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "\nManually verify a user's account status.\n\n- **Path Parameters**:\n    - `id`: The UUID of the user to verify.\n\n#### **Success Response**\n\n**204 No Content**",
+        "headers": [],
+        "method": "PATCH",
+        "name": "Verify user",
+        "sortPriority": 23.925925925925927,
+        "url": "${[baseUrl]}/admin/users/verify/:id",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":id",
+            "value": "<string>",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_raQ8oxoKuz",
+        "createdAt": "2026-01-03T08:11:31.070426334",
+        "updatedAt": "2026-01-03T17:13:50.943064956",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_cd3YF8aonm",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "disable an activated user account.\n\n\n- **Path Parameters**:\n    - `id`: The UUID of the user to activate.\n\nReturns 204",
+        "headers": [],
+        "method": "PATCH",
+        "name": "Deactivate user",
+        "sortPriority": 18.88888888888889,
+        "url": "${[baseUrl]}/admin/users/deactivate/:id",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":id",
+            "value": "<string>",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_tGNRRmefXm",
+        "createdAt": "2026-01-03T08:11:31.070148844",
+        "updatedAt": "2026-01-03T16:01:32.355080978",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_cd3YF8aonm",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "Enable a previously deactivated user account.\n\n\n- **Path Parameters**:\n    - `id`: The UUID of the user to activate.\n\nReturns 204",
+        "headers": [],
+        "method": "PATCH",
+        "name": "Activate user",
+        "sortPriority": 11.333333333333334,
+        "url": "${[baseUrl]}/admin/users/activate/:id",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":id",
+            "value": "<string>",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_HPFmtSDefP",
+        "createdAt": "2026-01-03T08:11:31.069697227",
+        "updatedAt": "2026-01-03T15:22:56.237242353",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_cd3YF8aonm",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "Retrieves detailed profile information for a specific user.\n\n#### **Path Parameters**\n\n| Parameter | Type | Required | Description |\n| :--- | :--- | :--- | :--- |\n| id | UUID | Yes | The ID of the user to retrieve. |\n\n#### **Success Response**\n\n**200 OK**\n\n```json\n{\n  \"id\": \"uuid-string\",\n  \"firstName\": \"John\",\n  \"username\": \"johndoe\",\n  \"email\": \"john@example.com\",\n  \"createdAt\": \"2024-03-20T10:00:00.000Z\",\n  \"updatedAt\": \"2024-03-21T10:00:00.000Z\",\n  \"isVerified\": true,\n  \"isActive\": true\n}",
+        "headers": [],
+        "method": "GET",
+        "name": "Get user details",
+        "sortPriority": 34.0,
+        "url": "${[baseUrl]}/admin/users/:id",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":id",
+            "value": "<string>",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_V3FCg6LS8A",
+        "createdAt": "2026-01-03T08:11:31.069465498",
+        "updatedAt": "2026-01-03T15:21:13.054403090",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_SEqF8Bwtyk",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "Retrieves a paginated list of all users on the platform.\n\n#### **Query Parameters**\n\n| Parameter | Type | Required | Description |\n| :--- | :--- | :--- | :--- |\n| `limit` | Number | No | Pagination limit (default 10) |\n| `skip` | Number | No | Pagination offset (default 0) |\n\n#### **Success Response**\n\n**200 OK**\n\n```json\n[\n  {\n    \"id\": \"uuid-string\",\n    \"firstName\": \"John\",\n    \"createdAt\": \"2024-03-20T10:00:00.000Z\",\n    \"updatedAt\": \"2024-03-21T10:00:00.000Z\",\n    \"isVerified\": true\n  }\n]\n```",
+        "headers": [],
+        "method": "GET",
+        "name": "List all users",
+        "sortPriority": 32.0,
+        "url": "${[baseUrl]}/admin/users",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": "limit",
+            "value": "<integer>",
+            "id": null
+          },
+          {
+            "enabled": true,
+            "name": "skip",
+            "value": "<integer>",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_7d6j3HvqYt",
+        "createdAt": "2026-01-03T08:11:31.069257621",
+        "updatedAt": "2026-01-03T15:16:17.596490565",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": null,
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"paymentMethod\": \"<string>\",\n  \"bookIds\": [\n    \"<uuid>\",\n    \"<uuid>\"\n  ],\n  \"orderId\": \"<uuid>\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "### **Checkout / Order Payment**\n\nInitiate a payment for an order. This endpoint handles creating a new order (if valid book IDs are provided) or paying for an existing order.\n\n- **URL**: `/checkout/:method`\n- **Method**: `POST`\n- **Auth required**: Yes (Bearer Token)\n- **Path Parameters**:\n    - `method`: The payment method to use. One of: `WALLET`, `PAYSTACK`, `CRYPTO` (Case-insensitive).\n\n#### **Request Body**\n\n| Field     | Type        | Required | Description |\n| :-------- | :---------- | :------- | :---------- |\n| `orderId` | `UUID`      | No*      | The ID of an existing order to pay for. |\n| `bookIds` | `UUID[]`    | No*      | Array of Book IDs to create a new order for. |\n\n*\\*Note: You must provide either `orderId` OR `bookIds`. providing both will default to checking the orderId logic first.*\n\n#### **Example Request (Paystack)**\n\n**POST** `/checkout/paystack`\n\n```json\n{\n  \"bookIds\": [\"123e4567-e89b-12d3-a456-426614174000\"]\n}\n```\n\nSuccess Responses\n1. Wallet Payment (Immediate Success)\n\n```json\n{\n  \"orderId\": \"uuid-string\",\n  \"transactionId\": \"uuid-string\",\n  \"status\": \"PAID\"\n}\n```\n2. Paystack Payment (Initiated)\n\n```json\n{\n  \"status\": \"PENDING\",\n  \"reference\": \"unique-payment-ref\",\n  \"paymentUrl\": \"[https://checkout.paystack.com/](https://checkout.paystack.com/)...\"\n}\n```\n3. Crypto Payment (Wallet Connect) Use these details to initiate a transaction on the frontend.\n```json\n{\n  \"status\": \"PENDING\",\n  \"reference\": \"unique-payment-ref\",\n  \"destinationAddress\": \"0xValletAddress...\",\n  \"amount\": 5000,\n  \"currency\": \"MON\"\n}\n```",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": null
+          }
+        ],
+        "method": "POST",
+        "name": "Create checkout for order or books",
+        "sortPriority": 29.0,
+        "url": "${[baseUrl]}/checkout",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_mooBduF9F5",
+        "createdAt": "2026-01-03T08:11:31.069103574",
+        "updatedAt": "2026-01-03T13:18:22.665535953",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": null,
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"amount\": \"<number>\",\n  \"method\": \"<string>\",\n  \"accountNumber\": \"<string>\",\n  \"accountName\": \"<string>\",\n  \"bankCode\": \"<string>\",\n  \"walletAddress\": \"<string>\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "\nWithdraw funds to a bank (Paystack) or crypto wallet.\n\n\n##### Body Parameters\n\n| Field           | Type     | Required | Description                |\n| :-------------- | :------- | :------- | :------------------------- |\n| `amount`        | `number` | Yes      | Amount to withdraw.        |\n| `method`        | `string` | Yes      | `PAYSTACK` or `CRYPTO`.    |\n| `accountNumber` | `string` | Cond.    | **Required for PAYSTACK**. |\n| `accountName`   | `string` | Cond.    | **Required for PAYSTACK**. |\n| `bankCode`      | `string` | Cond.    | **Required for PAYSTACK**. |\n| `walletAddress` | `string` | Cond.    | **Required for CRYPTO**.   |\n\n##### Response Example\n\n```json\n{\n  \"status\": true,\n  \"message\": \"Transfer initiated successfully\",\n  \"data\": { \"reference\": \"TRF-123\", \"status\": \"pending\" },\n  \"errors\": null\n}",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": null
+          }
+        ],
+        "method": "POST",
+        "name": "Initiate a withdrawal",
+        "sortPriority": 28.0,
+        "url": "${[baseUrl]}/withdrawal",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_XBQjQDiqFP",
+        "createdAt": "2026-01-03T08:11:31.068955204",
+        "updatedAt": "2026-01-03T13:12:40.838376985",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_T4MtiwMhZT",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "#### Verify Deposit\n\nVerify a deposit status (e.g., after a Paystack callback or manual check).\n\n- **Endpoint**: `GET /payments/verify/:method`\n- **Access**: Public / Authenticated (depends on guarding)\n\n##### Path Parameters\n\n| Field    | Type     | Required | Description            |\n| :------- | :------- | :------- | :--------------------- |\n| `method` | `string` | Yes      | `PAYSTACK` or `CRYPTO` (can be in lower case) |\n\n##### Query Parameters\n\n| Field       | Type     | Required | Description              |\n| :---------- | :------- | :------- | :----------------------- |\n| `reference` | `string` | No       | Paystack reference.      |\n| `hash`      | `string` | No       | Crypto transaction hash. |",
+        "headers": [],
+        "method": "GET",
+        "name": "Verify a deposit (Paystack/Crypto)",
+        "sortPriority": 27.0,
+        "url": "${[baseUrl]}/payments/verify:method",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": "method",
+            "value": "<string>",
+            "id": null
+          },
+          {
+            "enabled": true,
+            "name": "reference",
+            "value": "<string>",
+            "id": null
+          },
+          {
+            "enabled": true,
+            "name": "hash",
+            "value": "<string>",
+            "id": null
+          },
+          {
+            "enabled": true,
+            "name": "buyerAddress",
+            "value": "<string>",
+            "id": null
+          },
+          {
+            "enabled": true,
+            "name": "transferedAmount",
+            "value": "<number>",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_yTT9KDTQ5k",
+        "createdAt": "2026-01-03T08:11:31.068770916",
+        "updatedAt": "2026-01-03T13:14:04.022907756",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_T4MtiwMhZT",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"amount\": \"<number>\",\n  \"method\": \"<string>\",\n  \"metadata\": \"<object>\",\n  \"email\": \"<string>\",\n  \"buyerAddress\": \"<string>\",\n  \"hash\": \"<string>\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "\nTop up the user's wallet.\n\n\n##### Body Parameters\n| Field | Type | Required | Description |\n| :--- | :--- | :--- | :--- |\n| `amount` | `number` | Yes | Amount to deposit. |\n| `method` | `string` | Yes | `PAYSTACK` or `CRYPTO`. |\n| `email` | `string` | Cond. | **Required if method is PAYSTACK**. |\n| `buyerAddress` | `string` | Cond. | **Required if method is CRYPTO**. |\n| `hash` | `string` | Cond. | **Required if method is CRYPTO**. Transaction hash. |\n| `metadata` | `object` | No | Optional metadata. |\n\n##### Response Example\n```json\n{\n  \"id\": \"tx-uuid-1\",\n  \"status\": \"PENDING\",\n  \"amount\": 5000,\n  \"paymentMethod\": \"PAYSTACK\",\n  \"reference\": \"TRX-123456\"\n}",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": null
+          }
+        ],
+        "method": "POST",
+        "name": "Initiate a deposit",
+        "sortPriority": 26.0,
+        "url": "${[baseUrl]}/payments/deposit",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_r72AC94eZV",
+        "createdAt": "2026-01-03T08:11:31.068606741",
+        "updatedAt": "2026-01-03T13:00:28.120057307",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_M4KUCsUaGD",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "### Get Order Details\n\nFetch a specific order by ID.\n\n#### Response Example\n\n```json\n{\n  \"id\": \"order-uuid-456\",\n  \"userId\": \"user-uuid-123\",\n  \"status\": \"PAID\",\n  \"totalAmount\": 2500,\n  \"createdAt\": \"2024-01-03T12:00:00.000Z\",\n  \"updatedAt\": \"2024-01-03T12:00:00.000Z\",\n  \"books\": [\n    {\n      \"id\": \"line-item-1\",\n      \"orderId\": \"order-uuid-456\",\n      \"bookId\": \"book-id-1\",\n      \"price\": 1500,\n      \"title\": \"Atomic Habits\",\n      \"authorId\": \"author-uuid-999\",\n      \"bookCoverURL\": \"[https://example.com/cover.jpg](https://example.com/cover.jpg)\",\n      \"pageCount\": 320\n    }\n  ]\n}",
+        "headers": [],
+        "method": "GET",
+        "name": "Get order details",
+        "sortPriority": 1000.0,
+        "url": "${[baseUrl]}/orders/:id",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":id",
+            "value": "<uuid>",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_ZjxHbyK6Cf",
+        "createdAt": "2026-01-03T08:11:31.068265338",
+        "updatedAt": "2026-01-03T12:58:50.572593979",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_M4KUCsUaGD",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"bookIds\": [\n    \"<uuid>\",\n    \"<uuid>\"\n  ]\n}"
+        },
+        "bodyType": "application/json",
+        "description": "### Get My Orders\n\nFetch all orders placed by the current user. Supports pagination.\n\n\n#### Query Parameters\n\n| Field   | Type      | Required | Description                              |\n| :------ | :-------- | :------- | :--------------------------------------- |\n| `limit` | `integer` | No       | Number of items to return (default: 20). |\n| `skip`  | `integer` | No       | Number of items to skip (default: 0).    |\n\n#### Response Example\n\n```json\n[\n  {\n    \"id\": \"order-uuid-456\",\n    \"userId\": \"user-uuid-123\",\n    \"status\": \"PAID\",\n    \"totalAmount\": 2500,\n    \"createdAt\": \"2024-01-03T12:00:00.000Z\",\n    \"books\": [\n      {\n        \"id\": \"line-item-1\",\n        \"orderId\": \"order-uuid-456\",\n        \"bookId\": \"book-id-1\",\n        \"price\": 1500,        \n        \"title\": \"Atomic Habits\",\n        \"authorId\": \"author-uuid-999\",\n        \"bookCoverURL\": \"[https://example.com/cover.jpg](https://example.com/cover.jpg)\",\n        \"pageCount\": 320\n      }\n    ]\n  }\n]",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": null
+          }
+        ],
+        "method": "POST",
+        "name": "Create a new order",
+        "sortPriority": 2000.0,
+        "url": "${[baseUrl]}/orders",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_fBfCy9sJsq",
+        "createdAt": "2026-01-03T08:11:31.067994925",
+        "updatedAt": "2026-01-03T11:57:13.552977611",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_M4KUCsUaGD",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "[object Object]",
+        "headers": [],
+        "method": "GET",
+        "name": "Get my orders",
+        "sortPriority": 0.0,
+        "url": "${[baseUrl]}/orders",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_VW3BZpAFjs",
+        "createdAt": "2026-01-03T08:11:31.067844235",
+        "updatedAt": "2026-01-03T11:56:35.507183404",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_K22RjDaQJx",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "Removes a book from user bookmark",
+        "headers": [],
+        "method": "DELETE",
+        "name": "Remove bookmark",
+        "sortPriority": 20.0,
+        "url": "${[baseUrl]}/books/bookmarks/:id",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":id",
+            "value": "<uuid>",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_p4NzZZFyVS",
+        "createdAt": "2026-01-03T08:11:31.067699563",
+        "updatedAt": "2026-01-03T11:54:42.162103739",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_K22RjDaQJx",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "Add book to the authenticated user bookmark \n\nResponse Object\n\n```json\n{\n  \"statusCode\": 201,\n  \"message\": \"Success\",\n  \"errors\": null,\n  \"data\": {\n    \"id\": 15,\n    \"userId\": \"0b0308cc-6321-47a9-a4c4-a17e82df0c77\",\n    \"bookId\": \"01c8bf55-9c1b-4f80-9f9e-4e8578a408f4\",\n    \"createdAt\": \"2025-11-14T19:28:06.975Z\"\n  }\n}\n```\n",
+        "headers": [],
+        "method": "POST",
+        "name": "Bookmark a book",
+        "sortPriority": 19.0,
+        "url": "${[baseUrl]}/books/bookmarks/:id",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":id",
+            "value": "<uuid>",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_uNpSme9xxG",
+        "createdAt": "2026-01-03T08:11:31.067542233",
+        "updatedAt": "2026-01-03T10:43:28.578465010",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_qQLUyAwnNn",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "Deletes an existing book uploaded by an authenticated user.(this should not even exist at auser level only admin should be able to undelete a book. Note: we are now using a soft delete approach) \n\nReturns 204\n\n",
+        "headers": [],
+        "method": "GET",
+        "name": "Get my deleted books",
+        "sortPriority": 17.0,
+        "url": "${[baseUrl]}/books/me/deleted",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_mYxvQ8oJUw",
+        "createdAt": "2026-01-03T08:11:31.067271412",
+        "updatedAt": "2026-01-03T10:41:37.194020271",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_6L6h7JtEkT",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "Restore already deleted book uploaded by an authenticated user. (this should be an admin only action)\n\nReturns 204\n\n",
+        "headers": [],
+        "method": "POST",
+        "name": "Restore a deleted book",
+        "sortPriority": 16.0,
+        "url": "${[baseUrl]}/books/:id/restore",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":id",
+            "value": "<uuid>",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_diP72KitfB",
+        "createdAt": "2026-01-03T08:11:31.067071244",
+        "updatedAt": "2026-01-03T10:40:35.445341276",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_6L6h7JtEkT",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "Deletes an existing book uploaded by an authenticated user. \n\nReturns 204\n\n",
+        "headers": [],
+        "method": "DELETE",
+        "name": "Delete a book",
+        "sortPriority": 15.0,
+        "url": "${[baseUrl]}/books/:id",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":id",
+            "value": "<uuid>",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_iJcmwCFoqg",
+        "createdAt": "2026-01-03T08:11:31.066836252",
+        "updatedAt": "2026-01-04T05:54:53.405057868",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_6L6h7JtEkT",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "form": [
+            {
+              "enabled": true,
+              "name": "title",
+              "value": "<string>"
+            },
+            {
+              "enabled": true,
+              "name": "genre",
+              "value": "<string>"
+            },
+            {
+              "enabled": true,
+              "name": "price",
+              "value": "<number>"
+            },
+            {
+              "enabled": true,
+              "name": "isMature",
+              "value": "<boolean>"
+            },
+            {
+              "enabled": true,
+              "name": "pageCount",
+              "value": "<number>"
+            },
+            {
+              "enabled": true,
+              "name": "dateAuthored",
+              "value": "<dateTime>"
+            },
+            {
+              "enabled": true,
+              "name": "book",
+              "value": ""
+            },
+            {
+              "enabled": true,
+              "name": "bookCover",
+              "value": ""
+            }
+          ]
+        },
+        "bodyType": "multipart/form-data",
+        "description": "Updates an existing book uploaded by the authenticated user.\nOnly the author of the book is allowed to update it.\n\nReturns 204 status code.\n\n## Request Type\nMultipart/form-Data\n\nFields\n| Field        | Type    | Required | Description                                                                  |\n| ------------ | ------- | -------- | ---------------------------------------------------------------------------- |\n| title        | string  | No       | The title of the book.                                                       |\n| genre        | string  | No       | The genre of the book.                                                       |\n| price        | number  | No       | The cost of the book (in BOOKS).                                             |\n| isMature     | boolean | No       | Whether the book contains mature content.                                    |\n| dateAuthored | Date    | No       | Date the author considers the book released. Must be in `YYYY-MM-DD` format. |\n| book      | File | No       | Replaces the existing book file.   |\n| bookCover | File | No       | Replaces the existing cover image. |\n\n",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "multipart/form-data",
+            "id": null
+          }
+        ],
+        "method": "PATCH",
+        "name": "Update a book",
+        "sortPriority": 14.0,
+        "url": "${[baseUrl]}/books/:id",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":id",
+            "value": "<uuid>",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_r3zJbWHhML",
+        "createdAt": "2026-01-03T08:11:31.066648380",
+        "updatedAt": "2026-01-04T05:55:11.949152707",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_qQLUyAwnNn",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "form": [
+            {
+              "enabled": true,
+              "id": "6ujkCSjhtu",
+              "name": "title",
+              "value": "<string>"
+            },
+            {
+              "enabled": true,
+              "id": "drqTdbnRYC",
+              "name": "genre",
+              "value": "<string>"
+            },
+            {
+              "enabled": true,
+              "id": "fmgEHH0uaG",
+              "name": "price",
+              "value": "<number>"
+            },
+            {
+              "enabled": true,
+              "id": "Tpyyk7XSV9",
+              "name": "isMature",
+              "value": "<boolean>"
+            },
+            {
+              "enabled": true,
+              "id": "w6ySIsIUvT",
+              "name": "dateAuthored",
+              "value": "<dateTime>"
+            },
+            {
+              "enabled": true,
+              "id": "fiSh0ZAXjb",
+              "name": "book",
+              "value": ""
+            },
+            {
+              "enabled": true,
+              "id": "KP0kJN5Cfw",
+              "name": "bookCover",
+              "value": ""
+            },
+            {
+              "enabled": true,
+              "id": "dhNcCvfNRY",
+              "name": "",
+              "value": ""
+            }
+          ]
+        },
+        "bodyType": "multipart/form-data",
+        "description": "[object Object]",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "multipart/form-data",
+            "id": null
+          }
+        ],
+        "method": "POST",
+        "name": "Upload a new book (Author)",
+        "sortPriority": 12.0,
+        "url": "${[baseUrl]}/books",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_wxcyQsPyJ3",
+        "createdAt": "2026-01-03T08:11:31.066489156",
+        "updatedAt": "2026-01-04T05:34:12.703767421",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_qQLUyAwnNn",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "Fetch a list of books with optional filtering and pagination. This endpoint supports filtering by genre, price range, and maturity rating. Results are paginated using limit and skip.\n\n## Query Parameters\n| Parameter  | Type    | Required | Default | Description |\n| ---------- | ---------- | ------------------- | ------- | ---------------------------------------------------------------------------------------------------------- |\n| `limit`    | number  | no       | `20`    | Maximum number of books to return.                                                                         |\n| `skip`     | number  | no       | `0`     | Number of books to skip. Used for pagination. For example, page 3 with 20 per page → `skip = 40`.          |\n| `genre`    | string  | no       | —       | Filter books by genre (e.g., `Fantasy`, `Crime`).                                                          |\n| `minPrice` | number  | no       | —       | Return books with price **≥ minPrice**.                                                                    |\n| `maxPrice` | number  | no       | —       | Return books with price **≤ maxPrice**.                                                                    |\n| `isMature` | boolean | no       | —       | Filter by maturity rating. `true` = mature content, `false` = non-mature. Must be a boolean, not a string. |\n\n| `incluceHidden` | boolean | no       | —       | Filter by isVisble., `false` (only an admin can set this to true)|\n\n\nResponse Object \n\n```\n{\n  \"statusCode\": 200,\n  \"message\": \"Success\",\n  \"errors\": null,\n  \"data\": []\n}\n```",
+        "headers": [],
+        "method": "GET",
+        "name": "Get list of books (public)",
+        "sortPriority": 11.0,
+        "url": "${[baseUrl]}/books",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": "genre",
+            "value": "<string>",
+            "id": null
+          },
+          {
+            "enabled": true,
+            "name": "minPrice",
+            "value": "<integer>",
+            "id": null
+          },
+          {
+            "enabled": true,
+            "name": "maxPrice",
+            "value": "<integer>",
+            "id": null
+          },
+          {
+            "enabled": true,
+            "name": "isMature",
+            "value": "<boolean>",
+            "id": null
+          },
+          {
+            "enabled": true,
+            "name": "includeHidden",
+            "value": "<boolean>",
+            "id": null
+          },
+          {
+            "enabled": true,
+            "name": "limit",
+            "value": "20",
+            "id": null
+          },
+          {
+            "enabled": true,
+            "name": "skip",
+            "value": "0",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_HvC8rQKSST",
+        "createdAt": "2026-01-03T08:11:31.066185435",
+        "updatedAt": "2026-01-03T10:33:07.994123400",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_nBdcUgyNio",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "Fetch a specific transaction by its reference.\n- Admin: Can fetch any transaction.\n- Regular users: Can fetch only their own transactions.\n\n| Field       | Type   | Required | Description                              |\n| ----------- | ------ | -------- | ---------------------------------------- |\n| `reference` | string | yes      | The unique reference of the transaction. |\n\n#### Response Example\n\n```json\n{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"type\": \"ORDER\",\n  \"amount\": \"2500.00\",\n  \"paymentMethod\": \"WALLET\",\n  \"senderWalletId\": \"wallet-7362-8172\",\n  \"recipientWalletId\": null,\n  \"reference\": \"TRX-ORDER-999\",\n  \"hash\": null,\n  \"status\": \"SUCCESS\",\n  \"description\": \"Book Purchase\",\n  \"reason\": null,\n  \"metadata\": null,\n  \"providerResponse\": null,\n  \"createdAt\": \"2024-01-03T11:00:00.000Z\",\n  \"updatedAt\": \"2024-01-03T11:00:00.000Z\",\n  \"orderId\": \"order-uuid-456\",\n  \"senderWallet\": {\n    \"id\": \"wallet-7362-8172\",\n    \"userId\": \"user-uuid-123\"\n  }\n}\n\n```",
+        "headers": [],
+        "method": "GET",
+        "name": "Get transaction by reference",
+        "sortPriority": 9.0,
+        "url": "${[baseUrl]}/transactions/:reference",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":reference",
+            "value": "<string>",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_w9p7r7hzkj",
+        "createdAt": "2026-01-03T08:11:31.065932044",
+        "updatedAt": "2026-01-03T08:35:09.725445356",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_nBdcUgyNio",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "Fetch all transactions in the system of the current user.\n\n\n#### Query Parameters\n\n| Field    | Type     | Required | Description                                                         |\n| :------- | :------- | :------- | :------------------------------------------------------------------ |\n| `type`   | `string` | No       | Filter by transaction type (e.g., `DEPOSIT`, `WITHDRAWAL`, `ORDER`) |\n| `status` | `string` | No       | Filter by transaction status (e.g., `SUCCESS`, `PENDING`, `FAILED`) |\n\n#### Response Example\n\n```json\n[\n  {\n    \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"type\": \"ORDER\",\n    \"amount\": \"2500.00\",\n    \"paymentMethod\": \"WALLET\",\n    \"senderWalletId\": \"wallet-7362-8172\",\n    \"recipientWalletId\": null,\n    \"reference\": \"TRX-ORDER-999\",\n    \"hash\": null,\n    \"status\": \"SUCCESS\",\n    \"description\": \"Book Purchase\",\n    \"reason\": null,\n    \"metadata\": null,\n    \"providerResponse\": null,\n    \"createdAt\": \"2024-01-03T11:00:00.000Z\",\n    \"updatedAt\": \"2024-01-03T11:00:00.000Z\",\n    \"orderId\": \"order-uuid-456\",\n    \"senderWallet\": {\n      \"id\": \"wallet-7362-8172\",\n      \"userId\": \"user-uuid-123\"\n    }\n  }\n]\n```",
+        "headers": [],
+        "method": "GET",
+        "name": "Get current user transactions",
+        "sortPriority": 8.0,
+        "url": "${[baseUrl]}/transactions",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": "type",
+            "value": "<string>",
+            "id": null
+          },
+          {
+            "enabled": true,
+            "name": "status",
+            "value": "<string>",
+            "id": null
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_Ko2jqSiMoU",
+        "createdAt": "2026-01-03T08:11:31.065796676",
+        "updatedAt": "2026-01-03T08:33:51.357170220",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_9FBADt3LvS",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "Get all books bookmarked by the authenticated user.\n\n\nResponse Object\n\n```json\n{\n  \"statusCode\": 200,\n  \"message\": \"Success\",\n  \"errors\": null,\n  \"data\": []\n}\n```",
+        "headers": [],
+        "method": "GET",
+        "name": "Get current user bookmarks",
+        "sortPriority": 6.0,
+        "url": "${[baseUrl]}/me/bookmarks",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_SUFvj2XJ4z",
+        "createdAt": "2026-01-03T08:11:31.065671177",
+        "updatedAt": "2026-01-03T08:33:41.836071864",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_9FBADt3LvS",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "Returns the profile of the authenticated user.\n\nResponse Object\n```json\n{\n  \"statusCode\": 200,\n  \"message\": \"Success\",\n  \"errors\": null,\n  \"data\": {\n    \"id\": \"9a5f8891-9d5b-445c-b7bb-f1933c264bc0\",\n    \"firstName\": \"ross\",\n    \"lastName\": \"west\",\n    \"username\": \"Unique_Carroll64\",\n    \"email\": \"salakotalut@gmail.com\",\n    \"Wallet\": {\n      \"balance\": \"0\"\n    }\n  }\n}\n```\n---\n\n```json\n{\n  \"statusCode\": 401,\n  \"message\": \"unauthorizedException\",\n  \"errors\": [\n    \"invalid signature\"\n  ]\n}\n```\n",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Accept",
+            "value": "application/json",
+            "id": null
+          }
+        ],
+        "method": "GET",
+        "name": "Get current user profile",
+        "sortPriority": 5.0,
+        "url": "${[baseUrl]}/me",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_kTREsVg69k",
+        "createdAt": "2026-01-03T08:11:31.065510493",
+        "updatedAt": "2026-01-03T08:11:31.065510715",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_Sn8urEhUTK",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"token\": \"<string>\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "[object Object]",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": null
+          }
+        ],
+        "method": "POST",
+        "name": "Google Authentication",
+        "sortPriority": 3.0,
+        "url": "${[baseUrl]}/auth/google",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_xpAMzYFKTm",
+        "createdAt": "2026-01-03T08:11:31.065234249",
+        "updatedAt": "2026-01-03T08:34:15.989872998",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_Sn8urEhUTK",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"email\": \"<email>\",\n  \"password\": \"<string>\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "Authenticates a user using their email and password.\n\n\nRequest type\n\n```json\n{\n  \"email\": \"salakotalut@gmail.com\",\n  \"password\":  \"Password@123\"\n}\n```\n\nResponse Type\n\n```json\n{\n  \"statusCode\": 201,\n  \"message\": \"Success\",\n  \"errors\": null,\n  \"data\": {\n    \"accessToken\": <access token>,\n    \"user\": {\n      \"id\": \"9a5f8891-9d5b-445c-b7bb-f1933c264bc0\",\n      \"username\": \"Unique_Carroll64\",\n      \"firstName\": \"ross\",\n      \"lastName\": \"west\",\n      \"email\": \"salakotalut@gmail.com\",\n      \"role\": \"USER\"\n    }\n  }\n}\n```",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": null
+          }
+        ],
+        "method": "POST",
+        "name": "Login user",
+        "sortPriority": 2.0,
+        "url": "${[baseUrl]}/auth/login",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_WKuzMsGkkB",
+        "createdAt": "2026-01-03T08:11:31.064772801",
+        "updatedAt": "2026-01-03T08:34:08.632334231",
+        "workspaceId": "wk_aWSGCfNc2u",
+        "folderId": "fl_Sn8urEhUTK",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"firstName\": \"<string>\",\n  \"lastName\": \"<string>\",\n  \"email\": \"<email>\",\n  \"username\": \"<string>\",\n  \"password\": \"<string>\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "create a new user\n\n\nRequest Type\n```json\n{\n  \"firstName\":\"Talut\",\n  \"lastName\": \"Salako\",\n  \"username\": \"plutack\",\n  \"email\": \"plutack@nobody.live\",\n  \"password\":  \"Password@123\"\n}\n\n```\n\nResponse Type\n\n```json\n{\n  \"statusCode\": 201,\n  \"message\": \"Success\",\n  \"errors\": null,\n  \"data\": {\n    \"id\": \"ec0d8138-dca2-47fc-b30c-1b0a43edaeb2\",\n    \"firstName\": \"sunny\",\n    \"lastName\": \"heaney\",\n    \"email\": \"Hillard_Nikolaus@gmail.com\",\n    \"username\": \"Rosamond42\",\n    \"role\": \"USER\",\n    \"Wallet\": {\n      \"balance\": \"0\"\n    }\n  }\n}\n```",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": null
+          }
+        ],
+        "method": "POST",
+        "name": "Register a new user",
+        "sortPriority": 1.0,
+        "url": "${[baseUrl]}/auth/register",
+        "urlParameters": []
+      }
+    ],
+    "grpcRequests": [],
+    "websocketRequests": []
+  }
+}

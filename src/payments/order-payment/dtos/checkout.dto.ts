@@ -11,7 +11,7 @@ import { PaymentMethod } from 'generated/prisma';
 
 export type InternalPaymentMethod = Extract<PaymentMethod, 'WALLET'>;
 
-export class CreateCheckoutDto {
+export class CheckoutBodyDto {
 	@IsOptional()
 	@IsArray()
 	@IsUUID('all', { each: true })
@@ -24,7 +24,9 @@ export class CreateCheckoutDto {
 	@IsUUID()
 	@ValidateIf((o) => !o.bookIds || o.bookIds.length === 0)
 	orderId?: string;
+}
 
+export class CreateCheckoutDto extends CheckoutBodyDto {
 	@IsEnum(PaymentMethod)
 	paymentMethod: PaymentMethod;
 }

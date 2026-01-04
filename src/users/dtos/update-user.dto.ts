@@ -1,15 +1,15 @@
 import { IsOptional, IsString } from 'class-validator';
 
-export class EditUserDto {
+export class UpdateUserDto {
 	@IsOptional()
 	@IsString()
-	firstName: string;
+	firstName?: string;
 
 	@IsOptional()
 	@IsString()
-	lastName: string;
+	lastName?: string;
 
 	@IsOptional()
 	@IsString()
-	username: string;
+	username?: string;
 }

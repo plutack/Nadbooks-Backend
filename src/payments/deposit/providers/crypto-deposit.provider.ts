@@ -137,6 +137,9 @@ export class CryptoDepositProvider
 		return await Promise.resolve({
 			status: PaymentStatus.PENDING,
 			reference: dto.reference,
+			destinationAddress: this.centralWallet, // or this.contractAddress depending on if we use smart contract or just transfer
+			amount: dto.amount,
+			currency: 'MON',
 		});
 	}
 
