@@ -1,4 +1,4 @@
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString } from 'class-validator';
 
 export class AdminEditBookDto {
 	@IsOptional()
@@ -8,4 +8,8 @@ export class AdminEditBookDto {
 	@IsOptional()
 	@IsBoolean()
 	isMature: boolean;
+
+	@IsOptional()
+	@IsInt()
+	pageCount: number;
 }

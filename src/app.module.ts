@@ -26,7 +26,6 @@ import { WithdrawalModule } from '@/payments/withdrawal/withdrawal.module';
 import { PriceFeedModule } from '@/price-feed/price-feed.module';
 import { TransactionsModule } from '@/transactions/transactions.module';
 import { WebhookModule } from '@/webhook/webhook.module';
-import { OrdersModule } from '@/orders/orders.module';
 
 @Module({
 	imports: [
@@ -45,7 +44,6 @@ import { OrdersModule } from '@/orders/orders.module';
 		WithdrawalModule,
 		WebhookModule,
 		TransactionsModule,
-		OrdersModule,
 	],
 	controllers: [AppController],
 	providers: [

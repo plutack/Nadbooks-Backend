@@ -1,32 +1,13 @@
-import {
-	IsArray,
-	IsEnum,
-	IsNotEmpty,
-	IsOptional,
-	IsString,
-	IsUUID,
-	ValidateIf,
-} from 'class-validator';
+import { IsArray, IsEnum, IsNotEmpty, IsUUID } from 'class-validator';
 import { PaymentMethod } from 'generated/prisma';
 
 export type InternalPaymentMethod = Extract<PaymentMethod, 'WALLET'>;
 
-export class CheckoutBodyDto {
-	@IsOptional()
+export class CreateCheckoutDto {
 	@IsArray()
 	@IsUUID('all', { each: true })
 	@IsNotEmpty({ each: true })
-	@ValidateIf((o) => !o.orderId)
-	bookIds?: string[];
-
-	@IsOptional()
-	@IsString()
-	@IsUUID()
-	@ValidateIf((o) => !o.bookIds || o.bookIds.length === 0)
-	orderId?: string;
-}
-
-export class CreateCheckoutDto extends CheckoutBodyDto {
+	bookIds: string[];
 	@IsEnum(PaymentMethod)
 	paymentMethod: PaymentMethod;
 }

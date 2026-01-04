@@ -1,15 +1,31 @@
-import { HttpCode } from '@nestjs/common';
+import { EditUserDto } from '@/admin/dto/users/edit-user.dto';
+import { UserActivation } from '@/admin/dto/users/update-user-activation.dto';
+import { UserVerification } from '@/admin/dto/users/verify-user.dto';
+import { AuthGuard } from '@/auth/auth.guard';
 import { UserService } from '@/users/users.service';
 import { BaseFilterDto } from '@/common/dto/filters.dto';
-import { AdminAuth } from '@/auth/decorators/roles.decorator';
+import { RolesGuard } from '@/auth/guards/roles.guard';
+import { Roles } from '@/auth/decorators/roles.decorator';
+import { Role } from 'generated/prisma';
 import { UpdateUserRoleDto } from '@/admin/dto/users/update-user-role.dto';
-import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
+import { Request } from 'express'; // Need to access req.user
+import {
+	Body,
+	Controller,
+	Get,
+	Param,
+	Patch,
+	Query,
+	UseGuards,
+	Req,
+	UnauthorizedException,
+} from '@nestjs/common';
 import { JwtPayloadType } from '@/types/jwt.type';
-import { CurrentUser } from '@/auth/auth.guard';
 
 @Controller('admin/users')
-@AdminAuth()
-export class AdminUsersController {
+@UseGuards(AuthGuard, RolesGuard)
+@Roles(Role.ADMIN, Role.SUPER_ADMIN)
+export class UsersController {
 	constructor(private readonly userService: UserService) {}
 
 	@Get()
@@ -22,38 +38,48 @@ export class AdminUsersController {
 		return this.userService.findUserById(id);
 	}
 
+	@Patch(':id')
+	updateUserById(@Param('id') id: string, @Body() body: EditUserDto) {
+		return this.userService.updateUser(id, body);
+	}
+
 	@Patch('/activate/:id')
-	@HttpCode(204)
-	activateUser(@Param('id') id: string, @CurrentUser() user: JwtPayloadType) {
-		return this.userService.updateUserActiveState(user.role, id, true);
+	activateUser(@Param('id') id: string) {
+		return this.userService.updateUserActiveState(
+			id,
+			true, // UserActivation.ACTIVATE implies true
+		);
 	}
 
 	@Patch('/deactivate/:id')
-	@HttpCode(204)
-	deactivateUser(@Param('id') id: string, @CurrentUser() user: JwtPayloadType) {
-		return this.userService.updateUserActiveState(user.role, id, false);
+	deactivateUser(@Param('id') id: string) {
+		return this.userService.updateUserActiveState(
+			id,
+			false, // UserActivation.DEACTIVATE implies false
+		);
 	}
 
 	@Patch('/verify/:id')
-	@HttpCode(204)
 	verifyById(@Param('id') id: string) {
-		return this.userService.updateUserVerification(id, true);
+		return this.userService.updateUserVerification(
+			id,
+			true, // UserVerification.VERIFY implies true
+		);
 	}
 
 	@Patch('/role/:id')
-	@HttpCode(204)
-	@AdminAuth()
+	@UseGuards(RolesGuard)
+	@Roles(Role.ADMIN, Role.SUPER_ADMIN)
 	updateRole(
 		@Param('id') id: string,
 		@Body() body: UpdateUserRoleDto,
-		@CurrentUser() user: JwtPayloadType,
+		@Req() req: Request,
 	) {
+		const user = req['user'] as JwtPayloadType | undefined;
+		if (!user) {
+			throw new UnauthorizedException();
+		}
 		const requesterId = user.sub;
-		return this.userService.updateUserRole(
-			requesterId,
-			user.role,
-			id,
-			body.role,
-		);
+		return this.userService.updateUserRole(requesterId, id, body.role);
 	}
 }

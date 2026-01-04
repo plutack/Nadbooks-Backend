@@ -39,11 +39,6 @@ export class BooksController {
 		return this.bookService.restoreBook(id, user);
 	}
 
-	@Get(':id')
-	getBookById(@Param('id') id: string) {
-		return this.bookService.findBookById(id);
-	}
-
 	@Get()
 	getBooks(@Query() query: BookFilterDto) {
 		return this.bookService.getBooks(query);

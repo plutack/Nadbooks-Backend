@@ -16,46 +16,34 @@ import {
 import { FileType, UpdatableBookFields } from '@/books/types';
 import { AdminEditBookDto } from '@/admin/dto/books/edit-book.dto';
 import { Role } from 'generated/prisma';
-import { ImageProcessingService } from '@/common/image/image-processing.service';
 
 @Injectable()
 export class BooksService {
 	constructor(
 		private readonly storageService: StorageService,
 		private readonly db: PrismaService,
-		private readonly imageProcessor: ImageProcessingService,
 	) {}
 
 	private getBookCoverName(bookName: string): string {
 		return `${bookName}-cover`;
 	}
 
-	private async processBookCover(
-		file: Express.Multer.File,
-	): Promise<Buffer | null> {
-		return await this.imageProcessor.resizeAndOptimize(file.buffer);
+	// function to confirm if the file has the right dimensions
+	private validateBookCover(_file: Express.Multer.File): boolean {
+		return true;
 	}
 
-	private async uploadCover(
+	private uploadCover(
 		cover: Express.Multer.File,
 		title: string,
 	): Promise<string> {
-		const processedBuffer = await this.processBookCover(cover);
-
-		if (!processedBuffer) {
-			throw new BadRequestException('Invalid book cover image');
+		if (!this.validateBookCover(cover)) {
+			throw new BadRequestException('Invalid book cover');
 		}
-
-		// Update buffer with processed image
-		const processedFile = {
-			...cover,
-			buffer: processedBuffer,
-			mimetype: 'image/jpeg', // We converted to jpeg
-		};
 
 		return this.storageService.storeFile(
 			FileType.COVER,
-			processedFile,
+			cover,
 			this.getBookCoverName(title),
 		);
 	}
@@ -79,7 +67,7 @@ export class BooksService {
 				...bookDTO,
 				bookURL,
 				bookCoverURL,
-				pageCount: 0,
+				pageCount: Number(bookDTO.pageCount),
 				price: Number(bookDTO.price),
 				isMature: Boolean(bookDTO.isMature),
 				authorId: user.sub,
@@ -93,13 +81,9 @@ export class BooksService {
 	/**
 	 * Returns book | null
 	 */
-	async getBookById(bookId: string, includeHidden = false) {
-		const where: any = { id: bookId };
-		if (!includeHidden) {
-			where.isDeleted = false;
-		}
+	async getBookById(bookId: string) {
 		return await this.db.book.findFirst({
-			where,
+			where: { id: bookId, isDeleted: false },
 		});
 	}
 
@@ -126,35 +110,28 @@ export class BooksService {
 		});
 	}
 
-	async findBookById(bookId: string, includeHidden = false) {
-		const book = await this.getBookById(bookId, includeHidden);
+	async findBookById(bookId: string) {
+		const book = await this.getBookById(bookId);
 		if (!book) {
 			throw new NotFoundException('Book not found');
 		}
 		return book;
 	}
 
-	async getBookByTitle(title: string, includeHidden = false) {
-		const where: any = { title };
-		if (!includeHidden) {
-			where.isDeleted = false;
-		}
+	async getBookByTitle(title: string) {
 		return await this.db.book.findFirst({
-			where,
+			where: {
+				title,
+			},
 		});
 	}
 
-	async findAuthorBookById(
-		id: string,
-		authorId: string,
-		includeHidden = false,
-	) {
-		const where: any = { id, authorId };
-		if (!includeHidden) {
-			where.isDeleted = false;
-		}
+	async findAuthorBookById(id: string, authorId: string) {
 		const book = await this.db.book.findFirst({
-			where,
+			where: {
+				authorId,
+				id,
+			},
 		});
 		if (!book) {
 			throw new NotFoundException();
