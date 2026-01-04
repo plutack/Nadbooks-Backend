@@ -16,14 +16,13 @@ import {
 import { FileType, UpdatableBookFields } from '@/books/types';
 import { AdminEditBookDto } from '@/admin/dto/books/edit-book.dto';
 import { Role } from 'generated/prisma';
-import { ImageProcessingService } from '@/common/image/image-processing.service';
+import { ImageProcessor } from '@/common/utils/image.processor';
 
 @Injectable()
 export class BooksService {
 	constructor(
 		private readonly storageService: StorageService,
 		private readonly db: PrismaService,
-		private readonly imageProcessor: ImageProcessingService,
 	) {}
 
 	private getBookCoverName(bookName: string): string {
@@ -33,7 +32,7 @@ export class BooksService {
 	private async processBookCover(
 		file: Express.Multer.File,
 	): Promise<Buffer | null> {
-		return await this.imageProcessor.resizeAndOptimize(file.buffer);
+		return await ImageProcessor.resizeAndOptimize(file.buffer);
 	}
 
 	private async uploadCover(
