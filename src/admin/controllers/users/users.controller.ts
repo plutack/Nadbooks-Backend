@@ -1,9 +1,12 @@
 import { EditUserDto } from '@/admin/dto/users/edit-user.dto';
 import { UserActivation } from '@/admin/dto/users/update-user-activation.dto';
 import { UserVerification } from '@/admin/dto/users/verify-user.dto';
+import { AuthGuard } from '@/auth/auth.guard';
 import { UserService } from '@/users/users.service';
 import { BaseFilterDto } from '@/common/dto/filters.dto';
-import { AdminAuth } from '@/auth/decorators/roles.decorator';
+import { RolesGuard } from '@/auth/guards/roles.guard';
+import { Roles } from '@/auth/decorators/roles.decorator';
+import { Role } from 'generated/prisma';
 import { UpdateUserRoleDto } from '@/admin/dto/users/update-user-role.dto';
 import { Request } from 'express'; // Need to access req.user
 import {
@@ -13,14 +16,16 @@ import {
 	Param,
 	Patch,
 	Query,
+	UseGuards,
 	Req,
 	UnauthorizedException,
 } from '@nestjs/common';
 import { JwtPayloadType } from '@/types/jwt.type';
 
 @Controller('admin/users')
-@AdminAuth()
-export class AdminUsersController {
+@UseGuards(AuthGuard, RolesGuard)
+@Roles(Role.ADMIN, Role.SUPER_ADMIN)
+export class UsersController {
 	constructor(private readonly userService: UserService) {}
 
 	@Get()
@@ -63,7 +68,8 @@ export class AdminUsersController {
 	}
 
 	@Patch('/role/:id')
-	@AdminAuth()
+	@UseGuards(RolesGuard)
+	@Roles(Role.ADMIN, Role.SUPER_ADMIN)
 	updateRole(
 		@Param('id') id: string,
 		@Body() body: UpdateUserRoleDto,

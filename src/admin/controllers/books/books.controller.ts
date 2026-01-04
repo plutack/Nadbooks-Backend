@@ -1,13 +1,24 @@
-import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Get,
+	Param,
+	Patch,
+	Query,
+	UseGuards,
+} from '@nestjs/common';
 import { AdminEditBookDto } from '@/admin/dto/books/edit-book.dto';
 import { AuthGuard, CurrentUser } from '@/auth/auth.guard';
 import { BooksService } from '@/books/books.service';
 import { BaseFilterDto } from '@/common/dto/filters.dto';
-import { AdminAuth } from '@/auth/decorators/roles.decorator';
+import { RolesGuard } from '@/auth/guards/roles.guard';
+import { Roles } from '@/auth/decorators/roles.decorator';
+import { Role } from 'generated/prisma';
 import { JwtPayloadType } from '@/types/jwt.type';
 
 @Controller('admin/books')
-@AdminAuth()
+@UseGuards(AuthGuard, RolesGuard)
+@Roles(Role.ADMIN, Role.SUPER_ADMIN)
 export class AdminBooksController {
 	constructor(private booksService: BooksService) {}
 

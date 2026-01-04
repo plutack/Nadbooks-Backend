@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, TransactionStatus, TransactionType } from 'generated/prisma';
+import { Prisma } from 'generated/prisma';
 import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
@@ -21,11 +21,7 @@ export class TransactionService {
 	async getTransactionByReference(reference: string) {
 		const transaction = await this.db.transaction.findUnique({
 			where: { reference },
-			include: {
-				recipientWallet: { select: { id: true, userId: true } },
-				senderWallet: { select: { id: true, userId: true } },
-				order: true,
-			},
+			include: { recipientWallet: true, senderWallet: true, order: true },
 		});
 
 		if (!transaction) {
@@ -38,11 +34,7 @@ export class TransactionService {
 	async getTransactionById(id: string) {
 		const transaction = await this.db.transaction.findUnique({
 			where: { id },
-			include: {
-				recipientWallet: { select: { id: true, userId: true } },
-				senderWallet: { select: { id: true, userId: true } },
-				order: true,
-			},
+			include: { recipientWallet: true, senderWallet: true, order: true },
 		});
 
 		if (!transaction) {
@@ -74,54 +66,19 @@ export class TransactionService {
 		});
 	}
 
-	async getTransactionsByUser(
-		userId: string,
-		filter?: { type?: TransactionType; status?: TransactionStatus },
-	) {
-		const where: Prisma.TransactionWhereInput = {
-			OR: [{ senderWallet: { userId } }, { recipientWallet: { userId } }],
-		};
-
-		if (filter?.type) {
-			where.type = filter.type;
-		}
-
-		if (filter?.status) {
-			where.status = filter.status;
-		}
-
+	async getTransactionsByUser(userId: string) {
 		return await this.db.transaction.findMany({
-			where,
-			include: {
-				senderWallet: { select: { id: true, userId: true } },
-				recipientWallet: { select: { id: true, userId: true } },
-				order: true,
+			where: {
+				OR: [{ senderWallet: { userId } }, { recipientWallet: { userId } }],
 			},
+			include: { senderWallet: true, recipientWallet: true, order: true },
 			orderBy: { createdAt: 'desc' },
 		});
 	}
 
-	async getAllTransactions(filter?: {
-		type?: TransactionType;
-		status?: TransactionStatus;
-	}) {
-		const where: Prisma.TransactionWhereInput = {};
-
-		if (filter?.type) {
-			where.type = filter.type;
-		}
-
-		if (filter?.status) {
-			where.status = filter.status;
-		}
-
+	async getAllTransactions() {
 		return await this.db.transaction.findMany({
-			where,
-			include: {
-				senderWallet: { select: { id: true, userId: true } },
-				recipientWallet: { select: { id: true, userId: true } },
-				order: true,
-			},
+			include: { senderWallet: true, recipientWallet: true, order: true },
 			orderBy: { createdAt: 'desc' },
 		});
 	}
