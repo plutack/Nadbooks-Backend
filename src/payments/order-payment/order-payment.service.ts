@@ -14,7 +14,10 @@ import { CreateCheckoutDto } from '@/payments/order-payment/dtos/checkout.dto';
 import { generateRef } from '@/helpers/functions';
 import { PaystackDepositProvider } from '../deposit/providers/paystack-deposit.provider';
 import { CryptoDepositProvider } from '../deposit/providers/crypto-deposit.provider';
-import { PaystackDepositDto } from '../deposit/dtos/deposit.dto';
+import {
+	CryptoDepositDto,
+	PaystackDepositDto,
+} from '../deposit/dtos/deposit.dto';
 
 @Injectable()
 export class OrderPaymentService {
@@ -141,12 +144,16 @@ export class OrderPaymentService {
 					throw error;
 				}
 			} else if (dto.paymentMethod === PaymentMethod.CRYPTO) {
-				return {
-					status: 'PENDING',
-					reference,
+				const providerDto: CryptoDepositDto = {
 					amount: Number(order.totalAmount),
-					message: 'Please transfer the exact amount to the central wallet.',
+					reference,
+					metadata: {
+						userId: user.sub,
+						orderId: order.id,
+						type: TransactionType.ORDER,
+					},
 				};
+				return await this.cryptoProvider.initiateDeposit(providerDto);
 			}
 		}
 

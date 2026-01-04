@@ -20,14 +20,16 @@ export class PaystackDepositDto extends BaseDepositDto {
 }
 
 export class CryptoDepositDto extends BaseDepositDto {
+	@IsOptional()
 	@IsString()
-	buyerAddress: string;
+	buyerAddress?: string;
 
 	@IsString()
 	reference: string;
 
+	@IsOptional()
 	@IsString()
-	hash: string;
+	hash?: string;
 }
 
 export class DepositDto extends BaseDepositDto {

@@ -79,7 +79,7 @@ export class BooksService {
 				...bookDTO,
 				bookURL,
 				bookCoverURL,
-				pageCount: Number(bookDTO.pageCount),
+				pageCount: 0,
 				price: Number(bookDTO.price),
 				isMature: Boolean(bookDTO.isMature),
 				authorId: user.sub,
@@ -93,9 +93,13 @@ export class BooksService {
 	/**
 	 * Returns book | null
 	 */
-	async getBookById(bookId: string) {
+	async getBookById(bookId: string, includeHidden = false) {
+		const where: any = { id: bookId };
+		if (!includeHidden) {
+			where.isDeleted = false;
+		}
 		return await this.db.book.findFirst({
-			where: { id: bookId, isDeleted: false },
+			where,
 		});
 	}
 
@@ -122,28 +126,35 @@ export class BooksService {
 		});
 	}
 
-	async findBookById(bookId: string) {
-		const book = await this.getBookById(bookId);
+	async findBookById(bookId: string, includeHidden = false) {
+		const book = await this.getBookById(bookId, includeHidden);
 		if (!book) {
 			throw new NotFoundException('Book not found');
 		}
 		return book;
 	}
 
-	async getBookByTitle(title: string) {
+	async getBookByTitle(title: string, includeHidden = false) {
+		const where: any = { title };
+		if (!includeHidden) {
+			where.isDeleted = false;
+		}
 		return await this.db.book.findFirst({
-			where: {
-				title,
-			},
+			where,
 		});
 	}
 
-	async findAuthorBookById(id: string, authorId: string) {
+	async findAuthorBookById(
+		id: string,
+		authorId: string,
+		includeHidden = false,
+	) {
+		const where: any = { id, authorId };
+		if (!includeHidden) {
+			where.isDeleted = false;
+		}
 		const book = await this.db.book.findFirst({
-			where: {
-				authorId,
-				id,
-			},
+			where,
 		});
 		if (!book) {
 			throw new NotFoundException();
