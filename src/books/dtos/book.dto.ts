@@ -43,7 +43,17 @@ export class StoreBookDto {
 	dateAuthored: Date;
 }
 
-export class UpdateBookDto extends PartialType(StoreBookDto) {}
+export class UpdateBookDto extends PartialType(StoreBookDto) {
+	@IsOptional()
+	@IsNumber()
+	@Type(() => Number)
+	price: number;
+
+	@IsOptional()
+	@IsBoolean()
+	@Type(() => Boolean)
+	isMature: boolean;
+}
 
 export const StoreBookMultipartDto = multipartUtil.MultipartFileDto(
 	StoreBookDto,
