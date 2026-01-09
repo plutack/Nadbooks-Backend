@@ -86,6 +86,21 @@ export class BooksService {
 				dateUploaded: new Date(),
 				dateAuthored: new Date(bookDTO.dateAuthored),
 			},
+			select: {
+				id: true,
+				title: true,
+				genre: true,
+				price: true,
+				isMature: true,
+				pageCount: true,
+				bookURL: true,
+				bookCoverURL: true,
+				dateAuthored: true,
+				dateUploaded: true,
+				authorId: true,
+				isDeleted: false,
+				deletedById: false,
+			},
 		});
 		return newBook;
 	}
