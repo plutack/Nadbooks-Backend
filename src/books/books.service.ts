@@ -66,7 +66,11 @@ export class BooksService {
 		bookCover: Express.Multer.File,
 		user: JwtPayloadType,
 	) {
-		const existingBook = await this.getBookByTitle(bookDTO.title);
+		const existingBook = await this.getBookByTitle(bookDTO.title, true);
+
+		if (existingBook?.isDeleted) {
+			return this.restoreBook(existingBook.id, user);
+		}
 		if (existingBook) {
 			throw new BadRequestException('Book already exists');
 		}
