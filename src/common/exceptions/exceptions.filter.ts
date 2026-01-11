@@ -26,6 +26,7 @@ export class ExceptionsFilter implements ExceptionFilter {
 
 			if (typeof rawResponse === 'string') {
 				message = rawResponse;
+				errors = [rawResponse];
 			} else if (typeof rawResponse === 'object' && rawResponse !== null) {
 				const body = rawResponse as Record<string, any>;
 
@@ -37,13 +38,16 @@ export class ExceptionsFilter implements ExceptionFilter {
 				// Case 2: Explicit message string in body
 				else if (typeof body.message === 'string') {
 					message = body.message;
+					errors = [body.message];
 				}
 				// Case 3: Error object/string passed in body without explicit keys (fallback)
 				else {
 					message = exception.message || exception.name;
+					errors = [message];
 				}
 			} else {
 				message = exception.message || exception.name;
+				errors = [message];
 			}
 		} else if (
 			exception instanceof Error &&

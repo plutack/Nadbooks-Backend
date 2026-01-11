@@ -22,20 +22,20 @@ export class JwtFilter implements ExceptionFilter {
 		const response = http.getResponse();
 
 		const status = HttpStatus.UNAUTHORIZED;
-		let message = 'unauthorizedException';
+		let message = 'Authentication failed';
 		let errors: string[] = [];
 
 		if (
 			exception instanceof NestTokenError ||
 			exception instanceof LibTokenError
 		) {
-			message = 'unauthorizedException';
+			message = 'Authentication failed';
 			errors = ['Token has expired. Please log in again.'];
 		} else if (
 			exception instanceof NestJwtError ||
 			exception instanceof LibJwtError
 		) {
-			message = 'unauthorizedException';
+			message = 'Authentication failed';
 			errors = [exception.message || 'Invalid token'];
 		}
 
