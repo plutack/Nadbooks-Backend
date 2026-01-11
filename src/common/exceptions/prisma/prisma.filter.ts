@@ -15,9 +15,11 @@ export class PrismaFilter implements ExceptionFilter {
 		const ctx = host.switchToHttp();
 		const response = ctx.getResponse();
 
-		let status = HttpStatus.INTERNAL_SERVER_ERROR;
-		let message = 'An unexpected error occurred'; // HTTP-level message
-		let errors: string[] = ['Internal server error'];
+		let status = HttpStatus.BAD_REQUEST;
+		let message = 'Database operation failed';
+		let errors: string[] = [
+			'An unexpected error occurred during database operation',
+		];
 
 		switch (exception.code) {
 			case 'P2002':
@@ -40,7 +42,9 @@ export class PrismaFilter implements ExceptionFilter {
 				errors = ['An unexpected error occurred during database operation'];
 		}
 
-		this.logger.error(exception);
+		const request = ctx.getRequest();
+
+		this.logger.warn(`[${status}] ${message} - Path: ${request.url}`);
 
 		response.status(status).json({
 			statusCode: status,
