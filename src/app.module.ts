@@ -68,10 +68,6 @@ import { OrdersModule } from '@/orders/orders.module';
 			useValue: new ValidationPipe({
 				transform: true,
 				whitelist: true,
-				exceptionFactory: (errors) => {
-					console.error('Validation errors:', errors);
-					return new BadRequestException(errors);
-				},
 			}),
 		},
 		{
