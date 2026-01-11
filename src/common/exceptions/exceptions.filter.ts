@@ -6,31 +6,45 @@ import {
 	HttpStatus,
 	Logger,
 } from '@nestjs/common';
-import { JsonWebTokenError } from 'jsonwebtoken';
 
 @Catch()
 export class ExceptionsFilter implements ExceptionFilter {
 	constructor(private readonly logger: Logger) {}
+
 	catch(exception: unknown, host: ArgumentsHost) {
 		const ctx = host.switchToHttp();
 		const response = ctx.getResponse();
+		const request = ctx.getRequest();
 
 		let status: number;
 		let message: string;
-		let errors: string[];
+		let errors: string[] | null = null;
 
 		if (exception instanceof HttpException) {
 			status = exception.getStatus();
-			const raw = exception.getResponse();
-			if (typeof raw === 'string') {
-				message = raw;
-				errors = [raw];
+			const rawResponse = exception.getResponse();
+
+			if (typeof rawResponse === 'string') {
+				message = rawResponse;
+			} else if (typeof rawResponse === 'object' && rawResponse !== null) {
+				const body = rawResponse as Record<string, any>;
+
+				// Case 1: Validation errors (message is array)
+				if (Array.isArray(body.message)) {
+					errors = body.message;
+					message = body.message[0]; // Use first error as main message
+				}
+				// Case 2: Explicit message string in body
+				else if (typeof body.message === 'string') {
+					message = body.message;
+				}
+				// Case 3: Error object/string passed in body without explicit keys (fallback)
+				else {
+					message = exception.message || exception.name;
+				}
 			} else {
-				const body = raw as Record<string, any>;
-				message = exception.name;
-				errors = Array.isArray(body.message) ? body.message : [body.message];
+				message = exception.message || exception.name;
 			}
-			this.logger.error(exception);
 		} else if (
 			exception instanceof Error &&
 			exception.message === 'Origin not allowed by CORS'
@@ -38,25 +52,26 @@ export class ExceptionsFilter implements ExceptionFilter {
 			status = HttpStatus.FORBIDDEN;
 			message = 'ForbiddenResource';
 			errors = ['Origin not allowed'];
-			this.logger.warn(`[CORS] Blocked request from unauthorized origin`);
 		} else {
 			status = HttpStatus.INTERNAL_SERVER_ERROR;
-			message = 'InternalServerErrorException';
-			errors = ['Internal server error'];
+			message = 'Internal server error';
+		}
+
+		// LOGGING STRATEGY
+		if (status >= 500) {
 			this.logger.error(
-				`Unhandled exception: ${exception instanceof Error ? exception.message : exception}`,
+				`[${status}] ${message}`,
 				(exception as any).stack,
-				(exception as any).constructor?.name,
+				`ExceptionsFilter`,
 			);
-			this.logger.warn(
-				`Debug: Is instanceof JsonWebTokenError? ${exception instanceof JsonWebTokenError}`,
-			);
+		} else {
+			this.logger.warn(`[${status}] ${message} - Path: ${request.url}`);
 		}
 
 		response.status(status).json({
 			statusCode: status,
 			message,
-			errors,
+			errors: errors || undefined,
 		});
 	}
 }
