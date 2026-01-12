@@ -27,25 +27,33 @@ import { PriceFeedModule } from '@/price-feed/price-feed.module';
 import { TransactionsModule } from '@/transactions/transactions.module';
 import { WebhookModule } from '@/webhook/webhook.module';
 import { OrdersModule } from '@/orders/orders.module';
+import { RedisModule } from '@/redis/redis.module';
 
 @Module({
 	imports: [
+		// Config & Core
 		ConfigModule.forRoot({
 			isGlobal: true,
 		}),
-		AuthModule,
 		PrismaModule,
-		BooksModule,
+		RedisModule,
+
+		// Features
+		AuthModule,
 		UserModule,
 		WalletModule,
-		PriceFeedModule,
-		OrderPaymentModule,
+		BooksModule,
+		OrdersModule,
+		TransactionsModule,
 
+		// Payments
+		OrderPaymentModule,
 		DepositModule,
 		WithdrawalModule,
+
+		// Integrations
+		PriceFeedModule,
 		WebhookModule,
-		TransactionsModule,
-		OrdersModule,
 	],
 	controllers: [AppController],
 	providers: [

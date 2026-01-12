@@ -4,6 +4,7 @@ import {
 	CreateUserDto,
 	GoogleAuthDto,
 	LoginUserDto,
+	RefreshTokenDto,
 } from '@/auth/dtos/auth.dto';
 
 @Controller('auth')
@@ -23,5 +24,15 @@ export class AuthController {
 	@Post('google')
 	googleAuth(@Body() body: GoogleAuthDto) {
 		return this.auth.google(body.token);
+	}
+
+	@Post('refresh')
+	refresh(@Body() body: RefreshTokenDto) {
+		return this.auth.refresh(body);
+	}
+
+	@Post('logout')
+	logout(@Body() body: RefreshTokenDto) {
+		return this.auth.logout(body);
 	}
 }

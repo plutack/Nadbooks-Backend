@@ -53,5 +53,12 @@ export class LoginUserDto {
 
 export class GoogleAuthDto {
 	@IsString()
+	@IsNotEmpty()
 	token: string;
+}
+
+export class RefreshTokenDto {
+	@IsString()
+	@IsNotEmpty()
+	refreshToken: string;
 }
