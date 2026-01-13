@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AdminBooksController } from './books.controller';
-import { BooksService } from '@/books/books.service';
 import { AuthGuard } from '@/auth/auth.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
+import { BooksService } from '@/books/books.service';
+import { AdminBooksController } from './books.controller';
 
 describe('AdminBooksController', () => {
 	let controller: AdminBooksController;

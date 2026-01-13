@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ImageProcessingService } from './image-processing.service';
 import sharp from 'sharp';
+import { ImageProcessingService } from './image-processing.service';
 
 @Injectable()
 export class SharpImageProcessingService implements ImageProcessingService {

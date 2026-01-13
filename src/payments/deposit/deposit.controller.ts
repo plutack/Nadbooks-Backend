@@ -10,10 +10,10 @@ import {
 } from '@nestjs/common';
 import { PaymentMethod } from 'generated/prisma';
 import { AuthGuard, CurrentUser } from '@/auth/auth.guard';
+import { UppercasePipe } from '@/common/pipes/uppercase.pipe';
 import { JwtPayloadType } from '@/types/jwt.type';
 import { DepositService } from './deposit.service';
 import { DepositDto, VerifyDepositInput } from './dtos/deposit.dto';
-import { UppercasePipe } from '@/common/pipes/uppercase.pipe';
 
 export type ExternalPaymentMethod = Exclude<PaymentMethod, 'WALLET'>;
 

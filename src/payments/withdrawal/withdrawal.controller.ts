@@ -1,8 +1,8 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { WithdrawalService } from './withdrawal.service';
 import { AuthGuard, CurrentUser } from '@/auth/auth.guard';
 import { JwtPayloadType } from '@/types/jwt.type';
 import { WithdrawDto } from './dtos/withdrawal.dto';
+import { WithdrawalService } from './withdrawal.service';
 
 @Controller('withdrawal')
 export class WithdrawalController {

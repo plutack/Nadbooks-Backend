@@ -16,7 +16,7 @@ import {
 
 @Catch(NestJwtError, NestTokenError, LibJwtError, LibTokenError)
 export class JwtFilter implements ExceptionFilter {
-	constructor(private readonly _logger: Logger) {}
+	constructor(readonly _logger: Logger) {}
 	catch(exception: any, host: ArgumentsHost) {
 		const http = host.switchToHttp();
 		const response = http.getResponse();

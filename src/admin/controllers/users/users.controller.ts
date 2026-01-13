@@ -1,11 +1,18 @@
-import { HttpCode } from '@nestjs/common';
-import { UserService } from '@/users/users.service';
-import { BaseFilterDto } from '@/common/dto/filters.dto';
-import { AdminAuth } from '@/auth/decorators/roles.decorator';
+import {
+	Body,
+	Controller,
+	Get,
+	HttpCode,
+	Param,
+	Patch,
+	Query,
+} from '@nestjs/common';
 import { UpdateUserRoleDto } from '@/admin/dto/users/update-user-role.dto';
-import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
-import { JwtPayloadType } from '@/types/jwt.type';
 import { CurrentUser } from '@/auth/auth.guard';
+import { AdminAuth } from '@/auth/decorators/roles.decorator';
+import { BaseFilterDto } from '@/common/dto/filters.dto';
+import { JwtPayloadType } from '@/types/jwt.type';
+import { UserService } from '@/users/users.service';
 
 @Controller('admin/users')
 @AdminAuth()

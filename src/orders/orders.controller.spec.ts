@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { OrdersController } from './orders.controller';
-import { OrderService } from '@/payments/shared/order.service';
 import { AuthGuard } from '@/auth/auth.guard';
+import { OrderService } from '@/payments/shared/order.service';
+import { OrdersController } from './orders.controller';
 
 describe('OrdersController', () => {
 	let controller: OrdersController;

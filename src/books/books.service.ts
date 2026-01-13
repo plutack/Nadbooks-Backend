@@ -4,19 +4,19 @@ import {
 	Injectable,
 	NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '@/prisma/prisma.service';
-import { StorageService } from '@/storage/storage.service';
-import { BaseFilterDto } from '@/common/dto/filters.dto';
-import { JwtPayloadType } from '@/types/jwt.type';
+import { Role } from 'generated/prisma';
+import { AdminEditBookDto } from '@/admin/dto/books/edit-book.dto';
 import {
 	BookFilterDto,
 	StoreBookDto,
 	UpdateBookDto,
 } from '@/books/dtos/book.dto';
 import { FileType, UpdatableBookFields } from '@/books/types';
-import { AdminEditBookDto } from '@/admin/dto/books/edit-book.dto';
-import { Role } from 'generated/prisma';
+import { BaseFilterDto } from '@/common/dto/filters.dto';
 import { ImageProcessingService } from '@/common/image/image-processing.service';
+import { PrismaService } from '@/prisma/prisma.service';
+import { StorageService } from '@/storage/storage.service';
+import { JwtPayloadType } from '@/types/jwt.type';
 
 @Injectable()
 export class BooksService {

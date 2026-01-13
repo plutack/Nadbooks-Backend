@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AdminTransactionsController } from './transactions.controller';
-import { TransactionService } from '@/payments/shared/transaction.service';
 import { AuthGuard } from '@/auth/auth.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
+import { TransactionService } from '@/payments/shared/transaction.service';
+import { AdminTransactionsController } from './transactions.controller';
 
 describe('AdminTransactionsController', () => {
 	let controller: AdminTransactionsController;

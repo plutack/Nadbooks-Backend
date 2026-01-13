@@ -1,33 +1,33 @@
 import {
+	BadRequestException,
+	Logger,
 	MiddlewareConsumer,
 	Module,
 	RequestMethod,
 	ValidationPipe,
-	BadRequestException,
-	Logger,
 } from '@nestjs/common';
-import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
+import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { AppController } from '@/app.controller';
 import { AppService } from '@/app.service';
 import { AuthModule } from '@/auth/auth.module';
 import { BooksModule } from '@/books/books.module';
 import { ExceptionsFilter } from '@/common/exceptions/exceptions.filter';
 import { JwtFilter } from '@/common/exceptions/jwt/jwt.filter';
-import { LoggerMiddleware } from '@/middlewares/logger.middleware';
-import { OrderPaymentModule } from '@/payments/order-payment/order-payment.module';
 import { PrismaFilter } from '@/common/exceptions/prisma/prisma.filter';
-import { PrismaModule } from '@/prisma/prisma.module';
 import { ResponseInterceptor } from '@/common/interceptors/response.interceptor';
-import { UserModule } from '@/users/users.module';
-import { WalletModule } from '@/wallet/wallet.module';
+import { LoggerMiddleware } from '@/middlewares/logger.middleware';
+import { OrdersModule } from '@/orders/orders.module';
 import { DepositModule } from '@/payments/deposit/deposit.module';
+import { OrderPaymentModule } from '@/payments/order-payment/order-payment.module';
 import { WithdrawalModule } from '@/payments/withdrawal/withdrawal.module';
 import { PriceFeedModule } from '@/price-feed/price-feed.module';
-import { TransactionsModule } from '@/transactions/transactions.module';
-import { WebhookModule } from '@/webhook/webhook.module';
-import { OrdersModule } from '@/orders/orders.module';
+import { PrismaModule } from '@/prisma/prisma.module';
 import { RedisModule } from '@/redis/redis.module';
+import { TransactionsModule } from '@/transactions/transactions.module';
+import { UserModule } from '@/users/users.module';
+import { WalletModule } from '@/wallet/wallet.module';
+import { WebhookModule } from '@/webhook/webhook.module';
 
 @Module({
 	imports: [

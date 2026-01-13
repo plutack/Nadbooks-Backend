@@ -1,13 +1,13 @@
 import { Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
+import { PaymentMethod } from 'generated/prisma';
 import { AuthGuard, CurrentUser } from '@/auth/auth.guard';
+import { UppercasePipe } from '@/common/pipes/uppercase.pipe';
 import {
 	CheckoutBodyDto,
 	CreateCheckoutDto,
 } from '@/payments/order-payment/dtos/checkout.dto';
 import { OrderPaymentService } from '@/payments/order-payment/order-payment.service';
 import { JwtPayloadType } from '@/types/jwt.type';
-import { UppercasePipe } from '@/common/pipes/uppercase.pipe';
-import { PaymentMethod } from 'generated/prisma';
 
 @Controller('checkout')
 export class CheckoutController {

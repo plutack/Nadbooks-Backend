@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { OrderPaymentService } from './order-payment.service';
-import { PrismaService } from '@/prisma/prisma.service';
 import { OrderService } from '@/payments/shared/order.service';
 import { TransactionService } from '@/payments/shared/transaction.service';
+import { PrismaService } from '@/prisma/prisma.service';
 import { WalletService } from '@/wallet/wallet.service';
-import { PaystackDepositProvider } from '../deposit/providers/paystack-deposit.provider';
 import { CryptoDepositProvider } from '../deposit/providers/crypto-deposit.provider';
+import { PaystackDepositProvider } from '../deposit/providers/paystack-deposit.provider';
+import { OrderPaymentService } from './order-payment.service';
 
 describe('OrderPaymentService', () => {
 	let service: OrderPaymentService;
