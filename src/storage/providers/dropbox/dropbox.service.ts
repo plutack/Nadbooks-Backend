@@ -11,7 +11,6 @@ import { IStorageService } from '@/storage/interfaces/storage.interface';
 
 @Injectable()
 export class DropboxService implements IStorageService {
-	private ACCESS_TOKEN: string;
 	private AUTH_CODE: string;
 	private APP_KEY: string;
 	private APP_SECRET: string;
@@ -101,7 +100,7 @@ export class DropboxService implements IStorageService {
 		fileName: string,
 	) {
 		const dropboxClient = await this.getDropboxClient();
-		let buffer = file.buffer;
+		const buffer = file.buffer;
 
 		file.filename = fileName;
 		const pathName = `/nadbooks/${file.filename}`;

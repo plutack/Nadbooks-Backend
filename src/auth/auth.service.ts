@@ -14,8 +14,8 @@ import {
 	RefreshTokenDto,
 } from '@/auth/dtos/auth.dto';
 import { PrismaService } from '@/prisma/prisma.service';
-import { JwtPayloadType } from '@/types/jwt.type';
 import { RedisService } from '@/redis/redis.service';
+import { JwtPayloadType } from '@/types/jwt.type';
 
 @Injectable()
 export class AuthService {
@@ -37,7 +37,7 @@ export class AuthService {
 		await this.redis.set(
 			`refresh:${refreshToken}`,
 			userId,
-			this.config.getOrThrow<number>('REFRESH_TOKEN_TTL'), 
+			this.config.getOrThrow<number>('REFRESH_TOKEN_TTL'),
 		);
 		return refreshToken;
 	}

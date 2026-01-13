@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { OrdersController } from './orders.controller';
 import { SharedPaymentsModule } from '@/payments/shared/shared-payments.module';
+import { OrdersController } from './orders.controller';
 
 @Module({
 	imports: [SharedPaymentsModule],

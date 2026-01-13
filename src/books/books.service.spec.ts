@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BooksService } from './books.service';
 import { ImageProcessingService } from '@/common/image/image-processing.service';
+import { PrismaService } from '@/prisma/prisma.service';
 
 import { StorageService } from '@/storage/storage.service';
-import { PrismaService } from '@/prisma/prisma.service';
+import { BooksService } from './books.service';
 
 describe('BooksService', () => {
 	let service: BooksService;

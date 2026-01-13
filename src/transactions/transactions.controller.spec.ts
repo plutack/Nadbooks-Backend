@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { TransactionsController } from './transactions.controller';
-import { TransactionService } from '@/payments/shared/transaction.service';
 import { AuthGuard } from '@/auth/auth.guard';
+import { TransactionService } from '@/payments/shared/transaction.service';
+import { TransactionsController } from './transactions.controller';
 
 describe('TransactionsController', () => {
 	let controller: TransactionsController;

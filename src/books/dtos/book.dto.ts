@@ -10,8 +10,8 @@ import {
 	IsOptional,
 	IsString,
 } from 'class-validator';
-import * as multipartUtil from '@/helpers/dto/multipart.util';
 import { BaseFilterDto } from '@/common/dto/filters.dto';
+import * as multipartUtil from '@/helpers/dto/multipart.util';
 
 export class StoreBookDto {
 	@IsNotEmpty()

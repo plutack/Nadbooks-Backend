@@ -1,23 +1,23 @@
 import { Injectable } from '@nestjs/common';
-import {
-	TransactionType,
-	TransactionStatus,
-	PaymentMethod,
-} from 'generated/prisma';
-import { PrismaService } from '@/prisma/prisma.service';
 import { Decimal } from '@prisma/client/runtime/library';
-import { OrderService } from '../shared/order.service';
-import { TransactionService } from '../shared/transaction.service';
-import { WalletService } from '@/wallet/wallet.service';
-import { JwtPayloadType } from '@/types/jwt.type';
-import { CreateCheckoutDto } from '@/payments/order-payment/dtos/checkout.dto';
+import {
+	PaymentMethod,
+	TransactionStatus,
+	TransactionType,
+} from 'generated/prisma';
 import { generateRef } from '@/helpers/functions';
-import { PaystackDepositProvider } from '../deposit/providers/paystack-deposit.provider';
-import { CryptoDepositProvider } from '../deposit/providers/crypto-deposit.provider';
+import { CreateCheckoutDto } from '@/payments/order-payment/dtos/checkout.dto';
+import { PrismaService } from '@/prisma/prisma.service';
+import { JwtPayloadType } from '@/types/jwt.type';
+import { WalletService } from '@/wallet/wallet.service';
 import {
 	CryptoDepositDto,
 	PaystackDepositDto,
 } from '../deposit/dtos/deposit.dto';
+import { CryptoDepositProvider } from '../deposit/providers/crypto-deposit.provider';
+import { PaystackDepositProvider } from '../deposit/providers/paystack-deposit.provider';
+import { OrderService } from '../shared/order.service';
+import { TransactionService } from '../shared/transaction.service';
 
 @Injectable()
 export class OrderPaymentService {

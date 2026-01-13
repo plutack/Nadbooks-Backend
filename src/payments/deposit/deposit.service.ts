@@ -5,11 +5,6 @@ import {
 	TransactionType,
 } from 'generated/prisma';
 import { generateRef } from '@/helpers/functions';
-import { PrismaService } from '@/prisma/prisma.service';
-import { JwtPayloadType } from '@/types/jwt.type';
-import { WalletService } from '@/wallet/wallet.service';
-import { TransactionService } from '../shared/transaction.service';
-
 import {
 	CryptoDepositDto,
 	DepositDto,
@@ -23,6 +18,10 @@ import {
 } from '@/payments/deposit/interfaces/provider.interface';
 import { CryptoDepositProvider } from '@/payments/deposit/providers/crypto-deposit.provider';
 import { PaystackDepositProvider } from '@/payments/deposit/providers/paystack-deposit.provider';
+import { PrismaService } from '@/prisma/prisma.service';
+import { JwtPayloadType } from '@/types/jwt.type';
+import { WalletService } from '@/wallet/wallet.service';
+import { TransactionService } from '../shared/transaction.service';
 import { ExternalPaymentMethod } from '../withdrawal/dtos/withdrawal.dto';
 
 type DepositProviderMap = {

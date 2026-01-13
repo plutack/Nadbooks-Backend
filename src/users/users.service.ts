@@ -1,8 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+	BadRequestException,
+	Injectable,
+	NotFoundException,
+	UnauthorizedException,
+} from '@nestjs/common';
+import { Role } from 'generated/prisma';
 import { PrismaService } from '@/prisma/prisma.service';
 import { JwtPayloadType } from '@/types/jwt.type';
-import { Role } from 'generated/prisma';
-import { UnauthorizedException, BadRequestException } from '@nestjs/common';
 
 @Injectable()
 export class UserService {
