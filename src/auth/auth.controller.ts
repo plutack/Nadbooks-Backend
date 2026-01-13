@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { AuthService } from '@/auth/auth.service';
 import {
 	CreateUserDto,
@@ -16,21 +16,25 @@ export class AuthController {
 		return this.auth.register(body);
 	}
 
+	@HttpCode(200)
 	@Post('login')
 	loginUser(@Body() body: LoginUserDto) {
 		return this.auth.login(body);
 	}
 
+	@HttpCode(200)
 	@Post('google')
 	googleAuth(@Body() body: GoogleAuthDto) {
 		return this.auth.google(body.token);
 	}
 
+	@HttpCode(200)
 	@Post('refresh')
 	refresh(@Body() body: RefreshTokenDto) {
 		return this.auth.refresh(body);
 	}
 
+	@HttpCode(200)
 	@Post('logout')
 	logout(@Body() body: RefreshTokenDto) {
 		return this.auth.logout(body);
