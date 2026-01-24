@@ -4,6 +4,7 @@ import {
 	IsBoolean,
 	IsBooleanString,
 	IsDate,
+	IsEnum,
 	IsInt,
 	IsNotEmpty,
 	IsNumberString,
@@ -50,6 +51,14 @@ export const StoreBookMultipartDto = multipartUtil.MultipartFileDto(
 	['book', 'bookCover'],
 );
 
+export enum BookSort {
+	POPULARITY = 'POPULARITY',
+	NEWEST = 'NEWEST',
+	PRICE_LOW = 'PRICE_LOW',
+	PRICE_HIGH = 'PRICE_HIGH',
+	ALPHABETICAL = 'ALPHABETICAL',
+}
+
 export class BookFilterDto extends BaseFilterDto {
 	@IsOptional()
 	@IsString()
@@ -74,4 +83,9 @@ export class BookFilterDto extends BaseFilterDto {
 	@Transform(({ value }) => value === 'true')
 	@IsBoolean()
 	includeHidden?: boolean;
+
+	@IsOptional()
+	@Transform(({ value }) => value?.toUpperCase())
+	@IsEnum(BookSort)
+	sortBy?: BookSort;
 }

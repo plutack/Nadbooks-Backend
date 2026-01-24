@@ -119,10 +119,31 @@ export class BooksService {
 			where.isDeleted = false;
 		}
 
+		const orderBy: any = {};
+
+		switch (filters.sortBy) {
+			case 'POPULARITY':
+				orderBy.OrderBook = { _count: 'desc' };
+				break;
+			case 'NEWEST':
+				orderBy.dateUploaded = 'desc';
+				break;
+			case 'PRICE_LOW':
+				orderBy.price = 'asc';
+				break;
+			case 'PRICE_HIGH':
+				orderBy.price = 'desc';
+				break;
+			case 'ALPHABETICAL':
+				orderBy.title = 'asc';
+				break;
+		}
+
 		return await this.db.book.findMany({
 			take: filters.limit || 20,
 			skip: filters.skip || 0,
 			where,
+			orderBy: Object.keys(orderBy).length > 0 ? orderBy : undefined,
 		});
 	}
 
