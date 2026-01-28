@@ -4,7 +4,7 @@ import {
 	Injectable,
 	NotFoundException,
 } from '@nestjs/common';
-import { Role } from 'generated/prisma';
+import { BookStatus, Role } from 'generated/prisma';
 import { AdminEditBookDto } from '@/admin/dto/books/edit-book.dto';
 import {
 	BookFilterDto,
@@ -117,6 +117,7 @@ export class BooksService {
 
 		if (!filters.includeHidden) {
 			where.isDeleted = false;
+			where.status = BookStatus.APPROVED;
 		}
 
 		const orderBy: any = {};
@@ -144,6 +145,20 @@ export class BooksService {
 			skip: filters.skip || 0,
 			where,
 			orderBy: Object.keys(orderBy).length > 0 ? orderBy : undefined,
+		});
+	}
+
+	async getUserBooks(userId: string, filters: BaseFilterDto) {
+		return await this.db.book.findMany({
+			where: {
+				authorId: userId,
+				isDeleted: false,
+			},
+			take: filters.limit || 20,
+			skip: filters.skip || 0,
+			orderBy: {
+				dateUploaded: 'desc',
+			},
 		});
 	}
 
