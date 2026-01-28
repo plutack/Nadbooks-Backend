@@ -1,9 +1,11 @@
+import { Type } from 'class-transformer';
 import { IsNumber, IsOptional, IsString, ValidateIf } from 'class-validator';
 import { PaymentMethod } from 'generated/prisma';
 
 export type ExternalPaymentMethod = Exclude<PaymentMethod, 'WALLET'>;
 
 export class BaseDepositDto {
+	@Type(() => Number)
 	@IsNumber()
 	amount: number;
 
@@ -66,6 +68,7 @@ export class VerifyDepositInput {
 	buyerAddress?: string; // Crypto
 
 	@IsOptional()
+	@Type(() => Number)
 	@IsNumber()
 	transferedAmount?: number; // Crypto
 }

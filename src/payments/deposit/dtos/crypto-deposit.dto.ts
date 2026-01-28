@@ -1,8 +1,9 @@
-// src/payments/deposit/dtos/crypto-deposit.dto.ts
+import { Type } from 'class-transformer';
 import { IsNumber, IsString } from 'class-validator';
 import { PaymentStatus } from '@/payments/deposit/interfaces/provider.interface';
 
 export class CryptoDepositInput {
+	@Type(() => Number)
 	@IsNumber()
 	amount: number;
 
@@ -20,6 +21,7 @@ export class VerifyPaymentDto {
 	@IsString()
 	buyerAddress: string;
 
+	@Type(() => Number)
 	@IsNumber()
 	transferedAmount: number;
 }

@@ -46,6 +46,12 @@ enum OrderStatus {
   COMPLETED
 }
 
+enum BookStatus {
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+}
+
 model RoleChange {
   id         String @id @default(uuid())
   fromRole   Role
@@ -88,7 +94,9 @@ model User {
 
   // Books deleted by this user
   deletedBooks Book[] @relation("BookDeletedBy")
-
+  
+  // Books reviewed by this user
+  reviewedBooks Book[] @relation("BookReviewedBy")
 
   books         Book[]
   bookBookmarks BookBookmark[]
@@ -116,8 +124,13 @@ model Book {
   isDeleted    Boolean        @default(false) @map("is_deleted")
   deletedById  String?        @map("deleted_by_id")
   deletedBy    User?          @relation("BookDeletedBy", fields: [deletedById], references: [id])
+  status       BookStatus     @default(PENDING_APPROVAL)
+  reviewedById String?        @map("reviewed_by_id")
+  reviewedBy   User?          @relation("BookReviewedBy", fields: [reviewedById], references: [id])
+  dateReviewed DateTime?      @map("date_reviewed")
 
   @@index([genre])
+  @@index([status])
 }
 
 model BookBookmark {

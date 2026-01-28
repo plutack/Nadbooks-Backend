@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { IsNotEmpty, IsNumber, IsString, ValidateIf } from 'class-validator';
 import { PaymentMethod } from 'generated/prisma';
 
@@ -5,6 +6,7 @@ export type ExternalPaymentMethod = Exclude<PaymentMethod, 'WALLET'>;
 
 // Base fields shared by all withdrawals
 export class BaseWithdrawDto {
+	@Type(() => Number)
 	@IsNumber()
 	@IsNotEmpty()
 	amount: number;

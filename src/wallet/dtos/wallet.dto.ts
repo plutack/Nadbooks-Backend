@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 import { PaymentMethod } from 'generated/prisma';
@@ -7,6 +8,7 @@ export type ExternalPaymentMethod = Exclude<PaymentMethod, 'WALLET'>;
 //TODO: this is now redundant
 //
 export class DepositDto {
+	@Type(() => Number)
 	@IsNumber()
 	@IsNotEmpty()
 	amount: number;
@@ -17,6 +19,7 @@ export class DepositDto {
 }
 
 export class WithdrawDto {
+	@Type(() => Number)
 	@IsNumber()
 	@IsNotEmpty()
 	amount: number;

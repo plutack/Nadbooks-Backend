@@ -1,4 +1,5 @@
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
+import { BookStatus } from 'generated/prisma';
 
 export class AdminEditBookDto {
 	@IsOptional()
@@ -8,4 +9,8 @@ export class AdminEditBookDto {
 	@IsOptional()
 	@IsBoolean()
 	isMature: boolean;
+
+	@IsOptional()
+	@IsEnum(BookStatus)
+	status: BookStatus;
 }

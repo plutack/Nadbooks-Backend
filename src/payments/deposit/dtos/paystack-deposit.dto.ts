@@ -1,7 +1,9 @@
+import { Type } from 'class-transformer';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 // Input type for initiating a Paystack deposit
 export class BankDepositInput {
+	@Type(() => Number)
 	@IsNumber()
 	amount: number;
 
