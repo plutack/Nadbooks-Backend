@@ -31,11 +31,17 @@ export class StoreBookDto {
 	genre: string;
 
 	@IsNotEmpty()
-	@IsNumberString()
+	@Type(() => Number)
+	@IsInt()
 	price: number;
 
 	@IsNotEmpty()
-	@IsBooleanString()
+	@Transform(({ value }) => {
+		if (value === 'true') return true;
+		if (value === 'false') return false;
+		return value;
+	})
+	@IsBoolean()
 	isMature: boolean;
 
 	@IsNotEmpty()
