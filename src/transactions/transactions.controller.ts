@@ -25,7 +25,7 @@ export class TransactionsController {
 	) {
 		const filter = { type, status };
 		// Regular user: fetch own transactions only
-		return this.transactionService.getTransactionsByUser(user.sub, filter);
+		return await this.transactionService.getTransactionsByUser(user.sub, filter);
 	}
 
 	// Admin: can fetch any transaction by reference

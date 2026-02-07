@@ -2,8 +2,10 @@ import {
 	BadRequestException,
 	ForbiddenException,
 	Injectable,
+	Logger,
 	NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { BookStatus, Role } from 'generated/prisma';
 import { AdminEditBookDto } from '@/admin/dto/books/edit-book.dto';
 import {
@@ -15,16 +17,24 @@ import { FileType, UpdatableBookFields } from '@/books/types';
 import { BaseFilterDto } from '@/common/dto/filters.dto';
 import { ImageProcessingService } from '@/common/image/image-processing.service';
 import { PrismaService } from '@/prisma/prisma.service';
+import { RedisService } from '@/redis/redis.service';
 import { StorageService } from '@/storage/storage.service';
 import { JwtPayloadType } from '@/types/jwt.type';
 
 @Injectable()
 export class BooksService {
+	private readonly logger = new Logger(BooksService.name);
+	private readonly cacheTTL: number;
+
 	constructor(
 		private readonly storageService: StorageService,
 		private readonly db: PrismaService,
 		private readonly imageProcessor: ImageProcessingService,
-	) {}
+		private readonly redis: RedisService,
+		private readonly configService: ConfigService,
+	) {
+		this.cacheTTL = this.configService.getOrThrow<number>('CACHETTL');
+	}
 
 	private getBookCoverName(bookName: string): string {
 		return `${bookName}-cover`;
@@ -104,6 +114,13 @@ export class BooksService {
 	}
 
 	async getBooks(filters: BookFilterDto) {
+		const cacheKey = `books:list:${JSON.stringify(filters)}`;
+		const cachedBooks = await this.redis.getJSON(cacheKey);
+
+		if (cachedBooks) {
+			return cachedBooks;
+		}
+
 		const where: any = {};
 
 		if (filters.genre) where.genre = filters.genre;
@@ -140,12 +157,15 @@ export class BooksService {
 				break;
 		}
 
-		return await this.db.book.findMany({
+		const books = await this.db.book.findMany({
 			take: filters.limit || 20,
 			skip: filters.skip || 0,
 			where,
 			orderBy: Object.keys(orderBy).length > 0 ? orderBy : undefined,
 		});
+
+		await this.redis.setJSON(cacheKey, books, this.cacheTTL);
+		return books;
 	}
 
 	async getUserBooks(userId: string, filters: BaseFilterDto) {
@@ -163,10 +183,18 @@ export class BooksService {
 	}
 
 	async findBookById(bookId: string, includeHidden = false) {
+		const cacheKey = `books:id:${bookId}`;
+		const cachedBook = await this.redis.getJSON(cacheKey);
+		if (cachedBook) {
+			return cachedBook;
+		}
+
 		const book = await this.getBookById(bookId, includeHidden);
 		if (!book) {
 			throw new NotFoundException('Book not found');
 		}
+
+		await this.redis.setJSON(cacheKey, book, this.cacheTTL);
 		return book;
 	}
 
@@ -211,6 +239,8 @@ export class BooksService {
 				deletedById: authorId,
 			},
 		});
+
+		await this.redis.del(`books:id:${id}`);
 	}
 
 	async updateBook(
@@ -260,6 +290,8 @@ export class BooksService {
 			where: { id },
 			data: updateData,
 		});
+
+		await this.redis.del(`books:id:${id}`);
 	}
 
 	async bookmarkBook(userId: string, bookId: string) {
@@ -331,13 +363,16 @@ export class BooksService {
 			);
 		}
 
-		return await this.db.book.update({
+		const restoredBook = await this.db.book.update({
 			where: { id: bookId },
 			data: {
 				isDeleted: false,
 				deletedById: null,
 			},
 		});
+
+		await this.redis.del(`books:id:${bookId}`);
+		return restoredBook;
 	}
 
 	async adminUpdateBook(bookId: string, payload: AdminEditBookDto) {
@@ -345,6 +380,8 @@ export class BooksService {
 			where: { id: bookId },
 			data: payload,
 		});
+
+		await this.redis.del(`books:id:${bookId}`);
 		return book;
 	}
 }
