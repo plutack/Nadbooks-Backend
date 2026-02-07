@@ -33,7 +33,7 @@ export class BooksService {
 		private readonly redis: RedisService,
 		private readonly configService: ConfigService,
 	) {
-		this.cacheTTL = this.configService.getOrThrow<number>('CACHETTL');
+		this.cacheTTL = this.configService.getOrThrow<number>('CACHE_TTL');
 	}
 
 	private getBookCoverName(bookName: string): string {
