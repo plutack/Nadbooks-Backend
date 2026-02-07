@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard, CurrentUser } from '@/auth/auth.guard';
 import { BooksService } from '@/books/books.service';
+import { BaseFilterDto } from '@/common/dto/filters.dto';
 import {
 	BookFilterDto,
 	StoreBookDto,
@@ -25,6 +26,15 @@ import { JwtPayloadType } from '@/types/jwt.type';
 @Controller('books')
 export class BooksController {
 	constructor(private bookService: BooksService) {}
+
+	@Get('me')
+	@UseGuards(AuthGuard)
+	getMyBooks(
+		@CurrentUser() user: JwtPayloadType,
+		@Query() query: BaseFilterDto,
+	) {
+		return this.bookService.getUserBooks(user.sub, query);
+	}
 
 	@Get('me/deleted')
 	@UseGuards(AuthGuard)
@@ -46,6 +56,7 @@ export class BooksController {
 
 	@Get()
 	getBooks(@Query() query: BookFilterDto) {
+		query.includeHidden = false;
 		return this.bookService.getBooks(query);
 	}
 

@@ -3,6 +3,8 @@ import { ImageProcessingService } from '@/common/image/image-processing.service'
 import { PrismaService } from '@/prisma/prisma.service';
 
 import { StorageService } from '@/storage/storage.service';
+import { RedisService } from '@/redis/redis.service';
+import { ConfigService } from '@nestjs/config';
 import { BooksService } from './books.service';
 
 describe('BooksService', () => {
@@ -24,7 +26,36 @@ describe('BooksService', () => {
 				},
 				{
 					provide: PrismaService,
-					useValue: {},
+					useValue: {
+						book: {
+							findMany: jest.fn(),
+							findFirst: jest.fn(),
+							update: jest.fn(),
+							create: jest.fn(),
+							delete: jest.fn(),
+						},
+						bookBookmark: {
+							create: jest.fn(),
+							delete: jest.fn(),
+							findMany: jest.fn(),
+						},
+					},
+				},
+				{
+					provide: RedisService,
+					useValue: {
+						get: jest.fn(),
+						set: jest.fn(),
+						del: jest.fn(),
+						getJSON: jest.fn(),
+						setJSON: jest.fn(),
+					},
+				},
+				{
+					provide: ConfigService,
+					useValue: {
+						get: jest.fn().mockReturnValue(900),
+					},
 				},
 			],
 		}).compile();
@@ -34,5 +65,16 @@ describe('BooksService', () => {
 
 	it('should be defined', () => {
 		expect(service).toBeDefined();
+	});
+
+	it('should check cache for getBooks', async () => {
+		const redisService = service['redis'];
+		const spy = jest.spyOn(redisService, 'getJSON');
+
+		// Mock db findMany to avoid actual DB call error if cache miss logic proceeds
+		service['db'].book.findMany = jest.fn().mockResolvedValue([]);
+
+		await service.getBooks({});
+		expect(spy).toHaveBeenCalled();
 	});
 });
