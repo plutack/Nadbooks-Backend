@@ -2,12 +2,10 @@ import { PartialType } from '@nestjs/mapped-types';
 import { Transform, Type } from 'class-transformer';
 import {
 	IsBoolean,
-	IsBooleanString,
 	IsDate,
 	IsEnum,
 	IsInt,
 	IsNotEmpty,
-	IsNumberString,
 	IsOptional,
 	IsString,
 } from 'class-validator';

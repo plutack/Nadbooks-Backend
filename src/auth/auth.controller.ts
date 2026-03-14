@@ -1,8 +1,16 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Get,
+	HttpCode,
+	Post,
+	Req,
+	UseGuards,
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from '@/auth/auth.service';
 import {
 	CreateUserDto,
-	GoogleAuthDto,
 	LoginUserDto,
 	RefreshTokenDto,
 } from '@/auth/dtos/auth.dto';
@@ -22,10 +30,14 @@ export class AuthController {
 		return this.auth.login(body);
 	}
 
-	@HttpCode(200)
-	@Post('google')
-	googleAuth(@Body() body: GoogleAuthDto) {
-		return this.auth.google(body.token);
+	@Get('google')
+	@UseGuards(AuthGuard('google'))
+	googleAuthRedirect() {}
+
+	@Get('google/callback')
+	@UseGuards(AuthGuard('google'))
+	googleAuthCallback(@Req() req: any) {
+		return this.auth.handleOauthLogin(req.user);
 	}
 
 	@HttpCode(200)

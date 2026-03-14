@@ -1,3 +1,4 @@
+import { GoogleResponseUser } from '@/types/google.response';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
@@ -22,22 +23,17 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 	}
 
 	validate(
-		_token: string,
-		_: string | undefined,
+		_accessToken: string,
+		_refreshToken: string,
 		profile: GoogleResponseUser,
-		_done: Function,
 	) {
-		try {
-			const { name, email, provider, id } = profile;
+		const { name, email, provider, id } = profile;
 
-			return {
-				provider,
-				provider_id: id,
-				email: email,
-				name,
-			};
-		} catch (error) {
-			throw new Error(error);
-		}
+		return {
+			provider,
+			provider_id: id,
+			email: email,
+			name,
+		};
 	}
 }
