@@ -13,7 +13,7 @@ export class JWTStrategy extends PassportStrategy(Strategy, 'jwt') {
 				(req: Request) => req.cookies.accessToken,
 				ExtractJwt.fromAuthHeaderAsBearerToken(),
 			]),
-			ignoreExpiration: false,
+			ignoreExpiration: config.getOrThrow('IGNORE_JWT_EXPIRATION') === 'true',
 		});
 	}
 
