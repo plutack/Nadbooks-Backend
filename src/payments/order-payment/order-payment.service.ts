@@ -126,7 +126,7 @@ export class OrderPaymentService {
 			if (dto.paymentMethod === PaymentMethod.PAYSTACK) {
 				const providerDto: PaystackDepositDto = {
 					amount: Number(order.totalAmount),
-					email: user.email!,
+					email: user.email,
 					reference,
 					metadata: {
 						userId: user.sub,

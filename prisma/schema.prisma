@@ -53,22 +53,21 @@ enum BookStatus {
 }
 
 model RoleChange {
-  id         String @id @default(uuid())
-  fromRole   Role
-  toRole     Role
+  id       String @id @default(uuid())
+  fromRole Role
+  toRole   Role
 
   changedById String
-  changedBy   User @relation("RoleChangedBy", fields: [changedById], references: [id])
+  changedBy   User   @relation("RoleChangedBy", fields: [changedById], references: [id])
 
   userId String
-  user   User @relation("RoleChangedFor", fields: [userId], references: [id])
+  user   User   @relation("RoleChangedFor", fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([changedById])
 }
-
 
 model User {
   id           String  @id @default(uuid())
@@ -94,7 +93,7 @@ model User {
 
   // Books deleted by this user
   deletedBooks Book[] @relation("BookDeletedBy")
-  
+
   // Books reviewed by this user
   reviewedBooks Book[] @relation("BookReviewedBy")
 

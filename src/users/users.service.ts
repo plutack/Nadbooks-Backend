@@ -1,12 +1,10 @@
 import {
-	BadRequestException,
 	Injectable,
 	NotFoundException,
 	UnauthorizedException,
 } from '@nestjs/common';
 import { Role } from 'generated/prisma';
 import { PrismaService } from '@/prisma/prisma.service';
-import { JwtPayloadType } from '@/types/jwt.type';
 
 @Injectable()
 export class UserService {
@@ -37,6 +35,35 @@ export class UserService {
 		}
 
 		return existingUser;
+	}
+
+	async updateProfile(
+		userId: string,
+		payload: { firstName?: string; lastName?: string; username?: string },
+	) {
+		const existingUser = await this.db.user.findUnique({
+			where: { id: userId },
+		});
+
+		if (!existingUser) {
+			throw new NotFoundException('User not found');
+		}
+
+		return await this.db.user.update({
+			where: { id: userId },
+			data: {
+				firstName: payload.firstName ?? existingUser.firstName,
+				lastName: payload.lastName ?? existingUser.lastName,
+				username: payload.username ?? existingUser.username,
+			},
+			select: {
+				id: true,
+				firstName: true,
+				lastName: true,
+				username: true,
+				email: true,
+			},
+		});
 	}
 
 	/**

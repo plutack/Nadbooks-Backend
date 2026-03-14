@@ -1,4 +1,4 @@
-type GoogleResponseUser = {
+export type GoogleResponseUser = {
 	provider: 'google';
 	sub: string;
 	id: string;
