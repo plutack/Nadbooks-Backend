@@ -67,17 +67,22 @@ export class WebhookService {
 	async handleCryptoWebhook(payload: any, headers: any) {
 		const signature = headers['x-alchemy-signature'];
 
+		console.log('payload:', payload);
 		if (!this.verifySignature(payload, signature, this.alchemySecret)) {
+			console.log('payload:', payload);
 			return { status: 'unauthorized' };
 		}
 
 		const activities = payload.event?.activity;
 
 		if (!activities || !Array.isArray(activities)) {
+			console.log('called 3');
+
 			return { status: 'success' };
 		}
 
 		for (const activity of activities) {
+			console.log('called 2');
 			try {
 				await this.depositService.verifyDeposit(PaymentMethod.CRYPTO, {
 					hash: activity.hash,

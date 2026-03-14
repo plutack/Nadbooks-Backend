@@ -83,7 +83,7 @@ export class DepositService {
 				amount: dto.amount,
 				hash: dto.hash,
 				reference,
-				buyerAddress: user.sub,
+				address: user.sub,
 			} as CryptoDepositDto;
 		}
 
