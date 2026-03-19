@@ -28,15 +28,12 @@ type DecodedTransfer = {
 };
 
 @Injectable()
-export class CryptoDepositProvider
-	implements
-		DepositProviderInterface<
-			CryptoDepositDto,
-			DepositResult,
-			VerifyDepositInput,
-			{ status: PaymentStatus }
-		>
-{
+export class CryptoDepositProvider implements DepositProviderInterface<
+	CryptoDepositDto,
+	DepositResult,
+	VerifyDepositInput,
+	{ status: PaymentStatus }
+> {
 	private readonly provider: JsonRpcProvider;
 	private readonly contractAddress: string;
 	private readonly centralWallet: string;

@@ -75,3 +75,9 @@ export class PasswordStrengthDto {
 	})
 	password: string;
 }
+
+export class LinkGoogleDto {
+	@IsString()
+	@IsNotEmpty({ message: 'Google token is required' })
+	token: string;
+}

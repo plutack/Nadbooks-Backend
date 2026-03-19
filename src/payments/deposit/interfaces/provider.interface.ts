@@ -43,18 +43,16 @@ export interface DepositProviderInterface<
 	//  webhook handler
 	handleWebhook?(payload: any, headers?: Record<string, string>): Promise<any>;
 }
-export interface PaystackDepositProviderInterface
-	extends DepositProviderInterface<
-		PaystackDepositDto,
-		DepositResult,
-		VerifyDepositInput,
-		VerifyPaymentResult
-	> {}
+export interface PaystackDepositProviderInterface extends DepositProviderInterface<
+	PaystackDepositDto,
+	DepositResult,
+	VerifyDepositInput,
+	VerifyPaymentResult
+> {}
 
-export interface CryptoDepositProviderInterface
-	extends DepositProviderInterface<
-		CryptoDepositDto,
-		DepositResult,
-		VerifyPaymentDto,
-		VerifyPaymentResult
-	> {}
+export interface CryptoDepositProviderInterface extends DepositProviderInterface<
+	CryptoDepositDto,
+	DepositResult,
+	VerifyPaymentDto,
+	VerifyPaymentResult
+> {}

@@ -3,11 +3,13 @@ import {
 	Injectable,
 	NotFoundException,
 	UnauthorizedException,
+	ConflictException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
 import * as crypto from 'crypto';
+import { OAuth2Client } from 'google-auth-library';
 import {
 	CreateUserDto,
 	LoginUserDto,
@@ -16,6 +18,17 @@ import {
 import { PrismaService } from '@/prisma/prisma.service';
 import { RedisService } from '@/redis/redis.service';
 import { JwtPayloadType } from '@/types/jwt.type';
+import { Role } from 'generated/prisma';
+
+type UserResponse = {
+	id: string;
+	username: string;
+	firstName: string;
+	lastName: string;
+	email: string;
+	role: Role;
+	googleId: string | null;
+};
 
 @Injectable()
 export class AuthService {
@@ -187,6 +200,13 @@ export class AuthService {
 		});
 
 		if (existingUser) {
+			if (!existingUser.googleId && profile.provider === 'google') {
+				await this.db.user.update({
+					where: { id: existingUser.id },
+					data: { googleId: profile.provider_id },
+				});
+			}
+
 			const jwtPayload: JwtPayloadType = {
 				sub: existingUser.id,
 				username: existingUser.username,
@@ -205,16 +225,18 @@ export class AuthService {
 					lastName: existingUser.lastName,
 					email: existingUser.email,
 					role: existingUser.role,
+					googleId: existingUser.googleId,
 				},
 			};
 		}
 
-		const newUser = await this.db.user.create({
+		const newUser = (await this.db.user.create({
 			data: {
 				firstName: profile.name.givenName || 'User',
 				lastName: profile.name.familyName || '',
 				email: profile.email,
 				username: `${profile.email.split('@')[0]}_${crypto.randomBytes(3).toString('hex')}`,
+				googleId: profile.provider_id,
 				wallet: { create: { balance: 0 } },
 			},
 			select: {
@@ -224,8 +246,9 @@ export class AuthService {
 				email: true,
 				username: true,
 				role: true,
+				googleId: true,
 			},
-		});
+		})) as UserResponse;
 
 		const jwtPayload: JwtPayloadType = {
 			sub: newUser.id,
@@ -247,6 +270,7 @@ export class AuthService {
 				lastName: newUser.lastName,
 				email: newUser.email,
 				role: newUser.role,
+				googleId: newUser.googleId,
 			},
 		};
 	}
@@ -348,5 +372,106 @@ export class AuthService {
 				role: user.role,
 			},
 		};
+	}
+
+	async linkGoogleAccount(userId: string, token: string) {
+		const user = await this.db.user.findUnique({
+			where: { id: userId },
+		});
+
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+
+		if (user.googleId) {
+			throw new ConflictException('Google account is already linked');
+		}
+
+		const googleClient = new OAuth2Client(
+			this.config.getOrThrow<string>('GOOGLE_CLIENT_ID'),
+		);
+
+		let googleUserId: string;
+		let googleEmail: string;
+
+		try {
+			const ticket = await googleClient.verifyIdToken({
+				idToken: token,
+				audience: this.config.getOrThrow<string>('GOOGLE_CLIENT_ID'),
+			});
+			const payload = ticket.getPayload();
+			if (!payload || !payload.email) {
+				throw new UnauthorizedException('Invalid Google token payload');
+			}
+			googleUserId = payload.sub;
+			googleEmail = payload.email;
+		} catch {
+			throw new UnauthorizedException('Invalid Google token');
+		}
+
+		if (googleEmail.toLowerCase() !== user.email.toLowerCase()) {
+			throw new BadRequestException(
+				'Google account email must match your account email',
+			);
+		}
+
+		const existingGoogleUser = await this.db.user.findFirst({
+			where: {
+				googleId: googleUserId,
+				id: { not: userId },
+			},
+		});
+
+		if (existingGoogleUser) {
+			throw new ConflictException(
+				'This Google account is already linked to another user',
+			);
+		}
+
+		const updatedUser = await this.db.user.update({
+			where: { id: userId },
+			data: { googleId: googleUserId },
+			select: {
+				id: true,
+				username: true,
+				firstName: true,
+				lastName: true,
+				email: true,
+				role: true,
+				googleId: true,
+			},
+		});
+
+		return {
+			message: 'Google account linked successfully',
+			user: updatedUser,
+		};
+	}
+
+	async unlinkGoogleAccount(userId: string) {
+		const user = await this.db.user.findUnique({
+			where: { id: userId },
+		});
+
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+
+		if (!user.googleId) {
+			throw new BadRequestException('No Google account is currently linked');
+		}
+
+		if (!user.passwordHash) {
+			throw new BadRequestException(
+				'Cannot unlink Google account. Please set a password first using the set-password endpoint.',
+			);
+		}
+
+		await this.db.user.update({
+			where: { id: userId },
+			data: { googleId: null },
+		});
+
+		return { message: 'Google account unlinked successfully' };
 	}
 }

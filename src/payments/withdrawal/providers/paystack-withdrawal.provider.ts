@@ -8,9 +8,7 @@ import {
 } from '@/payments/withdrawal/interfaces/provider.interface';
 
 @Injectable()
-export class PaystackWithdrawalProvider
-	implements PaystackWithdrawalProviderInterface
-{
+export class PaystackWithdrawalProvider implements PaystackWithdrawalProviderInterface {
 	private readonly PAYSTACK_BASE = 'https://api.paystack.co';
 	private readonly secretKey: string;
 
