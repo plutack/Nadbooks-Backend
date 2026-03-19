@@ -16,8 +16,6 @@ export type CryptoWithdrawalInput = {
 	recieverAddress: string;
 };
 
-export interface PaystackWithdrawalProviderInterface
-	extends WithdrawalProvider<PaystackWithdrawalInput> {}
+export interface PaystackWithdrawalProviderInterface extends WithdrawalProvider<PaystackWithdrawalInput> {}
 
-export interface CryptoWithdrawalProviderInterface
-	extends WithdrawalProvider<CryptoWithdrawalInput> {}
+export interface CryptoWithdrawalProviderInterface extends WithdrawalProvider<CryptoWithdrawalInput> {}

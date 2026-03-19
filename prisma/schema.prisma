@@ -76,6 +76,7 @@ model User {
   username     String  @unique @db.VarChar(255)
   email        String  @unique @db.VarChar(255)
   passwordHash String? @map("password_hash") @db.VarChar(255)
+  googleId     String? @unique @map("google_id") @db.VarChar(255)
 
   role Role @default(USER)
 

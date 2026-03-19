@@ -1,19 +1,32 @@
 import {
 	Body,
 	Controller,
-	Get,
 	HttpCode,
 	Post,
 	Req,
 	UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { Request } from 'express';
 import { AuthService } from '@/auth/auth.service';
+import { JwtGuard } from '@/auth/guards/jwt.guard';
+import { GoogleTokenGuard } from '@/auth/guards/google-token.guard';
 import {
 	CreateUserDto,
 	LoginUserDto,
 	RefreshTokenDto,
+	LinkGoogleDto,
 } from '@/auth/dtos/auth.dto';
+
+interface GoogleUser {
+	email: string;
+	name: { givenName?: string; familyName?: string };
+	provider: string;
+	provider_id: string;
+}
+
+interface JwtUser {
+	sub: string;
+}
 
 @Controller('auth')
 export class AuthController {
@@ -30,13 +43,10 @@ export class AuthController {
 		return this.auth.login(body);
 	}
 
-	@Get('google')
-	@UseGuards(AuthGuard('google'))
-	googleAuthRedirect() {}
-
-	@Get('google/callback')
-	@UseGuards(AuthGuard('google'))
-	googleAuthCallback(@Req() req: any) {
+	@HttpCode(200)
+	@Post('google')
+	@UseGuards(GoogleTokenGuard)
+	googleLogin(@Req() req: Request & { user: GoogleUser }) {
 		return this.auth.handleOauthLogin(req.user);
 	}
 
@@ -50,5 +60,22 @@ export class AuthController {
 	@Post('logout')
 	logout(@Body() body: RefreshTokenDto) {
 		return this.auth.logout(body);
+	}
+
+	@HttpCode(200)
+	@Post('google/link')
+	@UseGuards(JwtGuard)
+	linkGoogle(
+		@Req() req: Request & { user: JwtUser },
+		@Body() body: LinkGoogleDto,
+	) {
+		return this.auth.linkGoogleAccount(req.user.sub, body.token);
+	}
+
+	@HttpCode(200)
+	@Post('google/unlink')
+	@UseGuards(JwtGuard)
+	unlinkGoogle(@Req() req: Request & { user: JwtUser }) {
+		return this.auth.unlinkGoogleAccount(req.user.sub);
 	}
 }

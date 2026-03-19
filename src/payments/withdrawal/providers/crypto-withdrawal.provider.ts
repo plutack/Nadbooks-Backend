@@ -7,9 +7,7 @@ import {
 } from '@/payments/withdrawal/interfaces/provider.interface';
 
 @Injectable()
-export class CryptoWithdrawalProvider
-	implements CryptoWithdrawalProviderInterface
-{
+export class CryptoWithdrawalProvider implements CryptoWithdrawalProviderInterface {
 	provider: JsonRpcProvider;
 	private readonly wallet: Wallet;
 
