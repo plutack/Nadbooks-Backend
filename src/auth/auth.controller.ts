@@ -15,6 +15,8 @@ import {
 	LoginUserDto,
 	RefreshTokenDto,
 	LinkGoogleDto,
+	RequestVerificationDto,
+	VerifyEmailDto,
 } from '@/auth/dtos/auth.dto';
 
 interface GoogleUser {
@@ -77,5 +79,17 @@ export class AuthController {
 	@UseGuards(JwtGuard)
 	unlinkGoogle(@Req() req: Request & { user: JwtUser }) {
 		return this.auth.unlinkGoogleAccount(req.user.sub);
+	}
+
+	@HttpCode(200)
+	@Post('request-verification')
+	requestVerification(@Body() body: RequestVerificationDto) {
+		return this.auth.requestVerification(body.email);
+	}
+
+	@HttpCode(200)
+	@Post('verify-email')
+	verifyEmail(@Body() body: VerifyEmailDto) {
+		return this.auth.verifyEmail(body.email, body.code);
 	}
 }

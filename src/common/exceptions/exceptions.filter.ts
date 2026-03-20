@@ -19,6 +19,7 @@ export class ExceptionsFilter implements ExceptionFilter {
 		let status: number;
 		let message: string;
 		let errors: string[] | null = null;
+		let extra: Record<string, any> = {};
 
 		if (exception instanceof HttpException) {
 			status = exception.getStatus();
@@ -33,12 +34,17 @@ export class ExceptionsFilter implements ExceptionFilter {
 				// Case 1: Validation errors (message is array)
 				if (Array.isArray(body.message)) {
 					errors = body.message;
-					message = body.message[0]; // Use first error as main message
+					message = body.message[0];
 				}
 				// Case 2: Explicit message string in body
 				else if (typeof body.message === 'string') {
 					message = body.message;
 					errors = [body.message];
+					extra = Object.fromEntries(
+						Object.entries(body).filter(
+							([k]) => k !== 'message' && k !== 'statusCode',
+						),
+					);
 				}
 				// Case 3: Error object/string passed in body without explicit keys (fallback)
 				else {
@@ -76,6 +82,7 @@ export class ExceptionsFilter implements ExceptionFilter {
 			statusCode: status,
 			message,
 			errors: errors || undefined,
+			...extra,
 		});
 	}
 }

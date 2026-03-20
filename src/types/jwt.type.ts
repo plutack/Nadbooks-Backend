@@ -5,4 +5,5 @@ export type JwtPayloadType = {
 	username: string;
 	email: string;
 	role: Role;
+	isVerified: boolean;
 };

@@ -1,5 +1,7 @@
 import {
 	BadRequestException,
+	HttpException,
+	HttpStatus,
 	Injectable,
 	NotFoundException,
 	UnauthorizedException,
@@ -19,6 +21,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { RedisService } from '@/redis/redis.service';
 import { JwtPayloadType } from '@/types/jwt.type';
 import { Role } from 'generated/prisma';
+import { EmailService } from '@/email/email.service';
 
 type UserResponse = {
 	id: string;
@@ -27,6 +30,7 @@ type UserResponse = {
 	lastName: string;
 	email: string;
 	role: Role;
+	isVerified: boolean;
 	googleId: string | null;
 };
 
@@ -37,6 +41,7 @@ export class AuthService {
 		private readonly jwt: JwtService,
 		private readonly redis: RedisService,
 		private readonly config: ConfigService,
+		private readonly emailService: EmailService,
 	) {}
 
 	private async generateRefreshToken(userId: string): Promise<string> {
@@ -74,6 +79,7 @@ export class AuthService {
 				email: true,
 				username: true,
 				role: true,
+				isVerified: true,
 				wallet: {
 					select: {
 						balance: true,
@@ -82,11 +88,30 @@ export class AuthService {
 			},
 		});
 
+		const isDev = this.config.get<string>('NODE_ENV') !== 'production';
+		const code = isDev ? '000000' : crypto.randomInt(100000, 999999).toString();
+
+		await this.redis.setJSON(
+			`verify:${dto.email}`,
+			{ code, sentAt: Date.now() },
+			this.config.getOrThrow<number>('VERIFICATION_CODE_TTL'),
+		);
+
+		if (!isDev) {
+			await this.emailService.sendEmail({
+				to: dto.email,
+				subject: 'Your verification code',
+				templateName: 'verification',
+				variables: { code },
+			});
+		}
+
 		const jwtPayload: JwtPayloadType = {
 			sub: newUser.id,
 			username: newUser.username,
 			email: newUser.email,
 			role: newUser.role,
+			isVerified: newUser.isVerified,
 		};
 
 		const accessToken = await this.jwt.signAsync(jwtPayload);
@@ -95,7 +120,7 @@ export class AuthService {
 		return {
 			accessToken,
 			refreshToken,
-			user: newUser,
+			user: { ...newUser, isVerified: false },
 		};
 	}
 
@@ -125,6 +150,7 @@ export class AuthService {
 			username: existingUser.username,
 			email: existingUser.email,
 			role: existingUser.role,
+			isVerified: existingUser.isVerified,
 		} satisfies JwtPayloadType;
 
 		const accessToken = await this.jwt.signAsync(payload);
@@ -140,6 +166,7 @@ export class AuthService {
 				lastName: existingUser.lastName,
 				email: existingUser.email,
 				role: existingUser.role,
+				isVerified: existingUser.isVerified,
 			},
 		};
 	}
@@ -169,6 +196,7 @@ export class AuthService {
 			username: user.username,
 			email: user.email,
 			role: user.role,
+			isVerified: user.isVerified,
 		};
 
 		const accessToken = await this.jwt.signAsync(payload);
@@ -207,11 +235,20 @@ export class AuthService {
 				});
 			}
 
+			if (!existingUser.isVerified) {
+				await this.db.user.update({
+					where: { id: existingUser.id },
+					data: { isVerified: true },
+				});
+				existingUser.isVerified = true;
+			}
+
 			const jwtPayload: JwtPayloadType = {
 				sub: existingUser.id,
 				username: existingUser.username,
 				email: existingUser.email,
 				role: existingUser.role,
+				isVerified: true,
 			};
 			const accessToken = await this.jwt.signAsync(jwtPayload);
 			const refreshToken = await this.generateRefreshToken(existingUser.id);
@@ -225,6 +262,7 @@ export class AuthService {
 					lastName: existingUser.lastName,
 					email: existingUser.email,
 					role: existingUser.role,
+					isVerified: true,
 					googleId: existingUser.googleId,
 				},
 			};
@@ -237,6 +275,7 @@ export class AuthService {
 				email: profile.email,
 				username: `${profile.email.split('@')[0]}_${crypto.randomBytes(3).toString('hex')}`,
 				googleId: profile.provider_id,
+				isVerified: true,
 				wallet: { create: { balance: 0 } },
 			},
 			select: {
@@ -246,6 +285,7 @@ export class AuthService {
 				email: true,
 				username: true,
 				role: true,
+				isVerified: true,
 				googleId: true,
 			},
 		})) as UserResponse;
@@ -255,6 +295,7 @@ export class AuthService {
 			username: newUser.username,
 			email: newUser.email,
 			role: newUser.role,
+			isVerified: newUser.isVerified,
 		};
 
 		const accessToken = await this.jwt.signAsync(jwtPayload);
@@ -312,6 +353,7 @@ export class AuthService {
 			username: user.username,
 			email: user.email,
 			role: user.role,
+			isVerified: user.isVerified,
 		};
 		const accessToken = await this.jwt.signAsync(jwtPayload);
 		const refreshToken = await this.generateRefreshToken(user.id);
@@ -356,6 +398,7 @@ export class AuthService {
 			username: user.username,
 			email: user.email,
 			role: user.role,
+			isVerified: user.isVerified,
 		};
 		const accessToken = await this.jwt.signAsync(jwtPayload);
 		const refreshToken = await this.generateRefreshToken(user.id);
@@ -473,5 +516,107 @@ export class AuthService {
 		});
 
 		return { message: 'Google account unlinked successfully' };
+	}
+
+	async requestVerification(email: string) {
+		const user = await this.db.user.findFirst({
+			where: { email },
+		});
+
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+
+		if (user.isVerified) {
+			throw new HttpException(
+				{
+					message: 'Email already verified',
+				},
+				HttpStatus.CONFLICT,
+			);
+		}
+
+		const existingData = await this.redis.getJSON<{
+			code: string;
+			sentAt: number;
+		}>(`verify:${email}`);
+		const fiveMinutes = 5 * 60 * 1000;
+		const ttl = this.config.getOrThrow<number>('VERIFICATION_CODE_TTL');
+
+		if (existingData && Date.now() - existingData.sentAt < fiveMinutes) {
+			const nextRetryIn = Math.ceil(
+				(fiveMinutes - (Date.now() - existingData.sentAt)) / 1000,
+			);
+			throw new HttpException(
+				{
+					message: 'Too many requests',
+					nextRetryIn,
+				},
+				HttpStatus.TOO_MANY_REQUESTS,
+			);
+		}
+
+		const isDev = this.config.get<string>('NODE_ENV') !== 'production';
+		const code =
+			existingData?.code ||
+			(isDev ? '000000' : crypto.randomInt(100000, 999999).toString());
+
+		await this.redis.setJSON(
+			`verify:${email}`,
+			{ code, sentAt: Date.now() },
+			ttl,
+		);
+
+		if (!isDev) {
+			await this.emailService.sendEmail({
+				to: email,
+				subject: 'Your verification code',
+				templateName: 'verification',
+				variables: { code },
+			});
+		}
+
+		return { message: 'Verification code sent' };
+	}
+
+	async verifyEmail(email: string, code: string) {
+		const user = await this.db.user.findFirst({
+			where: { email },
+		});
+
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+
+		if (user.isVerified) {
+			throw new HttpException(
+				{
+					message: 'Email already verified',
+				},
+				HttpStatus.CONFLICT,
+			);
+		}
+
+		const storedData = await this.redis.getJSON<{
+			code: string;
+			sentAt: number;
+		}>(`verify:${email}`);
+
+		if (!storedData) {
+			throw new BadRequestException('Verification code expired or not found');
+		}
+
+		if (storedData.code !== code) {
+			throw new UnauthorizedException('Invalid verification code');
+		}
+
+		await this.redis.del(`verify:${email}`);
+
+		await this.db.user.update({
+			where: { email },
+			data: { isVerified: true },
+		});
+
+		return { message: 'Email verified successfully' };
 	}
 }

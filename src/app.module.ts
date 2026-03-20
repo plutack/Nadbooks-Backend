@@ -1,5 +1,4 @@
 import {
-	BadRequestException,
 	Logger,
 	MiddlewareConsumer,
 	Module,
@@ -16,6 +15,7 @@ import { ExceptionsFilter } from '@/common/exceptions/exceptions.filter';
 import { JwtFilter } from '@/common/exceptions/jwt/jwt.filter';
 import { PrismaFilter } from '@/common/exceptions/prisma/prisma.filter';
 import { ResponseInterceptor } from '@/common/interceptors/response.interceptor';
+import { EmailModule } from '@/email/email.module';
 import { LoggerMiddleware } from '@/middlewares/logger.middleware';
 import { OrdersModule } from '@/orders/orders.module';
 import { DepositModule } from '@/payments/deposit/deposit.module';
@@ -24,6 +24,7 @@ import { WithdrawalModule } from '@/payments/withdrawal/withdrawal.module';
 import { PriceFeedModule } from '@/price-feed/price-feed.module';
 import { PrismaModule } from '@/prisma/prisma.module';
 import { RedisModule } from '@/redis/redis.module';
+import { QueueModule } from '@/queue/queue.module';
 import { TransactionsModule } from '@/transactions/transactions.module';
 import { UserModule } from '@/users/users.module';
 import { WalletModule } from '@/wallet/wallet.module';
@@ -35,6 +36,7 @@ import { WebhookModule } from '@/webhook/webhook.module';
 		ConfigModule.forRoot({
 			isGlobal: true,
 		}),
+		QueueModule,
 		PrismaModule,
 		RedisModule,
 
@@ -45,6 +47,7 @@ import { WebhookModule } from '@/webhook/webhook.module';
 		BooksModule,
 		OrdersModule,
 		TransactionsModule,
+		EmailModule,
 
 		// Payments
 		OrderPaymentModule,
