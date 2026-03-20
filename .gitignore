@@ -29,4 +29,5 @@ biome.json
 
 /generated/prisma
 /docs
-yaak*
+yaak.nadbooks*
+openapi.yaml

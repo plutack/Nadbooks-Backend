@@ -6,6 +6,7 @@ import { AuthController } from '@/auth/auth.controller';
 import { AuthService } from '@/auth/auth.service';
 import { GoogleTokenStrategy } from '@/auth/strategies/google-token.strategy';
 import { JWTStrategy } from '@/auth/strategies/jwt.strategy';
+import { EmailModule } from '@/email/email.module';
 
 @Global()
 @Module({
@@ -20,6 +21,7 @@ import { JWTStrategy } from '@/auth/strategies/jwt.strategy';
 			}),
 			inject: [ConfigService],
 		}),
+		EmailModule,
 	],
 	controllers: [AuthController],
 	providers: [AuthService, JWTStrategy, GoogleTokenStrategy],

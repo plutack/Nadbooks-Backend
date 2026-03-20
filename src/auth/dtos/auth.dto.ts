@@ -81,3 +81,20 @@ export class LinkGoogleDto {
 	@IsNotEmpty({ message: 'Google token is required' })
 	token: string;
 }
+
+export class RequestVerificationDto {
+	@IsEmail()
+	@Transform(({ value }) => value?.trim().toLowerCase())
+	email: string;
+}
+
+export class VerifyEmailDto {
+	@IsEmail()
+	@Transform(({ value }) => value?.trim().toLowerCase())
+	email: string;
+
+	@IsString()
+	@IsNotEmpty()
+	@Matches(/^\d{6}$/, { message: 'Code must be exactly 6 digits' })
+	code: string;
+}
