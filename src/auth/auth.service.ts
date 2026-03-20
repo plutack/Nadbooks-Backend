@@ -145,6 +145,10 @@ export class AuthService {
 			throw new UnauthorizedException('Invalid credentials');
 		}
 
+		if (!existingUser.isVerified) {
+			await this.queueVerificationEmail(existingUser.email);
+		}
+
 		const payload = {
 			sub: existingUser.id,
 			username: existingUser.username,
@@ -518,6 +522,49 @@ export class AuthService {
 		return { message: 'Google account unlinked successfully' };
 	}
 
+	private async generateAndStoreCode(email: string): Promise<{
+		code: string;
+		sent: boolean;
+	}> {
+		const existingData = await this.redis.getJSON<{
+			code: string;
+			sentAt: number;
+		}>(`verify:${email}`);
+		const fiveMinutes = 5 * 60 * 1000;
+		const ttl = this.config.getOrThrow<number>('VERIFICATION_CODE_TTL');
+
+		if (existingData && Date.now() - existingData.sentAt < fiveMinutes) {
+			return { code: existingData.code, sent: false };
+		}
+
+		const isDev = this.config.get<string>('NODE_ENV') !== 'production';
+		const code =
+			existingData?.code ||
+			(isDev ? '000000' : crypto.randomInt(100000, 999999).toString());
+
+		await this.redis.setJSON(
+			`verify:${email}`,
+			{ code, sentAt: Date.now() },
+			ttl,
+		);
+
+		return { code, sent: true };
+	}
+
+	private async queueVerificationEmail(email: string) {
+		const { code, sent } = await this.generateAndStoreCode(email);
+		const isDev = this.config.get<string>('NODE_ENV') !== 'production';
+		if (!isDev) {
+			await this.emailService.sendEmail({
+				to: email,
+				subject: 'Your verification code',
+				templateName: 'verification',
+				variables: { code },
+			});
+		}
+		return { sent };
+	}
+
 	async requestVerification(email: string) {
 		const user = await this.db.user.findFirst({
 			where: { email },
@@ -536,16 +583,16 @@ export class AuthService {
 			);
 		}
 
-		const existingData = await this.redis.getJSON<{
-			code: string;
-			sentAt: number;
-		}>(`verify:${email}`);
-		const fiveMinutes = 5 * 60 * 1000;
-		const ttl = this.config.getOrThrow<number>('VERIFICATION_CODE_TTL');
+		const { sent } = await this.queueVerificationEmail(email);
 
-		if (existingData && Date.now() - existingData.sentAt < fiveMinutes) {
+		if (!sent) {
+			const existingData = await this.redis.getJSON<{
+				code: string;
+				sentAt: number;
+			}>(`verify:${email}`);
+			const fiveMinutes = 5 * 60 * 1000;
 			const nextRetryIn = Math.ceil(
-				(fiveMinutes - (Date.now() - existingData.sentAt)) / 1000,
+				(fiveMinutes - (Date.now() - (existingData?.sentAt || 0))) / 1000,
 			);
 			throw new HttpException(
 				{
@@ -554,26 +601,6 @@ export class AuthService {
 				},
 				HttpStatus.TOO_MANY_REQUESTS,
 			);
-		}
-
-		const isDev = this.config.get<string>('NODE_ENV') !== 'production';
-		const code =
-			existingData?.code ||
-			(isDev ? '000000' : crypto.randomInt(100000, 999999).toString());
-
-		await this.redis.setJSON(
-			`verify:${email}`,
-			{ code, sentAt: Date.now() },
-			ttl,
-		);
-
-		if (!isDev) {
-			await this.emailService.sendEmail({
-				to: email,
-				subject: 'Your verification code',
-				templateName: 'verification',
-				variables: { code },
-			});
 		}
 
 		return { message: 'Verification code sent' };
