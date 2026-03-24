@@ -100,7 +100,7 @@ export class AuthService {
 		}
 
 		if (!existingUser.passwordHash) {
-			throw new BadRequestException(
+			throw new UnauthorizedException(
 				'This account cannot login with email/password',
 			);
 		}
