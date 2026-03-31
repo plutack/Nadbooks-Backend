@@ -171,6 +171,7 @@ export class AuthService {
 				email: existingUser.email,
 				role: existingUser.role,
 				isVerified: existingUser.isVerified,
+				hasPassword: !!existingUser.passwordHash,
 			},
 		};
 	}
