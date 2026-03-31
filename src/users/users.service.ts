@@ -22,6 +22,7 @@ export class UserService {
 				lastName: true,
 				username: true,
 				email: true,
+				passwordHash: true,
 				wallet: {
 					select: {
 						balance: true,
@@ -34,7 +35,15 @@ export class UserService {
 			throw NotFoundException;
 		}
 
-		return existingUser;
+		return {
+			id: existingUser.id,
+			firstName: existingUser.firstName,
+			lastName: existingUser.lastName,
+			username: existingUser.username,
+			email: existingUser.email,
+			hasPassword: !!existingUser.passwordHash,
+			wallet: existingUser.wallet,
+		};
 	}
 
 	async updateProfile(
