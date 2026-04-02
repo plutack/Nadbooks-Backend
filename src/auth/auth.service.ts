@@ -80,11 +80,6 @@ export class AuthService {
 				username: true,
 				role: true,
 				isVerified: true,
-				wallet: {
-					select: {
-						balance: true,
-					},
-				},
 			},
 		});
 
@@ -120,7 +115,7 @@ export class AuthService {
 		return {
 			accessToken,
 			refreshToken,
-			user: { ...newUser, isVerified: false },
+			user: { ...newUser, isVerified: false, hasPassword: true },
 		};
 	}
 
@@ -269,6 +264,7 @@ export class AuthService {
 					role: existingUser.role,
 					isVerified: true,
 					googleId: existingUser.googleId,
+					hasPassword: !!existingUser.passwordHash,
 				},
 			};
 		}
@@ -317,6 +313,7 @@ export class AuthService {
 				email: newUser.email,
 				role: newUser.role,
 				googleId: newUser.googleId,
+				hasPassword: false,
 			},
 		};
 	}
