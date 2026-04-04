@@ -3,12 +3,12 @@ import {
 	Catch,
 	ExceptionFilter,
 	HttpStatus,
-	Logger,
 } from '@nestjs/common';
 import {
 	JsonWebTokenError as NestJwtError,
 	TokenExpiredError as NestTokenError,
 } from '@nestjs/jwt';
+import { Response } from 'express';
 import {
 	JsonWebTokenError as LibJwtError,
 	TokenExpiredError as LibTokenError,
@@ -16,10 +16,9 @@ import {
 
 @Catch(NestJwtError, NestTokenError, LibJwtError, LibTokenError)
 export class JwtFilter implements ExceptionFilter {
-	constructor(readonly _logger: Logger) {}
-	catch(exception: any, host: ArgumentsHost) {
-		const http = host.switchToHttp();
-		const response = http.getResponse();
+	catch(exception: unknown, host: ArgumentsHost) {
+		const ctx = host.switchToHttp();
+		const response: Response = ctx.getResponse();
 
 		const status = HttpStatus.UNAUTHORIZED;
 		let message = 'Authentication failed';
@@ -36,8 +35,14 @@ export class JwtFilter implements ExceptionFilter {
 			exception instanceof LibJwtError
 		) {
 			message = 'Authentication failed';
-			errors = [exception.message || 'Invalid token'];
+			errors = [(exception as Error).message || 'Invalid token'];
 		}
+
+		response.locals.error = {
+			status,
+			message,
+			errors,
+		};
 
 		response.status(status).json({
 			statusCode: status,

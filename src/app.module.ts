@@ -1,10 +1,4 @@
-import {
-	Logger,
-	MiddlewareConsumer,
-	Module,
-	RequestMethod,
-	ValidationPipe,
-} from '@nestjs/common';
+import { MiddlewareConsumer, Module, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { AppController } from '@/app.controller';
@@ -16,7 +10,7 @@ import { JwtFilter } from '@/common/exceptions/jwt/jwt.filter';
 import { PrismaFilter } from '@/common/exceptions/prisma/prisma.filter';
 import { ResponseInterceptor } from '@/common/interceptors/response.interceptor';
 import { EmailModule } from '@/email/email.module';
-import { LoggerMiddleware } from '@/middlewares/logger.middleware';
+import { LoggingMiddleware } from '@/middlewares/logging.middleware';
 import { OrdersModule } from '@/orders/orders.module';
 import { DepositModule } from '@/payments/deposit/deposit.module';
 import { OrderPaymentModule } from '@/payments/order-payment/order-payment.module';
@@ -61,7 +55,6 @@ import { WebhookModule } from '@/webhook/webhook.module';
 	controllers: [AppController],
 	providers: [
 		AppService,
-		Logger,
 		{
 			provide: APP_FILTER,
 			useClass: ExceptionsFilter,
@@ -89,8 +82,6 @@ import { WebhookModule } from '@/webhook/webhook.module';
 })
 export class AppModule {
 	configure(consumer: MiddlewareConsumer) {
-		consumer
-			.apply(LoggerMiddleware)
-			.forRoutes({ path: '*path', method: RequestMethod.ALL });
+		consumer.apply(LoggingMiddleware).forRoutes('*');
 	}
 }
