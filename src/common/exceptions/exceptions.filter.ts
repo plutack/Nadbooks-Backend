@@ -4,17 +4,14 @@ import {
 	ExceptionFilter,
 	HttpException,
 	HttpStatus,
-	Logger,
 } from '@nestjs/common';
+import { Request, Response } from 'express';
 
 @Catch()
 export class ExceptionsFilter implements ExceptionFilter {
-	constructor(private readonly logger: Logger) {}
-
 	catch(exception: unknown, host: ArgumentsHost) {
 		const ctx = host.switchToHttp();
-		const response = ctx.getResponse();
-		const request = ctx.getRequest();
+		const response: Response = ctx.getResponse();
 
 		let status: number;
 		let message: string;
@@ -31,13 +28,10 @@ export class ExceptionsFilter implements ExceptionFilter {
 			} else if (typeof rawResponse === 'object' && rawResponse !== null) {
 				const body = rawResponse as Record<string, any>;
 
-				// Case 1: Validation errors (message is array)
 				if (Array.isArray(body.message)) {
 					errors = body.message;
 					message = body.message[0];
-				}
-				// Case 2: Explicit message string in body
-				else if (typeof body.message === 'string') {
+				} else if (typeof body.message === 'string') {
 					message = body.message;
 					errors = [body.message];
 					extra = Object.fromEntries(
@@ -45,9 +39,7 @@ export class ExceptionsFilter implements ExceptionFilter {
 							([k]) => k !== 'message' && k !== 'statusCode',
 						),
 					);
-				}
-				// Case 3: Error object/string passed in body without explicit keys (fallback)
-				else {
+				} else {
 					message = exception.message || exception.name;
 					errors = [message];
 				}
@@ -67,16 +59,15 @@ export class ExceptionsFilter implements ExceptionFilter {
 			message = 'Internal server error';
 		}
 
-		// LOGGING STRATEGY
-		if (status >= 500) {
-			this.logger.error(
-				`[${status}] ${message}`,
-				(exception as any).stack,
-				`ExceptionsFilter`,
-			);
-		} else {
-			this.logger.warn(`[${status}] ${message} - Path: ${request.url}`);
-		}
+		response.locals.error = {
+			status,
+			message,
+			errors: errors || undefined,
+			stack:
+				status >= 500 && exception instanceof Error
+					? exception.stack
+					: undefined,
+		};
 
 		response.status(status).json({
 			statusCode: status,

@@ -3,7 +3,6 @@ import {
 	Catch,
 	ExceptionFilter,
 	HttpStatus,
-	Logger,
 } from '@nestjs/common';
 import {
 	PrismaClientKnownRequestError,
@@ -17,8 +16,6 @@ import {
 	PrismaClientUnknownRequestError,
 )
 export class PrismaFilter implements ExceptionFilter {
-	constructor(private readonly logger: Logger) {}
-
 	catch(
 		exception:
 			| PrismaClientKnownRequestError
@@ -38,9 +35,6 @@ export class PrismaFilter implements ExceptionFilter {
 		if (exception instanceof PrismaClientValidationError) {
 			status = HttpStatus.BAD_REQUEST;
 			message = 'Validation Error';
-			// Extract meaningful info from the verbose error message if needed, or just send a generic one.
-			// Prisma validation errors are very verbose and expose internal structure, so we might want to be careful.
-			// For dev environment, sending it is fine.
 			errors = [exception.message.split('\n').pop() || 'Invalid data provided'];
 		} else if (exception instanceof PrismaClientKnownRequestError) {
 			switch (exception.code) {
@@ -64,18 +58,17 @@ export class PrismaFilter implements ExceptionFilter {
 					errors = ['An unexpected error occurred during database operation'];
 			}
 		} else {
-			// Unknown request error
 			status = HttpStatus.INTERNAL_SERVER_ERROR;
 			message = 'Database error';
 			errors = ['An unknown error occurred during database operation'];
 		}
 
-		const request = ctx.getRequest();
-
-		this.logger.error(
-			`[${status}] ${message} - Path: ${request.url}`,
-			exception.stack,
-		);
+		response.locals.error = {
+			status,
+			message,
+			errors,
+			stack: status >= 500 ? exception.stack : undefined,
+		};
 
 		response.status(status).json({
 			statusCode: status,
