@@ -13,12 +13,15 @@ import {
 } from '@/payments/deposit/interfaces/provider.interface';
 
 @Injectable()
-export class PaystackDepositProvider implements DepositProviderInterface<
-	PaystackDepositDto,
-	DepositResult,
-	VerifyDepositInput,
-	{ status: PaymentStatus }
-> {
+export class PaystackDepositProvider
+	implements
+		DepositProviderInterface<
+			PaystackDepositDto,
+			DepositResult,
+			VerifyDepositInput,
+			{ status: PaymentStatus }
+		>
+{
 	private readonly PAYSTACK_BASE = 'https://api.paystack.co';
 	private readonly secretKey: string;
 
@@ -33,26 +36,29 @@ export class PaystackDepositProvider implements DepositProviderInterface<
 	async initiateDeposit(dto: PaystackDepositDto): Promise<DepositResult> {
 		const url = `${this.PAYSTACK_BASE}/transaction/initialize`;
 		console.log('provider level: ', dto);
-		const response = await lastValueFrom(
-			this.http.post(
-				url,
-				{
-					amount: dto.amount,
-					email: dto.email,
-					reference: dto.reference,
-					metadata: dto.metadata,
-				},
-				{ headers: { Authorization: `Bearer ${this.secretKey}` } },
-			),
-		);
+		try {
+			const response = await lastValueFrom(
+				this.http.post(
+					url,
+					{
+						amount: dto.amount,
+						email: dto.email,
+						reference: dto.reference,
+						metadata: dto.metadata,
+					},
+					{ headers: { Authorization: `Bearer ${this.secretKey}` } },
+				),
+			);
+			const data = response.data?.data;
 
-		const data = response.data?.data;
-
-		return {
-			status: PaymentStatus.PENDING,
-			reference: data.reference,
-			paymentUrl: data.authorization_url,
-		};
+			return {
+				status: PaymentStatus.PENDING,
+				reference: data.reference,
+				paymentUrl: data.authorization_url,
+			};
+		} catch (err) {
+			throw err;
+		}
 	}
 
 	async verifyPayment(

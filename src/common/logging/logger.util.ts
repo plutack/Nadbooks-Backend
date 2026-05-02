@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
 
-const SENSITIVE_FIELDS = [
+export const SENSITIVE_FIELDS = [
 	'password',
 	'passwordHash',
 	'currentPassword',
@@ -9,6 +9,9 @@ const SENSITIVE_FIELDS = [
 	'refreshToken',
 	'accessToken',
 	'authorization',
+	'pin',
+	'oldPin',
+	'newPin',
 ];
 
 export function maskSensitive(obj: unknown, depth: number = 0): unknown {

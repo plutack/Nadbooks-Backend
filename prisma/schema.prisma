@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -12,6 +6,162 @@ generator client {
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model RoleChange {
+  id          String   @id @default(uuid())
+  fromRole    Role
+  toRole      Role
+  changedById String
+  userId      String
+  createdAt   DateTime @default(now())
+  changedBy   User     @relation("RoleChangedBy", fields: [changedById], references: [id])
+  user        User     @relation("RoleChangedFor", fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([changedById])
+}
+
+model User {
+  id                  String         @id @default(uuid())
+  firstName           String         @map("first_name") @db.VarChar(255)
+  lastName            String         @map("last_name") @db.VarChar(255)
+  username            String         @unique @db.VarChar(255)
+  email               String         @unique @db.VarChar(255)
+  passwordHash        String?        @map("password_hash") @db.VarChar(255)
+  role                Role           @default(USER)
+  isActive            Boolean        @default(true)
+  isVerified          Boolean        @default(false)
+  createdAt           DateTime       @default(now()) @map("created_at")
+  updatedAt           DateTime       @updatedAt @map("updated_at")
+  googleId            String?        @unique @map("google_id") @db.VarChar(255)
+  pinChangedAt      DateTime?  @map("pin_changed_at")
+  pinHash           String?    @map("pin_hash")
+  books               Book[]
+  deletedBooks        Book[]         @relation("BookDeletedBy")
+  reviewedBooks       Book[]         @relation("BookReviewedBy")
+  bookBookmarks       BookBookmark[]
+  orders              Order[]
+  roleChangesMade     RoleChange[]   @relation("RoleChangedBy")
+  roleChangesReceived RoleChange[]   @relation("RoleChangedFor")
+  wallet              Wallet?
+}
+
+model Book {
+  id           String         @id @default(uuid())
+  title        String
+  genre        String
+  price        Int
+  isMature     Boolean        @map("is_mature")
+  pageCount    Int            @map("page_count")
+  bookURL      String         @map("book_url")
+  bookCoverURL String         @map("book_cover_url")
+  dateUpdated  DateTime       @updatedAt @map("date_updated")
+  dateAuthored DateTime       @map("date_authored")
+  dateUploaded DateTime       @map("date_uploaded")
+  authorId     String         @map("author_id")
+  isDeleted    Boolean        @default(false) @map("is_deleted")
+  deletedById  String?        @map("deleted_by_id")
+  dateReviewed DateTime?      @map("date_reviewed")
+  reviewedById String?        @map("reviewed_by_id")
+  status       BookStatus     @default(PENDING_APPROVAL)
+  author       User           @relation(fields: [authorId], references: [id])
+  deletedBy    User?          @relation("BookDeletedBy", fields: [deletedById], references: [id])
+  reviewedBy   User?          @relation("BookReviewedBy", fields: [reviewedById], references: [id])
+  bookmarks    BookBookmark[]
+  OrderBook    OrderBook[]
+
+  @@index([genre])
+  @@index([status])
+  @@index([authorId], map: "Book_author_id_fkey")
+  @@index([deletedById], map: "Book_deleted_by_id_fkey")
+  @@index([reviewedById], map: "Book_reviewed_by_id_fkey")
+}
+
+model BookBookmark {
+  id        Int      @id @default(autoincrement())
+  userId    String   @map("user_id")
+  bookId    String   @map("book_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  book      Book     @relation(fields: [bookId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, bookId])
+  @@index([bookId], map: "BookBookmark_book_id_fkey")
+}
+
+model Wallet {
+  id                   String        @id @default(uuid())
+  userId               String        @unique @map("user_id")
+  balance              Decimal       @default(0.000000000000000000000000000000)
+  createdAt            DateTime      @default(now()) @map("created_at")
+  updatedAt            DateTime      @updatedAt @map("updated_at")
+  receivedTransactions Transaction[] @relation("ReceivedTransactions")
+  sentTransactions     Transaction[] @relation("SentTransactions")
+  user                 User          @relation(fields: [userId], references: [id])
+}
+
+model Transaction {
+  id                String            @id @default(uuid())
+  type              TransactionType
+  amount            Decimal
+  paymentMethod     PaymentMethod     @map("payment_method")
+  senderWalletId    String?           @map("sender_wallet_id")
+  recipientWalletId String?           @map("recipient_wallet_id")
+  reference         String            @unique
+  hash              String?           @unique
+  status            TransactionStatus @default(PENDING)
+  description       String?
+  reason            String?
+  metadata          Json?
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+  orderId           String?           @map("order_id")
+  order             Order?            @relation(fields: [orderId], references: [id])
+  recipientWallet   Wallet?           @relation("ReceivedTransactions", fields: [recipientWalletId], references: [id])
+  senderWallet      Wallet?           @relation("SentTransactions", fields: [senderWalletId], references: [id])
+
+  @@index([orderId], map: "Transaction_order_id_fkey")
+  @@index([recipientWalletId], map: "Transaction_recipient_wallet_id_fkey")
+  @@index([senderWalletId], map: "Transaction_sender_wallet_id_fkey")
+}
+
+model ProviderResponse {
+  id            String        @id @default(uuid())
+  provider      PaymentMethod
+  reference     String        @unique
+  response      Json
+  createdAt     DateTime     @default(now()) @map("created_at")
+
+  @@unique([provider, reference], name: "ProviderResponse_provider_reference_unique")
+}
+
+model Order {
+  id           String        @id @default(uuid())
+  userId       String        @map("user_id")
+  status       OrderStatus   @default(PENDING)
+  totalAmount  Int           @map("total_amount")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  user         User          @relation(fields: [userId], references: [id])
+  books        OrderBook[]
+  transactions Transaction[]
+
+  @@index([userId], map: "Order_user_id_fkey")
+}
+
+model OrderBook {
+  id        String   @id @default(uuid())
+  orderId   String   @map("order_id")
+  bookId    String   @map("book_id")
+  price     Int
+  authorId  String   @map("author_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  book      Book     @relation(fields: [bookId], references: [id])
+  order     Order    @relation(fields: [orderId], references: [id])
+
+  @@unique([orderId, bookId])
+  @@index([bookId], map: "OrderBook_book_id_fkey")
 }
 
 enum Role {
@@ -50,159 +200,4 @@ enum BookStatus {
   PENDING_APPROVAL
   APPROVED
   REJECTED
-}
-
-model RoleChange {
-  id       String @id @default(uuid())
-  fromRole Role
-  toRole   Role
-
-  changedById String
-  changedBy   User   @relation("RoleChangedBy", fields: [changedById], references: [id])
-
-  userId String
-  user   User   @relation("RoleChangedFor", fields: [userId], references: [id])
-
-  createdAt DateTime @default(now())
-
-  @@index([userId])
-  @@index([changedById])
-}
-
-model User {
-  id           String  @id @default(uuid())
-  firstName    String  @map("first_name") @db.VarChar(255)
-  lastName     String  @map("last_name") @db.VarChar(255)
-  username     String  @unique @db.VarChar(255)
-  email        String  @unique @db.VarChar(255)
-  passwordHash String? @map("password_hash") @db.VarChar(255)
-  googleId     String? @unique @map("google_id") @db.VarChar(255)
-
-  role Role @default(USER)
-
-  isActive   Boolean @default(true)
-  isVerified Boolean @default(false)
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  // Role changes this user PERFORMED (actor)
-  roleChangesMade RoleChange[] @relation("RoleChangedBy")
-
-  // Role changes this user RECEIVED (target)
-  roleChangesReceived RoleChange[] @relation("RoleChangedFor")
-
-  // Books deleted by this user
-  deletedBooks Book[] @relation("BookDeletedBy")
-
-  // Books reviewed by this user
-  reviewedBooks Book[] @relation("BookReviewedBy")
-
-  books         Book[]
-  bookBookmarks BookBookmark[]
-  wallet        Wallet?
-  orders        Order[]
-}
-
-//NOTE: Genre might become an enum.
-model Book {
-  id           String         @id @default(uuid())
-  title        String
-  genre        String
-  price        Int
-  isMature     Boolean        @map("is_mature")
-  pageCount    Int            @map("page_count")
-  bookURL      String         @map("book_url")
-  bookCoverURL String         @map("book_cover_url")
-  dateUpdated  DateTime       @updatedAt @map("date_updated")
-  dateAuthored DateTime       @map("date_authored")
-  dateUploaded DateTime       @map("date_uploaded")
-  authorId     String         @map("author_id")
-  author       User           @relation(fields: [authorId], references: [id])
-  bookmarks    BookBookmark[]
-  OrderBook    OrderBook[]
-  isDeleted    Boolean        @default(false) @map("is_deleted")
-  deletedById  String?        @map("deleted_by_id")
-  deletedBy    User?          @relation("BookDeletedBy", fields: [deletedById], references: [id])
-  status       BookStatus     @default(PENDING_APPROVAL)
-  reviewedById String?        @map("reviewed_by_id")
-  reviewedBy   User?          @relation("BookReviewedBy", fields: [reviewedById], references: [id])
-  dateReviewed DateTime?      @map("date_reviewed")
-
-  @@index([genre])
-  @@index([status])
-}
-
-model BookBookmark {
-  id        Int      @id @default(autoincrement())
-  userId    String   @map("user_id")
-  user      User     @relation(fields: [userId], references: [id])
-  bookId    String   @map("book_id")
-  book      Book     @relation(fields: [bookId], references: [id])
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@unique([userId, bookId])
-}
-
-model Wallet {
-  id        String   @id @default(uuid())
-  userId    String   @unique @map("user_id")
-  user      User     @relation(fields: [userId], references: [id])
-  balance   Decimal  @default(0)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  sentTransactions     Transaction[] @relation("SentTransactions")
-  receivedTransactions Transaction[] @relation("ReceivedTransactions")
-}
-
-model Transaction {
-  id                String            @id @default(uuid())
-  type              TransactionType
-  amount            Decimal
-  paymentMethod     PaymentMethod     @map("payment_method")
-  senderWalletId    String?           @map("sender_wallet_id")
-  recipientWalletId String?           @map("recipient_wallet_id")
-  reference         String            @unique
-  hash              String?           @unique
-  status            TransactionStatus @default(PENDING)
-  description       String?
-  reason            String?
-  metadata          Json?
-  providerResponse  Json?
-  createdAt         DateTime          @default(now()) @map("created_at")
-  updatedAt         DateTime          @updatedAt @map("updated_at")
-  orderId           String?           @map("order_id")
-
-  senderWallet    Wallet? @relation("SentTransactions", fields: [senderWalletId], references: [id])
-  recipientWallet Wallet? @relation("ReceivedTransactions", fields: [recipientWalletId], references: [id])
-
-  order Order? @relation(fields: [orderId], references: [id])
-}
-
-model Order {
-  id           String        @id @default(uuid())
-  userId       String        @map("user_id")
-  status       OrderStatus   @default(PENDING)
-  totalAmount  Int           @map("total_amount")
-  createdAt    DateTime      @default(now()) @map("created_at")
-  updatedAt    DateTime      @updatedAt @map("updated_at")
-  transactions Transaction[]
-
-  user  User        @relation(fields: [userId], references: [id])
-  books OrderBook[]
-}
-
-model OrderBook {
-  id        String   @id @default(uuid())
-  orderId   String   @map("order_id")
-  bookId    String   @map("book_id")
-  price     Int
-  authorId  String   @map("author_id")
-  createdAt DateTime @default(now()) @map("created_at")
-
-  order Order @relation(fields: [orderId], references: [id])
-  book  Book  @relation(fields: [bookId], references: [id])
-
-  @@unique([orderId, bookId])
 }

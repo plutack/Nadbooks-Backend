@@ -67,7 +67,7 @@ export class PrismaFilter implements ExceptionFilter {
 			status,
 			message,
 			errors,
-			stack: status >= 500 ? exception.stack : undefined,
+			stack: status >= 400 ? exception.stack : undefined,
 		};
 
 		response.status(status).json({

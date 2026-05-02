@@ -2,12 +2,12 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 import { AppModule } from '@/app.module';
+import { isDev } from '@/helpers/functions';
 
 async function bootstrap() {
-	const app = await NestFactory.create(AppModule);
+	const app = await NestFactory.create(AppModule, { rawBody: true });
 	const config = app.get(ConfigService);
 
-	const nodeEnv = config.getOrThrow<string>('NODE_ENV');
 	const rawOrigins = config.getOrThrow<string>('FRONTEND_ORIGIN_PREFIX');
 
 	const frontendOrigins = rawOrigins
@@ -18,9 +18,8 @@ async function bootstrap() {
 	app.enableShutdownHooks();
 	app.use(cookieParser());
 
-	const isDev = nodeEnv === 'development';
 	app.enableCors({
-		origin: isDev ? true : frontendOrigins,
+		origin: isDev(config) ? true : frontendOrigins,
 		credentials: true,
 	});
 

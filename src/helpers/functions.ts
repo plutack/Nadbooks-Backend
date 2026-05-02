@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import { TransactionType } from 'generated/prisma';
 
 export function generateRef(type: TransactionType, userId: string): string {
@@ -22,4 +23,9 @@ export function generateRef(type: TransactionType, userId: string): string {
 	const shortUser = userId.slice(-4).toUpperCase();
 
 	return `${prefix}-${timestamp}-${shortUser}-${unique}`;
+}
+
+export function isDev(config: ConfigService): boolean {
+	const nodeEnv = config.get<string>('NODE_ENV');
+	return nodeEnv === 'development';
 }

@@ -2,6 +2,16 @@ export interface WithdrawalProvider<Input> {
 	initiateWithdrawal(input: Input): Promise<string>;
 }
 
+export type BankAccountResolution = {
+	accountNumber: string;
+	bankCode: string;
+};
+
+export type PaystackBank = {
+	name: string;
+	code: string;
+};
+
 export type PaystackWithdrawalInput = {
 	amount: number;
 	reason: string;
@@ -15,7 +25,11 @@ export type CryptoWithdrawalInput = {
 	reference: string;
 	recieverAddress: string;
 };
+export interface PaystackWithdrawalProviderInterface
+	extends WithdrawalProvider<PaystackWithdrawalInput> {
+	resolveBankAccount(input: BankAccountResolution): Promise<string>;
+	getBanks(): Promise<PaystackBank[]>;
+}
 
-export interface PaystackWithdrawalProviderInterface extends WithdrawalProvider<PaystackWithdrawalInput> {}
-
-export interface CryptoWithdrawalProviderInterface extends WithdrawalProvider<CryptoWithdrawalInput> {}
+export interface CryptoWithdrawalProviderInterface
+	extends WithdrawalProvider<CryptoWithdrawalInput> {}

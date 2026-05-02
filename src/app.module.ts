@@ -1,6 +1,7 @@
 import { MiddlewareConsumer, Module, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from '@/app.controller';
 import { AppService } from '@/app.service';
 import { AuthModule } from '@/auth/auth.module';
@@ -30,6 +31,7 @@ import { WebhookModule } from '@/webhook/webhook.module';
 		ConfigModule.forRoot({
 			isGlobal: true,
 		}),
+		ScheduleModule.forRoot(),
 		QueueModule,
 		PrismaModule,
 		RedisModule,
@@ -82,6 +84,6 @@ import { WebhookModule } from '@/webhook/webhook.module';
 })
 export class AppModule {
 	configure(consumer: MiddlewareConsumer) {
-		consumer.apply(LoggingMiddleware).forRoutes('*');
+		consumer.apply(LoggingMiddleware).forRoutes('*path');
 	}
 }

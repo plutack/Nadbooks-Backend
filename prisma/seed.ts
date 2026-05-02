@@ -50,7 +50,7 @@ async function createSuperAdmin() {
 				isVerified: true,
 				wallet: {
 					create: {
-						balance: 0,
+						balance: 5000,
 					},
 				},
 			},

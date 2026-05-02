@@ -1,12 +1,23 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard, CurrentUser } from '@/auth/auth.guard';
 import { JwtPayloadType } from '@/types/jwt.type';
-import { WithdrawDto } from './dtos/withdrawal.dto';
+import { ResolveBankAccountDto, WithdrawDto } from './dtos/withdrawal.dto';
 import { WithdrawalService } from './withdrawal.service';
 
 @Controller('withdrawal')
 export class WithdrawalController {
 	constructor(private readonly withdrawalService: WithdrawalService) {}
+
+	@Get('resolve-bank')
+	@UseGuards(AuthGuard)
+	async resolveBankAccount(@Query() dto: ResolveBankAccountDto) {
+		return this.withdrawalService.resolveBankAccount(dto);
+	}
+
+	@Get('banks')
+	async getBanks() {
+		return this.withdrawalService.getBanks();
+	}
 
 	@Post()
 	@UseGuards(AuthGuard)
@@ -14,6 +25,6 @@ export class WithdrawalController {
 		@Body() dto: WithdrawDto,
 		@CurrentUser() user: JwtPayloadType,
 	) {
-		return await this.withdrawalService.initiateWithdrawal(user, dto);
+		return this.withdrawalService.initiateWithdrawal(user, dto);
 	}
 }

@@ -3,7 +3,13 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { User } from 'generated/prisma';
 import { PrismaService } from '@/prisma/prisma.service';
+
+export type JwtValidatedUser = Pick<
+	User,
+	'email' | 'username' | 'role' | 'isVerified' | 'isActive'
+> & { sub: string };
 
 @Injectable()
 export class JWTStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -17,7 +23,7 @@ export class JWTStrategy extends PassportStrategy(Strategy, 'jwt') {
 				(req: Request) => req.cookies.accessToken,
 				ExtractJwt.fromAuthHeaderAsBearerToken(),
 			]),
-			ignoreExpiration: false,
+			ignoreExpiration: config.getOrThrow('IGNORE_JWT_EXPIRATION') === 'true',
 		});
 	}
 
@@ -26,7 +32,7 @@ export class JWTStrategy extends PassportStrategy(Strategy, 'jwt') {
 		email: string;
 		username: string;
 		role: string;
-	}) {
+	}): Promise<JwtValidatedUser | null> {
 		const user = await this.db.user.findUnique({
 			where: { id: payload.sub },
 			select: {
@@ -35,6 +41,7 @@ export class JWTStrategy extends PassportStrategy(Strategy, 'jwt') {
 				username: true,
 				role: true,
 				isVerified: true,
+				isActive: true,
 			},
 		});
 
@@ -42,6 +49,9 @@ export class JWTStrategy extends PassportStrategy(Strategy, 'jwt') {
 			return null;
 		}
 
-		return user;
+		return {
+			...user,
+			sub: user.id,
+		};
 	}
 }

@@ -1,4 +1,3 @@
-import { VerifyPaymentDto } from '@/payments/deposit/dtos/crypto-deposit.dto';
 import {
 	CryptoDepositDto,
 	PaystackDepositDto,
@@ -43,16 +42,16 @@ export interface DepositProviderInterface<
 	//  webhook handler
 	handleWebhook?(payload: any, headers?: Record<string, string>): Promise<any>;
 }
-export interface PaystackDepositProviderInterface extends DepositProviderInterface<
+export type PaystackDepositProviderInterface = DepositProviderInterface<
 	PaystackDepositDto,
 	DepositResult,
 	VerifyDepositInput,
 	VerifyPaymentResult
-> {}
+>;
 
-export interface CryptoDepositProviderInterface extends DepositProviderInterface<
+export type CryptoDepositProviderInterface = DepositProviderInterface<
 	CryptoDepositDto,
 	DepositResult,
-	VerifyPaymentDto,
+	VerifyDepositInput,
 	VerifyPaymentResult
-> {}
+>;
