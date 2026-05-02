@@ -22,12 +22,12 @@ export class PaystackDepositDto extends BaseDepositDto {
 }
 
 export class CryptoDepositDto extends BaseDepositDto {
+	@IsString()
+	reference: string;
+
 	@IsOptional()
 	@IsString()
 	address?: string;
-
-	@IsString()
-	reference: string;
 
 	@IsOptional()
 	@IsString()
@@ -49,6 +49,7 @@ export class DepositDto extends BaseDepositDto {
 	address?: string;
 
 	@ValidateIf((o) => o.method === PaymentMethod.CRYPTO)
+	@IsOptional()
 	@IsString()
 	hash?: string;
 }

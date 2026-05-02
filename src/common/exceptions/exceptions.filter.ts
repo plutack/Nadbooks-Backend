@@ -29,8 +29,9 @@ export class ExceptionsFilter implements ExceptionFilter {
 				const body = rawResponse as Record<string, any>;
 
 				if (Array.isArray(body.message)) {
-					errors = body.message;
-					message = body.message[0];
+					const msgArray = body.message as string[];
+					errors = msgArray;
+					message = msgArray[0] ?? 'Unknown error';
 				} else if (typeof body.message === 'string') {
 					message = body.message;
 					errors = [body.message];
@@ -64,7 +65,7 @@ export class ExceptionsFilter implements ExceptionFilter {
 			message,
 			errors: errors || undefined,
 			stack:
-				status >= 500 && exception instanceof Error
+				status >= 400 && exception instanceof Error
 					? exception.stack
 					: undefined,
 		};

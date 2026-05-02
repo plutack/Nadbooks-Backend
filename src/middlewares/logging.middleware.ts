@@ -29,8 +29,8 @@ export class LoggingMiddleware implements NestMiddleware {
 			body: req.context.body,
 		});
 
-		const originalJson = res.json.bind(res);
 		const chunks: Buffer[] = [];
+		const originalJson = res.json.bind(res) as (body: unknown) => Response;
 
 		res.json = (payload: unknown): Response => {
 			if (payload !== undefined) {

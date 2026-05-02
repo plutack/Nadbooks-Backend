@@ -13,12 +13,15 @@ import {
 } from '@/payments/deposit/interfaces/provider.interface';
 
 @Injectable()
-export class PaystackDepositProvider implements DepositProviderInterface<
-	PaystackDepositDto,
-	DepositResult,
-	VerifyDepositInput,
-	{ status: PaymentStatus }
-> {
+export class PaystackDepositProvider
+	implements
+		DepositProviderInterface<
+			PaystackDepositDto,
+			DepositResult,
+			VerifyDepositInput,
+			{ status: PaymentStatus }
+		>
+{
 	private readonly PAYSTACK_BASE = 'https://api.paystack.co';
 	private readonly secretKey: string;
 

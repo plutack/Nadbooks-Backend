@@ -1,6 +1,22 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsString, ValidateIf } from 'class-validator';
+import {
+	IsNotEmpty,
+	IsNumber,
+	IsString,
+	Matches,
+	ValidateIf,
+} from 'class-validator';
 import { PaymentMethod } from 'generated/prisma';
+
+export class ResolveBankAccountDto {
+	@IsString()
+	@IsNotEmpty()
+	accountNumber: string;
+
+	@IsString()
+	@IsNotEmpty()
+	bankCode: string;
+}
 
 export type ExternalPaymentMethod = Exclude<PaymentMethod, 'WALLET'>;
 
@@ -35,6 +51,10 @@ export class WithdrawDto extends BaseWithdrawDto {
 	@IsString()
 	@IsNotEmpty()
 	method: ExternalPaymentMethod;
+
+	@IsString()
+	@Matches(/^\d{6}$/, { message: 'Transaction PIN must be 6 digits' })
+	pin: string;
 
 	// Paystack-specific fields
 	@ValidateIf((o: WithdrawDto) => o.method === PaymentMethod.PAYSTACK)

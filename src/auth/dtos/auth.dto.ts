@@ -98,3 +98,44 @@ export class VerifyEmailDto {
 	@Matches(/^\d{6}$/, { message: 'Code must be exactly 6 digits' })
 	code: string;
 }
+
+export class SetPinDto {
+	@IsString()
+	@IsNotEmpty()
+	@Matches(/^\d{6}$/, { message: 'Transaction PIN must be exactly 6 digits' })
+	pin: string;
+}
+
+export class ChangePinDto {
+	@IsString()
+	@IsNotEmpty()
+	@Matches(/^\d{6}$/, { message: 'Current PIN must be exactly 6 digits' })
+	oldPin: string;
+
+	@IsString()
+	@IsNotEmpty()
+	@Matches(/^\d{6}$/, { message: 'New PIN must be exactly 6 digits' })
+	newPin: string;
+}
+
+export class RequestPinResetDto {
+	@IsEmail()
+	@Transform(({ value }) => value?.trim().toLowerCase())
+	email: string;
+}
+
+export class ConfirmPinResetDto {
+	@IsEmail()
+	@Transform(({ value }) => value?.trim().toLowerCase())
+	email: string;
+
+	@IsString()
+	@IsNotEmpty()
+	@Matches(/^\d{6}$/, { message: 'Reset code must be exactly 6 digits' })
+	code: string;
+
+	@IsString()
+	@IsNotEmpty()
+	@Matches(/^\d{6}$/, { message: 'New PIN must be exactly 6 digits' })
+	newPin: string;
+}

@@ -22,6 +22,7 @@ import { RedisService } from '@/redis/redis.service';
 import { JwtPayloadType } from '@/types/jwt.type';
 import { Role } from 'generated/prisma';
 import { EmailService } from '@/email/email.service';
+import { isDev } from '@/helpers/functions';
 
 type UserResponse = {
 	id: string;
@@ -83,8 +84,8 @@ export class AuthService {
 			},
 		});
 
-		const isDev = this.config.get<string>('NODE_ENV') !== 'production';
-		const code = isDev ? '000000' : crypto.randomInt(100000, 999999).toString();
+		const dev = isDev(this.config);
+		const code = dev ? '000000' : crypto.randomInt(100000, 999999).toString();
 
 		await this.redis.setJSON(
 			`verify:${dto.email}`,
@@ -535,10 +536,10 @@ export class AuthService {
 			return { code: existingData.code, sent: false };
 		}
 
-		const isDev = this.config.get<string>('NODE_ENV') !== 'production';
+		const dev = isDev(this.config);
 		const code =
 			existingData?.code ||
-			(isDev ? '000000' : crypto.randomInt(100000, 999999).toString());
+			(dev ? '000000' : crypto.randomInt(100000, 999999).toString());
 
 		await this.redis.setJSON(
 			`verify:${email}`,
@@ -551,8 +552,8 @@ export class AuthService {
 
 	private async queueVerificationEmail(email: string) {
 		const { code, sent } = await this.generateAndStoreCode(email);
-		const isDev = this.config.get<string>('NODE_ENV') !== 'production';
-		if (!isDev) {
+		const dev = isDev(this.config);
+		if (!dev) {
 			await this.emailService.sendEmail({
 				to: email,
 				subject: 'Your verification code',
@@ -643,5 +644,187 @@ export class AuthService {
 		});
 
 		return { message: 'Email verified successfully' };
+	}
+
+	async setPin(userId: string, pin: string): Promise<{ message: string }> {
+		const user = await this.db.user.findUnique({
+			where: { id: userId },
+			select: { isVerified: true, pinHash: true },
+		});
+
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+
+		if (user.pinHash) {
+			throw new ConflictException(
+				'PIN already set. Use /pin/change to update it.',
+			);
+		}
+
+		const pinHash = await argon.hash(pin);
+		await this.db.user.update({
+			where: { id: userId },
+			data: { pinHash, pinChangedAt: new Date() },
+		});
+
+		return { message: 'Transaction PIN set successfully' };
+	}
+
+	async changePin(
+		userId: string,
+		oldPin: string,
+		newPin: string,
+	): Promise<{ message: string }> {
+		const user = await this.db.user.findUnique({
+			where: { id: userId },
+			select: { pinHash: true },
+		});
+
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+
+		if (!user.pinHash) {
+			throw new BadRequestException(
+				'PIN not set. Use POST /pin/set to create one.',
+			);
+		}
+
+		const isOldPinValid = await argon.verify(user.pinHash, oldPin);
+		if (!isOldPinValid) {
+			throw new BadRequestException('Invalid current PIN');
+		}
+
+		const newPinHash = await argon.hash(newPin);
+		await this.db.user.update({
+			where: { id: userId },
+			data: { pinHash: newPinHash, pinChangedAt: new Date() },
+		});
+
+		return { message: 'Transaction PIN changed successfully' };
+	}
+
+	async requestPinReset(email: string): Promise<{ message: string }> {
+		const user = await this.db.user.findUnique({
+			where: { email },
+		});
+
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+
+		if (!user.isVerified) {
+			throw new BadRequestException(
+				'Email verification required before resetting PIN',
+			);
+		}
+
+		return this.queuePinResetEmail(email);
+	}
+
+	async confirmPinReset(
+		email: string,
+		code: string,
+		newPin: string,
+	): Promise<{ message: string }> {
+		const user = await this.db.user.findFirst({
+			where: { email },
+		});
+
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+
+		const storedData = await this.redis.getJSON<{
+			code: string;
+			sentAt: number;
+			userId: string;
+		}>(`pin:reset:${email}`);
+
+		if (!storedData) {
+			throw new BadRequestException('Reset code expired or not found');
+		}
+
+		if (storedData.code !== code) {
+			throw new UnauthorizedException('Invalid reset code');
+		}
+
+		await this.redis.del(`pin:reset:${email}`);
+
+		const pinHash = await argon.hash(newPin);
+		await this.db.user.update({
+			where: { id: user.id },
+			data: { pinHash, pinChangedAt: new Date() },
+		});
+
+		return { message: 'Transaction PIN reset successfully' };
+	}
+
+	private async queuePinResetEmail(
+		email: string,
+	): Promise<{ message: string }> {
+		const { code, sent } = await this.generateAndStorePinResetCode(email);
+
+		if (!sent) {
+			const existingData = await this.redis.getJSON<{
+				code: string;
+				sentAt: number;
+			}>(`pin:reset:${email}`);
+			const fiveMinutes = 5 * 60 * 1000;
+			const nextRetryIn = Math.ceil(
+				(fiveMinutes - (Date.now() - (existingData?.sentAt || 0))) / 1000,
+			);
+			throw new HttpException(
+				{
+					message: 'Too many requests',
+					nextRetryIn,
+				},
+				HttpStatus.TOO_MANY_REQUESTS,
+			);
+		}
+
+		const dev = isDev(this.config);
+		if (!dev) {
+			await this.emailService.sendEmail({
+				to: email,
+				subject: 'Reset your transaction PIN',
+				templateName: 'transaction-pin-reset',
+				variables: { code },
+			});
+		}
+
+		return { message: 'PIN reset code sent' };
+	}
+
+	private async generateAndStorePinResetCode(email: string): Promise<{
+		code: string;
+		sent: boolean;
+	}> {
+		const existingData = await this.redis.getJSON<{
+			code: string;
+			sentAt: number;
+			userId: string;
+		}>(`pin:reset:${email}`);
+		const fiveMinutes = 5 * 60 * 1000;
+
+		if (existingData && Date.now() - existingData.sentAt < fiveMinutes) {
+			return { code: existingData.code, sent: false };
+		}
+
+		const dev = isDev(this.config);
+		const code =
+			existingData?.code ||
+			(dev ? '000000' : crypto.randomInt(100000, 999999).toString());
+
+		const user = await this.db.user.findFirst({ where: { email } });
+
+		await this.redis.setJSON(
+			`pin:reset:${email}`,
+			{ code, sentAt: Date.now(), userId: user?.id },
+			this.config.getOrThrow<number>('VERIFICATION_CODE_TTL'),
+		);
+
+		return { code, sent: true };
 	}
 }

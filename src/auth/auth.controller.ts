@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from '@/auth/auth.service';
+import { CurrentUser } from '@/auth/auth.guard';
 import { JwtGuard } from '@/auth/guards/jwt.guard';
 import { GoogleTokenGuard } from '@/auth/guards/google-token.guard';
 import {
@@ -17,7 +18,12 @@ import {
 	LinkGoogleDto,
 	RequestVerificationDto,
 	VerifyEmailDto,
+	SetPinDto,
+	ChangePinDto,
+	RequestPinResetDto,
+	ConfirmPinResetDto,
 } from '@/auth/dtos/auth.dto';
+import { JwtPayloadType } from '@/types/jwt.type';
 
 interface GoogleUser {
 	email: string;
@@ -91,5 +97,31 @@ export class AuthController {
 	@Post('verify-email')
 	verifyEmail(@Body() body: VerifyEmailDto) {
 		return this.auth.verifyEmail(body.email, body.code);
+	}
+
+	@HttpCode(200)
+	@Post('pin/set')
+	@UseGuards(JwtGuard)
+	setPin(@Body() body: SetPinDto, @CurrentUser() user: JwtPayloadType) {
+		return this.auth.setPin(user.sub, body.pin);
+	}
+
+	@HttpCode(200)
+	@Post('pin/change')
+	@UseGuards(JwtGuard)
+	changePin(@Body() body: ChangePinDto, @CurrentUser() user: JwtPayloadType) {
+		return this.auth.changePin(user.sub, body.oldPin, body.newPin);
+	}
+
+	@HttpCode(200)
+	@Post('pin/reset')
+	requestPinReset(@Body() body: RequestPinResetDto) {
+		return this.auth.requestPinReset(body.email);
+	}
+
+	@HttpCode(200)
+	@Post('pin/reset/confirm')
+	confirmPinReset(@Body() body: ConfirmPinResetDto) {
+		return this.auth.confirmPinReset(body.email, body.code, body.newPin);
 	}
 }

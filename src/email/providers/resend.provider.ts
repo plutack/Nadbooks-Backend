@@ -30,11 +30,7 @@ export class ResendEmailProvider implements EmailProviderInterface {
 		}
 
 		try {
-			// For a real app, you would load HTML templates and compile them with variables.
-			// Here we construct a simple HTML body for the verification email as a starting point.
-			const htmlBody = `<p>Hello,</p><p>Your verification code is: ${dto.variables?.code}</p>`;
-
-			// If we wanted to expand, we'd use dto.templateName to pick a template file.
+			const htmlBody = `<p>Your code is: <strong>${dto.variables?.code}</strong></p>`;
 
 			await this.resend.emails.send({
 				from: this.defaultFrom,
@@ -45,8 +41,6 @@ export class ResendEmailProvider implements EmailProviderInterface {
 			this.logger.log(`Email sent successfully to ${dto.to}`);
 		} catch (error) {
 			this.logger.error(`Failed to send email to ${dto.to}`, error);
-			// We intentionally do not throw here to fail silently if it's an email delivery issue,
-			// as requested, though you might want to rethrow for queue retries in a strict setup.
 		}
 	}
 }

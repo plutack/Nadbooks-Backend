@@ -25,9 +25,13 @@ CREATE TABLE `User` (
     `isVerified` BOOLEAN NOT NULL DEFAULT false,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NOT NULL,
+    `google_id` VARCHAR(255) NULL,
+    `pin_changed_at` DATETIME(3) NULL,
+    `pin_hash` VARCHAR(191) NULL,
 
     UNIQUE INDEX `User_username_key`(`username`),
     UNIQUE INDEX `User_email_key`(`email`),
+    UNIQUE INDEX `User_google_id_key`(`google_id`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -47,12 +51,15 @@ CREATE TABLE `Book` (
     `author_id` VARCHAR(191) NOT NULL,
     `is_deleted` BOOLEAN NOT NULL DEFAULT false,
     `deleted_by_id` VARCHAR(191) NULL,
-    `status` ENUM('PENDING_APPROVAL', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'PENDING_APPROVAL',
-    `reviewed_by_id` VARCHAR(191) NULL,
     `date_reviewed` DATETIME(3) NULL,
+    `reviewed_by_id` VARCHAR(191) NULL,
+    `status` ENUM('PENDING_APPROVAL', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'PENDING_APPROVAL',
 
     INDEX `Book_genre_idx`(`genre`),
     INDEX `Book_status_idx`(`status`),
+    INDEX `Book_author_id_fkey`(`author_id`),
+    INDEX `Book_deleted_by_id_fkey`(`deleted_by_id`),
+    INDEX `Book_reviewed_by_id_fkey`(`reviewed_by_id`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -63,6 +70,7 @@ CREATE TABLE `BookBookmark` (
     `book_id` VARCHAR(191) NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
+    INDEX `BookBookmark_book_id_fkey`(`book_id`),
     UNIQUE INDEX `BookBookmark_user_id_book_id_key`(`user_id`, `book_id`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -71,7 +79,7 @@ CREATE TABLE `BookBookmark` (
 CREATE TABLE `Wallet` (
     `id` VARCHAR(191) NOT NULL,
     `user_id` VARCHAR(191) NOT NULL,
-    `balance` DECIMAL(65, 30) NOT NULL DEFAULT 0,
+    `balance` DECIMAL(65, 30) NOT NULL DEFAULT 0.000000000000000000000000000000,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NOT NULL,
 
@@ -93,13 +101,28 @@ CREATE TABLE `Transaction` (
     `description` VARCHAR(191) NULL,
     `reason` VARCHAR(191) NULL,
     `metadata` JSON NULL,
-    `providerResponse` JSON NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NOT NULL,
     `order_id` VARCHAR(191) NULL,
 
     UNIQUE INDEX `Transaction_reference_key`(`reference`),
     UNIQUE INDEX `Transaction_hash_key`(`hash`),
+    INDEX `Transaction_order_id_fkey`(`order_id`),
+    INDEX `Transaction_recipient_wallet_id_fkey`(`recipient_wallet_id`),
+    INDEX `Transaction_sender_wallet_id_fkey`(`sender_wallet_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `ProviderResponse` (
+    `id` VARCHAR(191) NOT NULL,
+    `provider` ENUM('PAYSTACK', 'CRYPTO', 'WALLET') NOT NULL,
+    `reference` VARCHAR(191) NOT NULL,
+    `response` JSON NOT NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    UNIQUE INDEX `ProviderResponse_reference_key`(`reference`),
+    UNIQUE INDEX `ProviderResponse_provider_reference_key`(`provider`, `reference`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -112,6 +135,7 @@ CREATE TABLE `Order` (
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NOT NULL,
 
+    INDEX `Order_user_id_fkey`(`user_id`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -124,6 +148,7 @@ CREATE TABLE `OrderBook` (
     `author_id` VARCHAR(191) NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
+    INDEX `OrderBook_book_id_fkey`(`book_id`),
     UNIQUE INDEX `OrderBook_order_id_book_id_key`(`order_id`, `book_id`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -144,28 +169,28 @@ ALTER TABLE `Book` ADD CONSTRAINT `Book_deleted_by_id_fkey` FOREIGN KEY (`delete
 ALTER TABLE `Book` ADD CONSTRAINT `Book_reviewed_by_id_fkey` FOREIGN KEY (`reviewed_by_id`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `BookBookmark` ADD CONSTRAINT `BookBookmark_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `BookBookmark` ADD CONSTRAINT `BookBookmark_book_id_fkey` FOREIGN KEY (`book_id`) REFERENCES `Book`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `BookBookmark` ADD CONSTRAINT `BookBookmark_book_id_fkey` FOREIGN KEY (`book_id`) REFERENCES `Book`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `BookBookmark` ADD CONSTRAINT `BookBookmark_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Wallet` ADD CONSTRAINT `Wallet_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Transaction` ADD CONSTRAINT `Transaction_sender_wallet_id_fkey` FOREIGN KEY (`sender_wallet_id`) REFERENCES `Wallet`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `Transaction` ADD CONSTRAINT `Transaction_order_id_fkey` FOREIGN KEY (`order_id`) REFERENCES `Order`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Transaction` ADD CONSTRAINT `Transaction_recipient_wallet_id_fkey` FOREIGN KEY (`recipient_wallet_id`) REFERENCES `Wallet`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Transaction` ADD CONSTRAINT `Transaction_order_id_fkey` FOREIGN KEY (`order_id`) REFERENCES `Order`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `Transaction` ADD CONSTRAINT `Transaction_sender_wallet_id_fkey` FOREIGN KEY (`sender_wallet_id`) REFERENCES `Wallet`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Order` ADD CONSTRAINT `Order_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `OrderBook` ADD CONSTRAINT `OrderBook_order_id_fkey` FOREIGN KEY (`order_id`) REFERENCES `Order`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `OrderBook` ADD CONSTRAINT `OrderBook_book_id_fkey` FOREIGN KEY (`book_id`) REFERENCES `Book`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `OrderBook` ADD CONSTRAINT `OrderBook_book_id_fkey` FOREIGN KEY (`book_id`) REFERENCES `Book`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `OrderBook` ADD CONSTRAINT `OrderBook_order_id_fkey` FOREIGN KEY (`order_id`) REFERENCES `Order`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
