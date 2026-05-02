@@ -36,6 +36,7 @@ export class WebhookService {
 	}
 
 	private async saveProviderResponse(
+		transactionId: string | null,
 		provider: PaymentMethod,
 		reference: string,
 		response: Prisma.InputJsonValue,
@@ -43,7 +44,7 @@ export class WebhookService {
 		const existing = await this.findProviderResponse(provider, reference);
 		if (existing) return null;
 		return this.db.providerResponse.create({
-			data: { provider, reference, response },
+			data: { transactionId, provider, reference, response },
 			select: { id: true },
 		});
 	}
@@ -97,6 +98,7 @@ export class WebhookService {
 				return { status: 'duplicate' };
 			}
 			await this.saveProviderResponse(
+				null,
 				PaymentMethod.PAYSTACK,
 				reference,
 				payload,
@@ -130,7 +132,7 @@ export class WebhookService {
 			if (existing) {
 				return { status: 'duplicate' };
 			}
-			await this.saveProviderResponse(PaymentMethod.CRYPTO, webhookId, payload);
+			await this.saveProviderResponse(null, PaymentMethod.CRYPTO, webhookId, payload);
 		}
 
 		return { status: 'queued' };

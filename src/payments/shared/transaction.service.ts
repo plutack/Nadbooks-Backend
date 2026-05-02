@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, TransactionStatus, TransactionType } from 'generated/prisma';
+import { PaymentMethod, Prisma, TransactionStatus, TransactionType } from 'generated/prisma';
 import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
@@ -123,6 +123,36 @@ export class TransactionService {
 				order: true,
 			},
 			orderBy: { createdAt: 'desc' },
+		});
+	}
+
+	async findProviderResponse(
+		provider: PaymentMethod,
+		reference: string,
+	): Promise<{ id: string } | null> {
+		return this.db.providerResponse
+			.findUnique({
+				where: {
+					ProviderResponse_provider_reference_unique: { provider, reference },
+				},
+				select: { id: true },
+			})
+			.then((r) => r as { id: string } | null);
+	}
+
+	async saveProviderResponse(
+		transactionId: string | null,
+		provider: PaymentMethod,
+		reference: string,
+		response: Prisma.InputJsonValue,
+		tx?: Prisma.TransactionClient,
+	): Promise<{ id: string } | null> {
+		const client = this.getClient(tx);
+		const existing = await this.findProviderResponse(provider, reference);
+		if (existing) return null;
+		return client.providerResponse.create({
+			data: { transactionId, provider, reference, response },
+			select: { id: true },
 		});
 	}
 }

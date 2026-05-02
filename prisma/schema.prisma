@@ -120,6 +120,7 @@ model Transaction {
   order             Order?            @relation(fields: [orderId], references: [id])
   recipientWallet   Wallet?           @relation("ReceivedTransactions", fields: [recipientWalletId], references: [id])
   senderWallet      Wallet?           @relation("SentTransactions", fields: [senderWalletId], references: [id])
+  providerResponses ProviderResponse[]
 
   @@index([orderId], map: "Transaction_order_id_fkey")
   @@index([recipientWalletId], map: "Transaction_recipient_wallet_id_fkey")
@@ -128,10 +129,13 @@ model Transaction {
 
 model ProviderResponse {
   id            String        @id @default(uuid())
+  transactionId String?       @map("transaction_id")
   provider      PaymentMethod
   reference     String        @unique
   response      Json
-  createdAt     DateTime     @default(now()) @map("created_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  transaction Transaction? @relation(fields: [transactionId], references: [id])
 
   @@unique([provider, reference], name: "ProviderResponse_provider_reference_unique")
 }
