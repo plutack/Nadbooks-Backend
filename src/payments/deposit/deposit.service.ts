@@ -146,13 +146,6 @@ export class DepositService {
 						? input.hash!
 						: (result as any).reference || input.hash!;
 
-				await this.transactionService.saveProviderResponse(
-					tx.id,
-					method,
-					providerRef,
-					result as object,
-				);
-
 				if (method === PaymentMethod.CRYPTO) {
 					const monAmount = (result as any).decodedAmount as string;
 					const { booksAmount, context } =
@@ -208,14 +201,6 @@ export class DepositService {
 		if (txRecord.status !== TransactionStatus.PENDING) return;
 
 		await this.db.$transaction(async (tx) => {
-			await this.transactionService.saveProviderResponse(
-				txRecord.id,
-				PaymentMethod.PAYSTACK,
-				data.reference,
-				data,
-				tx,
-			);
-
 			await this.walletService.credit(
 				txRecord.recipientWalletId!,
 				txRecord.amount,
