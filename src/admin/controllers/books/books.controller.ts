@@ -7,8 +7,10 @@ import {
 	Patch,
 	Query,
 } from '@nestjs/common';
+import { BookStatus } from 'generated/prisma';
 import { AdminEditBookDto } from '@/admin/dto/books/edit-book.dto';
-import { AuthGuard, CurrentUser } from '@/auth/auth.guard';
+import { ReviewBookDto } from '@/admin/dto/books/review-book.dto';
+import { CurrentUser } from '@/auth/auth.guard';
 import { AdminAuth } from '@/auth/decorators/roles.decorator';
 import { BooksService } from '@/books/books.service';
 import { BaseFilterDto } from '@/common/dto/filters.dto';
@@ -39,5 +41,19 @@ export class AdminBooksController {
 	@HttpCode(204)
 	banBookById(@Param('id') id: string, @CurrentUser() user: JwtPayloadType) {
 		return this.booksService.banBook(id, user.sub);
+	}
+
+	@Patch(':id/review')
+	@HttpCode(200)
+	reviewBook(
+		@Param('id') id: string,
+		@Body() body: ReviewBookDto,
+		@CurrentUser() user: JwtPayloadType,
+	) {
+		return this.booksService.reviewBook(
+			id,
+			user.sub,
+			body.status as unknown as BookStatus,
+		);
 	}
 }

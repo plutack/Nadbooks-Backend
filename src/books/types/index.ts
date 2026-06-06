@@ -3,6 +3,7 @@ import { Book } from 'generated/prisma';
 export enum FileType {
 	BOOK = 'BOOK',
 	COVER = 'COVER',
+	AVATAR = 'AVATAR',
 }
 
 export type UpdatableBookFields = Omit<

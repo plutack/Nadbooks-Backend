@@ -6,12 +6,43 @@ const prisma = new PrismaClient();
 async function main() {
 	try {
 		await createSuperAdmin();
+		await seedGenres();
 	} catch (e) {
 		console.error(e);
 		process.exit(1);
 	} finally {
 		await prisma.$disconnect();
 	}
+}
+
+const DEFAULT_GENRES = [
+	'Fiction',
+	'Non-Fiction',
+	'Romance',
+	'Mystery',
+	'Thriller',
+	'Science Fiction',
+	'Fantasy',
+	'Horror',
+	'Biography',
+	'Self-Help',
+	'Poetry',
+	'History',
+	'Business',
+	'Children',
+	'Young Adult',
+];
+
+async function seedGenres() {
+	console.log('Seeding genres...');
+	for (const name of DEFAULT_GENRES) {
+		await prisma.genre.upsert({
+			where: { name },
+			update: {},
+			create: { name },
+		});
+	}
+	console.log(`Seeded ${DEFAULT_GENRES.length} genres.`);
 }
 
 async function createSuperAdmin() {

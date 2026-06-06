@@ -45,13 +45,26 @@ export class AuthService {
 		private readonly emailService: EmailService,
 	) {}
 
+	private async getUserEpoch(userId: string): Promise<number> {
+		const v = await this.redis.get(`refresh:epoch:user:${userId}`);
+		return v ? parseInt(v, 10) : 0;
+	}
+
+	private async getGlobalEpoch(): Promise<number> {
+		const v = await this.redis.get(`refresh:epoch:global`);
+		return v ? parseInt(v, 10) : 0;
+	}
+
 	private async generateRefreshToken(userId: string): Promise<string> {
 		const refreshToken = crypto.randomUUID();
-		// Store token -> userId so we can look it up by token later
-		// Key: refresh:{token} -> Value: userId
-		await this.redis.set(
+		const userEpoch = await this.getUserEpoch(userId);
+		const globalEpoch = await this.getGlobalEpoch();
+		// Store token -> { userId, userEpoch, globalEpoch } so we can look it up by
+		// token later and validate it against the current revocation epochs.
+		// Key: refresh:{token} -> Value: { userId, userEpoch, globalEpoch }
+		await this.redis.setJSON(
 			`refresh:${refreshToken}`,
-			userId,
+			{ userId, userEpoch, globalEpoch },
 			this.config.getOrThrow<number>('REFRESH_TOKEN_TTL'),
 		);
 		return refreshToken;
@@ -174,10 +187,26 @@ export class AuthService {
 
 	async refresh(dto: RefreshTokenDto) {
 		const { refreshToken } = dto;
-		const userId = await this.redis.get(`refresh:${refreshToken}`);
+		const stored = await this.redis.getJSON<{
+			userId: string;
+			userEpoch: number;
+			globalEpoch: number;
+		}>(`refresh:${refreshToken}`);
 
-		if (!userId) {
+		if (!stored) {
 			throw new UnauthorizedException('Invalid or expired refresh token');
+		}
+
+		// Reject if the token was issued before a session revocation (per-user or
+		// global). The epochs are bumped by admins to force-logout users.
+		const currentUserEpoch = await this.getUserEpoch(stored.userId);
+		const currentGlobalEpoch = await this.getGlobalEpoch();
+		if (
+			stored.userEpoch !== currentUserEpoch ||
+			stored.globalEpoch !== currentGlobalEpoch
+		) {
+			await this.redis.del(`refresh:${refreshToken}`);
+			throw new UnauthorizedException('Session has been revoked');
 		}
 
 		// Rotate token: delete old one
@@ -185,7 +214,7 @@ export class AuthService {
 
 		// Get user details for new AT
 		const user = await this.db.user.findUnique({
-			where: { id: userId },
+			where: { id: stored.userId },
 		});
 
 		if (!user) {
@@ -212,6 +241,22 @@ export class AuthService {
 	async logout(dto: RefreshTokenDto) {
 		await this.redis.del(`refresh:${dto.refreshToken}`);
 		return { message: 'Logged out successfully' };
+	}
+
+	// NOTE: this only revokes refresh tokens. Already-issued access JWTs remain
+	// valid until they expire (15m TTL); the user is fully locked out once their
+	// current access token expires and they can no longer refresh.
+	async revokeUserSessions(userId: string): Promise<{ message: string }> {
+		await this.redis.incr(`refresh:epoch:user:${userId}`);
+		return { message: 'All sessions for this user have been revoked' };
+	}
+
+	// NOTE: this only revokes refresh tokens. Already-issued access JWTs remain
+	// valid until they expire (15m TTL); all users are fully locked out once their
+	// current access tokens expire and they can no longer refresh.
+	async revokeAllSessions(): Promise<{ message: string }> {
+		await this.redis.incr(`refresh:epoch:global`);
+		return { message: 'All sessions across all users have been revoked' };
 	}
 
 	async handleOauthLogin(profile: {
@@ -644,6 +689,126 @@ export class AuthService {
 		});
 
 		return { message: 'Email verified successfully' };
+	}
+
+	/**
+	 * Starts an email change: sends a verification code to the NEW address. The
+	 * email is only switched once the user proves control of it via confirmEmailChange.
+	 */
+	async requestEmailChange(userId: string, newEmail: string) {
+		const user = await this.db.user.findUnique({ where: { id: userId } });
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+		if (user.email.toLowerCase() === newEmail.toLowerCase()) {
+			throw new BadRequestException(
+				'New email is the same as your current email',
+			);
+		}
+
+		const taken = await this.db.user.findFirst({
+			where: { email: newEmail, id: { not: userId } },
+		});
+		if (taken) {
+			throw new ConflictException('Email already in use');
+		}
+
+		const key = `email-change:${userId}`;
+		const existing = await this.redis.getJSON<{
+			code: string;
+			newEmail: string;
+			sentAt: number;
+		}>(key);
+		const fiveMinutes = 5 * 60 * 1000;
+		if (existing && Date.now() - existing.sentAt < fiveMinutes) {
+			const nextRetryIn = Math.ceil(
+				(fiveMinutes - (Date.now() - existing.sentAt)) / 1000,
+			);
+			throw new HttpException(
+				{ message: 'Too many requests', nextRetryIn },
+				HttpStatus.TOO_MANY_REQUESTS,
+			);
+		}
+
+		const dev = isDev(this.config);
+		const code = dev ? '000000' : crypto.randomInt(100000, 999999).toString();
+
+		await this.redis.setJSON(
+			key,
+			{ code, newEmail, sentAt: Date.now() },
+			this.config.getOrThrow<number>('VERIFICATION_CODE_TTL'),
+		);
+
+		if (!dev) {
+			await this.emailService.sendEmail({
+				to: newEmail,
+				subject: 'Confirm your new email',
+				templateName: 'verification',
+				variables: { code },
+			});
+		}
+
+		return { message: 'Verification code sent to your new email' };
+	}
+
+	/** Completes an email change after the code sent to the new address is confirmed. */
+	async confirmEmailChange(userId: string, code: string) {
+		const key = `email-change:${userId}`;
+		const stored = await this.redis.getJSON<{
+			code: string;
+			newEmail: string;
+			sentAt: number;
+		}>(key);
+
+		if (!stored) {
+			throw new BadRequestException(
+				'Email change request expired or not found',
+			);
+		}
+		if (stored.code !== code) {
+			throw new UnauthorizedException('Invalid verification code');
+		}
+
+		// Re-check in case the address was claimed between request and confirm.
+		const taken = await this.db.user.findFirst({
+			where: { email: stored.newEmail, id: { not: userId } },
+		});
+		if (taken) {
+			throw new ConflictException('Email already in use');
+		}
+
+		const user = await this.db.user.update({
+			where: { id: userId },
+			data: { email: stored.newEmail, isVerified: true },
+		});
+
+		await this.redis.del(key);
+
+		// The email is part of the JWT payload, so reissue tokens.
+		const payload: JwtPayloadType = {
+			sub: user.id,
+			username: user.username,
+			email: user.email,
+			role: user.role,
+			isVerified: user.isVerified,
+		};
+		const accessToken = await this.jwt.signAsync(payload);
+		const refreshToken = await this.generateRefreshToken(user.id);
+
+		return {
+			message: 'Email updated successfully',
+			accessToken,
+			refreshToken,
+			user: {
+				id: user.id,
+				username: user.username,
+				firstName: user.firstName,
+				lastName: user.lastName,
+				email: user.email,
+				role: user.role,
+				isVerified: user.isVerified,
+			},
+		};
 	}
 
 	async setPin(userId: string, pin: string): Promise<{ message: string }> {

@@ -132,7 +132,12 @@ export class WebhookService {
 			if (existing) {
 				return { status: 'duplicate' };
 			}
-			await this.saveProviderResponse(null, PaymentMethod.CRYPTO, webhookId, payload);
+			await this.saveProviderResponse(
+				null,
+				PaymentMethod.CRYPTO,
+				webhookId,
+				payload,
+			);
 		}
 
 		return { status: 'queued' };

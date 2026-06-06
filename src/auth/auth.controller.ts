@@ -6,7 +6,11 @@ import {
 	Req,
 	UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { Request } from 'express';
+
+/** Tight limit for brute-force-prone endpoints: 5 requests / minute / IP. */
+const STRICT_THROTTLE = { default: { limit: 5, ttl: 60_000 } };
 import { AuthService } from '@/auth/auth.service';
 import { CurrentUser } from '@/auth/auth.guard';
 import { JwtGuard } from '@/auth/guards/jwt.guard';
@@ -40,11 +44,13 @@ interface JwtUser {
 export class AuthController {
 	constructor(private auth: AuthService) {}
 
+	@Throttle(STRICT_THROTTLE)
 	@Post('register')
 	registerUser(@Body() body: CreateUserDto) {
 		return this.auth.register(body);
 	}
 
+	@Throttle(STRICT_THROTTLE)
 	@HttpCode(200)
 	@Post('login')
 	loginUser(@Body() body: LoginUserDto) {
@@ -58,6 +64,7 @@ export class AuthController {
 		return this.auth.handleOauthLogin(req.user);
 	}
 
+	@Throttle(STRICT_THROTTLE)
 	@HttpCode(200)
 	@Post('refresh')
 	refresh(@Body() body: RefreshTokenDto) {
@@ -87,12 +94,14 @@ export class AuthController {
 		return this.auth.unlinkGoogleAccount(req.user.sub);
 	}
 
+	@Throttle(STRICT_THROTTLE)
 	@HttpCode(200)
 	@Post('request-verification')
 	requestVerification(@Body() body: RequestVerificationDto) {
 		return this.auth.requestVerification(body.email);
 	}
 
+	@Throttle(STRICT_THROTTLE)
 	@HttpCode(200)
 	@Post('verify-email')
 	verifyEmail(@Body() body: VerifyEmailDto) {
@@ -113,12 +122,14 @@ export class AuthController {
 		return this.auth.changePin(user.sub, body.oldPin, body.newPin);
 	}
 
+	@Throttle(STRICT_THROTTLE)
 	@HttpCode(200)
 	@Post('pin/reset')
 	requestPinReset(@Body() body: RequestPinResetDto) {
 		return this.auth.requestPinReset(body.email);
 	}
 
+	@Throttle(STRICT_THROTTLE)
 	@HttpCode(200)
 	@Post('pin/reset/confirm')
 	confirmPinReset(@Body() body: ConfirmPinResetDto) {
