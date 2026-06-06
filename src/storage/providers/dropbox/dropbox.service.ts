@@ -137,4 +137,45 @@ export class DropboxService implements IStorageService {
 			.replace('?dl=0', '');
 		return directUrl;
 	}
+
+	/** Buffers the stream then uploads — Dropbox's SDK takes a buffer, not a stream. */
+	async storeStream(
+		fileType: FileType,
+		stream: import('stream').Readable,
+		fileName: string,
+		contentType: string,
+	): Promise<string> {
+		const chunks: Buffer[] = [];
+		for await (const chunk of stream) {
+			chunks.push(chunk as Buffer);
+		}
+		const buffer = Buffer.concat(chunks);
+		const file = {
+			buffer,
+			originalname: fileName,
+			mimetype: contentType,
+		} as Express.Multer.File;
+		return this.storeFile(fileType, file, fileName);
+	}
+
+	/**
+	 * Dropbox temporary links are valid for ~4 hours (not configurable).
+	 * `key` is treated as the Dropbox path (e.g. `/nadbooks/<name>`).
+	 */
+	async getSignedUrl(key: string): Promise<string> {
+		const client = await this.getDropboxClient();
+		const path = key.startsWith('/') ? key : `/nadbooks/${key}`;
+		const link = await client.filesGetTemporaryLink({ path });
+		return link.result.link;
+	}
+
+	async deleteFile(reference: string): Promise<void> {
+		// Best-effort: only attempt when given a Dropbox path, not a shared URL.
+		if (reference.startsWith('http')) return;
+		const client = await this.getDropboxClient();
+		const path = reference.startsWith('/')
+			? reference
+			: `/nadbooks/${reference}`;
+		await client.filesDeleteV2({ path });
+	}
 }

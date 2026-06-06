@@ -1,7 +1,10 @@
 import { MiddlewareConsumer, Module, ValidationPipe } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
+import { AdminModule } from '@/admin/admin.module';
 import { AppController } from '@/app.controller';
 import { AppService } from '@/app.service';
 import { AuthModule } from '@/auth/auth.module';
@@ -24,6 +27,8 @@ import { TransactionsModule } from '@/transactions/transactions.module';
 import { UserModule } from '@/users/users.module';
 import { WalletModule } from '@/wallet/wallet.module';
 import { WebhookModule } from '@/webhook/webhook.module';
+import { HealthModule } from '@/health/health.module';
+import { GenreModule } from '@/genre/genre.module';
 
 @Module({
 	imports: [
@@ -32,6 +37,18 @@ import { WebhookModule } from '@/webhook/webhook.module';
 			isGlobal: true,
 		}),
 		ScheduleModule.forRoot(),
+		// Global default: 100 requests / minute / IP. Sensitive auth routes tighten
+		// this with their own @Throttle decorators. Counters are kept in Redis so
+		// the limit holds across restarts (and across instances, if ever scaled out).
+		ThrottlerModule.forRootAsync({
+			inject: [ConfigService],
+			useFactory: (config: ConfigService) => ({
+				throttlers: [{ ttl: 60_000, limit: 100 }],
+				storage: new ThrottlerStorageRedisService(
+					config.getOrThrow<string>('REDIS_URL'),
+				),
+			}),
+		}),
 		QueueModule,
 		PrismaModule,
 		RedisModule,
@@ -41,7 +58,9 @@ import { WebhookModule } from '@/webhook/webhook.module';
 		UserModule,
 		WalletModule,
 		BooksModule,
+		GenreModule,
 		OrdersModule,
+		AdminModule,
 		TransactionsModule,
 		EmailModule,
 
@@ -53,10 +72,15 @@ import { WebhookModule } from '@/webhook/webhook.module';
 		// Integrations
 		PriceFeedModule,
 		WebhookModule,
+		HealthModule,
 	],
 	controllers: [AppController],
 	providers: [
 		AppService,
+		{
+			provide: APP_GUARD,
+			useClass: ThrottlerGuard,
+		},
 		{
 			provide: APP_FILTER,
 			useClass: ExceptionsFilter,

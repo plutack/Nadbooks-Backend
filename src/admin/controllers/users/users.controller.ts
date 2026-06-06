@@ -7,6 +7,7 @@ import {
 	Patch,
 	Query,
 } from '@nestjs/common';
+import { Role } from 'generated/prisma';
 import { UpdateUserRoleDto } from '@/admin/dto/users/update-user-role.dto';
 import { CurrentUser } from '@/auth/auth.guard';
 import { AdminAuth } from '@/auth/decorators/roles.decorator';
@@ -20,13 +21,22 @@ export class AdminUsersController {
 	constructor(private readonly userService: UserService) {}
 
 	@Get()
-	getUsers(@Query() { limit, skip }: BaseFilterDto) {
-		return this.userService.getUsers(limit, skip);
+	getUsers(
+		@Query() { limit, skip }: BaseFilterDto,
+		@Query('search') search?: string,
+		@Query('role') role?: Role,
+	) {
+		return this.userService.getUsers(limit, skip, search, role);
 	}
 
 	@Get(':id')
 	getUserById(@Param('id') id: string) {
 		return this.userService.findUserById(id);
+	}
+
+	@Get(':id/role-history')
+	getRoleHistory(@Param('id') id: string) {
+		return this.userService.getRoleHistory(id);
 	}
 
 	@Patch('/activate/:id')

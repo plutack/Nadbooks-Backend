@@ -35,6 +35,7 @@ model User {
   createdAt           DateTime       @default(now()) @map("created_at")
   updatedAt           DateTime       @updatedAt @map("updated_at")
   googleId            String?        @unique @map("google_id") @db.VarChar(255)
+  avatarURL           String?        @map("avatar_url") @db.VarChar(512)
   pinChangedAt      DateTime?  @map("pin_changed_at")
   pinHash           String?    @map("pin_hash")
   books               Book[]
@@ -44,13 +45,27 @@ model User {
   orders              Order[]
   roleChangesMade     RoleChange[]   @relation("RoleChangedBy")
   roleChangesReceived RoleChange[]   @relation("RoleChangedFor")
+  socialLinks         SocialLink[]
   wallet              Wallet?
+}
+
+model SocialLink {
+  id        String         @id @default(uuid())
+  userId    String         @map("user_id")
+  platform  SocialPlatform
+  url       String         @db.VarChar(255)
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+  user      User           @relation(fields: [userId], references: [id])
+
+  @@unique([userId, platform])
+  @@index([userId])
 }
 
 model Book {
   id           String         @id @default(uuid())
   title        String
-  genre        String
+  genreId      String         @map("genre_id")
   price        Int
   isMature     Boolean        @map("is_mature")
   pageCount    Int            @map("page_count")
@@ -68,14 +83,23 @@ model Book {
   author       User           @relation(fields: [authorId], references: [id])
   deletedBy    User?          @relation("BookDeletedBy", fields: [deletedById], references: [id])
   reviewedBy   User?          @relation("BookReviewedBy", fields: [reviewedById], references: [id])
+  genre        Genre          @relation(fields: [genreId], references: [id])
   bookmarks    BookBookmark[]
   OrderBook    OrderBook[]
 
-  @@index([genre])
+  @@index([genreId])
   @@index([status])
   @@index([authorId], map: "Book_author_id_fkey")
   @@index([deletedById], map: "Book_deleted_by_id_fkey")
   @@index([reviewedById], map: "Book_reviewed_by_id_fkey")
+}
+
+model Genre {
+  id        String   @id @default(uuid())
+  name      String   @unique @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  books     Book[]
 }
 
 model BookBookmark {
@@ -204,4 +228,10 @@ enum BookStatus {
   PENDING_APPROVAL
   APPROVED
   REJECTED
+}
+
+enum SocialPlatform {
+  INSTAGRAM
+  TWITTER
+  FACEBOOK
 }

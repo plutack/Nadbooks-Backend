@@ -1,10 +1,10 @@
-import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsUUID } from 'class-validator';
 import { BookStatus } from 'generated/prisma';
 
 export class AdminEditBookDto {
 	@IsOptional()
-	@IsString()
-	genre: string;
+	@IsUUID()
+	genreId: string;
 
 	@IsOptional()
 	@IsBoolean()

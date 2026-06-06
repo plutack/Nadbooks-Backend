@@ -15,8 +15,10 @@ export class DexPriceService {
 	private readonly booksAddress: string;
 	private readonly booksUsdtPoolAddress: string;
 
-	private mockPrice: number = 1.5;
-	private mockBooksPrice: number = 0.00073;
+	// Fallback prices used only until the on-chain DEX pools are live; once the
+	// blockchain integration is wired up these branches stop being hit.
+	private readonly mockPrice = 1.5;
+	private readonly mockBooksPrice = 0.00073;
 
 	private readonly ABI = [
 		'function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts)',
@@ -26,10 +28,6 @@ export class DexPriceService {
 		const rpcUrl = config.getOrThrow<string>('ALCHEMY_RPC_URL');
 		this.provider = new JsonRpcProvider(rpcUrl);
 		this.pool = new Contract(this.poolAddress, this.ABI, this.provider);
-
-		this.mockPrice = config.get<number>('MOCK_MON_USDT_PRICE') ?? 1.5;
-		this.mockBooksPrice =
-			config.get<number>('MOCK_BOOKS_USDT_PRICE') ?? 0.00073;
 
 		this.booksAddress =
 			config.get<string>('BOOKS_ADDRESS') ??

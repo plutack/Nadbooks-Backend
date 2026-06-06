@@ -26,6 +26,7 @@ CREATE TABLE `User` (
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NOT NULL,
     `google_id` VARCHAR(255) NULL,
+    `avatar_url` VARCHAR(512) NULL,
     `pin_changed_at` DATETIME(3) NULL,
     `pin_hash` VARCHAR(191) NULL,
 
@@ -36,10 +37,24 @@ CREATE TABLE `User` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `SocialLink` (
+    `id` VARCHAR(191) NOT NULL,
+    `user_id` VARCHAR(191) NOT NULL,
+    `platform` ENUM('INSTAGRAM', 'TWITTER', 'FACEBOOK') NOT NULL,
+    `url` VARCHAR(255) NOT NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NOT NULL,
+
+    INDEX `SocialLink_user_id_idx`(`user_id`),
+    UNIQUE INDEX `SocialLink_user_id_platform_key`(`user_id`, `platform`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `Book` (
     `id` VARCHAR(191) NOT NULL,
     `title` VARCHAR(191) NOT NULL,
-    `genre` VARCHAR(191) NOT NULL,
+    `genre_id` VARCHAR(191) NOT NULL,
     `price` INTEGER NOT NULL,
     `is_mature` BOOLEAN NOT NULL,
     `page_count` INTEGER NOT NULL,
@@ -55,11 +70,22 @@ CREATE TABLE `Book` (
     `reviewed_by_id` VARCHAR(191) NULL,
     `status` ENUM('PENDING_APPROVAL', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'PENDING_APPROVAL',
 
-    INDEX `Book_genre_idx`(`genre`),
+    INDEX `Book_genre_id_idx`(`genre_id`),
     INDEX `Book_status_idx`(`status`),
     INDEX `Book_author_id_fkey`(`author_id`),
     INDEX `Book_deleted_by_id_fkey`(`deleted_by_id`),
     INDEX `Book_reviewed_by_id_fkey`(`reviewed_by_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Genre` (
+    `id` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(255) NOT NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `Genre_name_key`(`name`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -116,6 +142,7 @@ CREATE TABLE `Transaction` (
 -- CreateTable
 CREATE TABLE `ProviderResponse` (
     `id` VARCHAR(191) NOT NULL,
+    `transaction_id` VARCHAR(191) NULL,
     `provider` ENUM('PAYSTACK', 'CRYPTO', 'WALLET') NOT NULL,
     `reference` VARCHAR(191) NOT NULL,
     `response` JSON NOT NULL,
@@ -160,6 +187,9 @@ ALTER TABLE `RoleChange` ADD CONSTRAINT `RoleChange_changedById_fkey` FOREIGN KE
 ALTER TABLE `RoleChange` ADD CONSTRAINT `RoleChange_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `SocialLink` ADD CONSTRAINT `SocialLink_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `Book` ADD CONSTRAINT `Book_author_id_fkey` FOREIGN KEY (`author_id`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -167,6 +197,9 @@ ALTER TABLE `Book` ADD CONSTRAINT `Book_deleted_by_id_fkey` FOREIGN KEY (`delete
 
 -- AddForeignKey
 ALTER TABLE `Book` ADD CONSTRAINT `Book_reviewed_by_id_fkey` FOREIGN KEY (`reviewed_by_id`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Book` ADD CONSTRAINT `Book_genre_id_fkey` FOREIGN KEY (`genre_id`) REFERENCES `Genre`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `BookBookmark` ADD CONSTRAINT `BookBookmark_book_id_fkey` FOREIGN KEY (`book_id`) REFERENCES `Book`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -185,6 +218,9 @@ ALTER TABLE `Transaction` ADD CONSTRAINT `Transaction_recipient_wallet_id_fkey` 
 
 -- AddForeignKey
 ALTER TABLE `Transaction` ADD CONSTRAINT `Transaction_sender_wallet_id_fkey` FOREIGN KEY (`sender_wallet_id`) REFERENCES `Wallet`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProviderResponse` ADD CONSTRAINT `ProviderResponse_transaction_id_fkey` FOREIGN KEY (`transaction_id`) REFERENCES `Transaction`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Order` ADD CONSTRAINT `Order_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

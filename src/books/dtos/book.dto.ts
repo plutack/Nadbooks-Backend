@@ -2,12 +2,13 @@ import { PartialType } from '@nestjs/mapped-types';
 import { Transform, Type } from 'class-transformer';
 import {
 	IsBoolean,
-	IsDate,
+	IsDateString,
 	IsEnum,
 	IsInt,
 	IsNotEmpty,
 	IsOptional,
 	IsString,
+	IsUUID,
 } from 'class-validator';
 import { BaseFilterDto } from '@/common/dto/filters.dto';
 import * as multipartUtil from '@/helpers/dto/multipart.util';
@@ -25,8 +26,8 @@ export class StoreBookDto {
 	// author: string;
 
 	@IsNotEmpty()
-	@IsString()
-	genre: string;
+	@IsUUID()
+	genreId: string;
 
 	@IsNotEmpty()
 	@Type(() => Number)
@@ -43,9 +44,8 @@ export class StoreBookDto {
 	isMature: boolean;
 
 	@IsNotEmpty()
-	@IsDate()
-	@Type(() => Date)
-	dateAuthored: Date;
+	@IsDateString()
+	dateAuthored: string;
 }
 
 export class UpdateBookDto extends PartialType(StoreBookDto) {}
@@ -64,6 +64,12 @@ export enum BookSort {
 }
 
 export class BookFilterDto extends BaseFilterDto {
+	/** Canonical genre filter — the id from GET /genres. */
+	@IsOptional()
+	@IsUUID()
+	genreId?: string;
+
+	/** Convenience genre filter by name (e.g. ?genre=Fiction). Ignored if genreId is set. */
 	@IsOptional()
 	@IsString()
 	genre?: string;

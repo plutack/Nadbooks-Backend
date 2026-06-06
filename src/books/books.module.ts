@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ImageProcessingModule } from '@/common/image/image-processing.module';
+import { GenreModule } from '@/genre/genre.module';
 import { PriceFeedModule } from '@/price-feed/price-feed.module';
 import { StorageModule } from '@/storage/storage.module';
 import { WalletModule } from '@/wallet/wallet.module';
@@ -12,6 +13,7 @@ import { BooksService } from './books.service';
 		WalletModule,
 		PriceFeedModule,
 		ImageProcessingModule,
+		GenreModule,
 	],
 	controllers: [BooksController],
 	providers: [BooksService],

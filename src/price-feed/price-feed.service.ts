@@ -60,13 +60,18 @@ export class PriceFeedService {
 	}
 
 	/**
-	 * Fetch the latest NGN → BOOKS rate from an external source
+	 * Fetch the latest NGN → BOOKS rate.
+	 * Reads from the Redis cache (warmed hourly by PriceCacheService) instead of
+	 * hitting CurrencyFreaks live — every conversion preview used to leak a live
+	 * call, which exhausted the 1000/month quota in ~a day.
 	 */
 	private async fetchBooksPerNgnRate(): Promise<Decimal> {
-		const USDtoNGNRate = await this.fiatConvertService.getUSDToNGNRate();
+		const USDtoNGNRate = await this.getUsdNgnRate();
 
 		const rate = new Decimal(USDtoNGNRate);
-		this.logger.debug(`Fetched fresh NGN_TO_BOOKS_RATE: ${rate.toString()}`);
+		this.logger.debug(
+			`Fetched NGN_TO_BOOKS_RATE from cache: ${rate.toString()}`,
+		);
 		return rate;
 	}
 

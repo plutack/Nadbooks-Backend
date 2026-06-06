@@ -1,14 +1,24 @@
 import {
+	BadRequestException,
 	Injectable,
 	NotFoundException,
 	UnauthorizedException,
 } from '@nestjs/common';
-import { Role } from 'generated/prisma';
+import { Prisma, Role, SocialPlatform } from 'generated/prisma';
+import { FileType } from '@/books/types';
+import { ImageProcessingService } from '@/common/image/image-processing.service';
+import { ALLOWED_IMAGE_LABELS, assertAllowedType } from '@/common/mime';
 import { PrismaService } from '@/prisma/prisma.service';
+import { StorageService } from '@/storage/storage.service';
+import { UpdateSocialsDto } from './dtos/update-socials.dto';
 
 @Injectable()
 export class UserService {
-	constructor(private readonly db: PrismaService) {}
+	constructor(
+		private readonly db: PrismaService,
+		private readonly storageService: StorageService,
+		private readonly imageProcessor: ImageProcessingService,
+	) {}
 
 	/**
 	 * Returns the profile of the currently authenticated user.
@@ -23,9 +33,16 @@ export class UserService {
 				username: true,
 				email: true,
 				passwordHash: true,
+				avatarURL: true,
 				wallet: {
 					select: {
 						balance: true,
+					},
+				},
+				socialLinks: {
+					select: {
+						platform: true,
+						url: true,
 					},
 				},
 			},
@@ -41,9 +58,92 @@ export class UserService {
 			lastName: existingUser.lastName,
 			username: existingUser.username,
 			email: existingUser.email,
+			avatarURL: existingUser.avatarURL,
 			hasPassword: !!existingUser.passwordHash,
 			wallet: existingUser.wallet,
+			socialLinks: existingUser.socialLinks,
 		};
+	}
+
+	/**
+	 * Resizes/optimizes the uploaded image, stores it in the public bucket, and
+	 * sets it as the user's avatar. Removes the previous avatar so it doesn't orphan.
+	 */
+	async updateAvatar(userId: string, file: Express.Multer.File) {
+		if (!file) {
+			throw new BadRequestException('Avatar image is required');
+		}
+
+		// Validate the bytes are actually an image before processing/uploading.
+		assertAllowedType(file.buffer, ALLOWED_IMAGE_LABELS);
+
+		const processed = await this.imageProcessor.resizeAndOptimize(file.buffer);
+		if (!processed) {
+			throw new BadRequestException('Invalid avatar image');
+		}
+
+		const processedFile = {
+			...file,
+			buffer: processed,
+			mimetype: 'image/jpeg',
+		};
+
+		const avatarURL = await this.storageService.storeFile(
+			FileType.AVATAR,
+			processedFile,
+			userId,
+		);
+
+		const current = await this.db.user.findUnique({
+			where: { id: userId },
+			select: { avatarURL: true },
+		});
+
+		await this.db.user.update({
+			where: { id: userId },
+			data: { avatarURL },
+		});
+
+		if (current?.avatarURL) {
+			await this.storageService.deleteFile(current.avatarURL);
+		}
+
+		return { avatarURL };
+	}
+
+	/**
+	 * Sets or clears the social media links of the currently authenticated user.
+	 */
+	async updateSocials(userId: string, dto: UpdateSocialsDto) {
+		const entries: { platform: SocialPlatform; value?: string }[] = [
+			{ platform: SocialPlatform.INSTAGRAM, value: dto.instagram },
+			{ platform: SocialPlatform.TWITTER, value: dto.twitter },
+			{ platform: SocialPlatform.FACEBOOK, value: dto.facebook },
+		];
+
+		for (const { platform, value } of entries) {
+			if (value === undefined) {
+				continue;
+			}
+
+			if (value === '') {
+				await this.db.socialLink.deleteMany({
+					where: { userId, platform },
+				});
+				continue;
+			}
+
+			await this.db.socialLink.upsert({
+				where: { userId_platform: { userId, platform } },
+				create: { userId, platform, url: value },
+				update: { url: value },
+			});
+		}
+
+		return this.db.socialLink.findMany({
+			where: { userId },
+			select: { platform: true, url: true },
+		});
 	}
 
 	async updateProfile(
@@ -114,17 +214,59 @@ export class UserService {
 		return user;
 	}
 
-	async getUsers(limit: number = 10, skip: number = 0) {
+	async getUsers(
+		limit: number = 10,
+		skip: number = 0,
+		search?: string,
+		role?: Role,
+	) {
+		const where: Prisma.UserWhereInput = {};
+
+		if (role) {
+			where.role = role;
+		}
+
+		if (search) {
+			where.OR = [
+				{ username: { contains: search } },
+				{ email: { contains: search } },
+				{ firstName: { contains: search } },
+				{ lastName: { contains: search } },
+			];
+		}
+
 		return await this.db.user.findMany({
+			where,
 			select: {
 				id: true,
 				firstName: true,
+				lastName: true,
+				username: true,
+				email: true,
+				role: true,
+				isActive: true,
+				isVerified: true,
 				createdAt: true,
 				updatedAt: true,
-				isVerified: true,
 			},
 			take: limit,
 			skip,
+		});
+	}
+
+	/** Audit trail of role changes for a user (most recent first). */
+	async getRoleHistory(userId: string) {
+		return await this.db.roleChange.findMany({
+			where: { userId },
+			orderBy: { createdAt: 'desc' },
+			select: {
+				fromRole: true,
+				toRole: true,
+				createdAt: true,
+				changedBy: {
+					select: { id: true, username: true },
+				},
+			},
 		});
 	}
 

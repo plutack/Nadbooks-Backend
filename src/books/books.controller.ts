@@ -54,6 +54,12 @@ export class BooksController {
 		return this.bookService.findBookById(id);
 	}
 
+	@Get(':id/download')
+	@UseGuards(AuthGuard)
+	getDownloadUrl(@Param('id') id: string, @CurrentUser() user: JwtPayloadType) {
+		return this.bookService.getDownloadUrl(id, user);
+	}
+
 	@Get()
 	getBooks(@Query() query: BookFilterDto) {
 		query.includeHidden = false;

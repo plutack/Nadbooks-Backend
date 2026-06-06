@@ -53,10 +53,21 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 		await this.client.expire(key, seconds);
 	}
 
+	async incr(key: string): Promise<number> {
+		return await this.client.incr(key);
+	}
+
 	async getJSON<T>(key: string): Promise<T | null> {
 		const value = await this.client.get(key);
 		if (!value) return null;
-		return JSON.parse(value) as T;
+		try {
+			return JSON.parse(value) as T;
+		} catch {
+			// Value isn't valid JSON (e.g. a legacy plain-string entry). Treat as a
+			// miss rather than throwing so callers get a clean null.
+			this.logger.warn(`Non-JSON value at key ${key}; treating as missing`);
+			return null;
+		}
 	}
 
 	async setJSON(key: string, value: any, ttlSeconds?: number): Promise<void> {
